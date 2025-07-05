@@ -1,6 +1,6 @@
 import { Effect, Config, Console } from "effect";
 
-const adminEmailsConfig = Config.array(Config.string("ADMIN_EMAILS")).pipe(
+const adminEmailsConfig = Config.array(Config.string(), "ADMIN_EMAILS").pipe(
   Config.map((emails) => emails.map((email) => email.trim().toLowerCase()))
 );
 
