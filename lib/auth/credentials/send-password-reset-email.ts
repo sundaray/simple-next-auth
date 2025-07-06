@@ -1,31 +1,5 @@
 import "server-only";
 
-import { base64url } from "jose";
-import { getRandomValues } from "uncrypto";
-
-/************************************************
- *
- * Create password reset verification token
- *
- ************************************************/
-
-export function createPasswordResetToken(): string {
-  const randomValues = new Uint8Array(32);
-  getRandomValues(randomValues);
-  return base64url.encode(randomValues);
-}
-
-/************************************************
- *
- * Create password reset verification URL
- *
- ************************************************/
-export function createPasswordResetURL(token: string): string {
-  const url = new URL("/api/auth/verify-password-reset", process.env.BASE_URL);
-  url.searchParams.set("token", token);
-  return url.toString();
-}
-
 /************************************************
  *
  * Send password reset verification email

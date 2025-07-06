@@ -3,6 +3,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { Effect, Data, Console } from "effect";
 import { decrypt } from "@/lib/auth/session/decrypt";
+import { PasswordResetSessionSchema } from "@/lib/auth/schema";
 
 class PasswordResetCookieStoreError extends Data.TaggedError(
   "PasswordResetCookieStoreError"
@@ -51,7 +52,10 @@ export function getPasswordResetSession() {
       );
     }
 
-    const session = yield* decrypt(sessionCookie.value);
+    const session = yield* decrypt(
+      sessionCookie.value,
+      PasswordResetSessionSchema
+    );
 
     return session;
   }).pipe(

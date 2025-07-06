@@ -2,28 +2,19 @@
 
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
-import { Effect } from "effect";
+import { Effect, pipe } from "effect";
 import { SignInEmailPasswordFormSchema } from "@/schema";
 
 import { getAccountStatus } from "@/lib/auth/credentials/get-account-status";
 import { verifyPassword } from "@/lib/auth/credentials/verify-password";
-import { createUserSession } from "@/lib/auth/session";
-import { getUserRole } from "@/lib/auth/get-user-role";
+import { createUserSession } from "@/lib/auth/session/create-user-session";
+import { getUserRole } from "@/lib/auth/shared/get-user-role";
 
 /************************************************
  *
  * Sign in with email and password
  *
  ************************************************/
-
-const errorMessages: Record<string, string> = {
-  InvalidPasswordError: "Incorrect email or password.",
-  DatabaseError: "Database error. Please try again.",
-  ConfigError: "Configuration error. Please try again.",
-  EncryptionError: "Encryption error. Please try again.",
-  UserSessionCreationError: "Failed to create user session. Please try again.",
-  PasswordVerificationError: "Failed to verify password. Please try again.",
-};
 
 export async function signInWithEmailAndPassword(
   next: string,
@@ -58,18 +49,56 @@ export async function signInWithEmailAndPassword(
     yield* createUserSession(email, role);
   });
 
-  // Transform the Effect to handle both success and failure cases
-  const handledProgram = Effect.match(program, {
-    onFailure: (error) => {
-      if (error._tag === "CreateAccount") {
-        return submission.reply({ formErrors: [error.message] });
-      }
-      const message =
-        errorMessages[error._tag] || "Something went wrong. Please try again.";
-      return submission.reply({ formErrors: [message] });
-    },
-    onSuccess: () => redirect(next),
-  });
+  const handledErrors = {
+    InvalidPasswordError: () =>
+      Effect.succeed(
+        submission.reply({ formErrors: ["Incorrect email or password."] })
+      ),
+    DatabaseError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Database error. Please try again."],
+        })
+      ),
+    ConfigError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Configuration error. Please try again."],
+        })
+      ),
+    EncryptionError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Encryption error. Please try again."],
+        })
+      ),
+    UserSessionCreationError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Failed to create user session. Please try again."],
+        })
+      ),
+    PasswordVerificationError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Failed to verify password. Please try again."],
+        })
+      ),
+  };
+
+  // Handle the success and failure channels of the program.
+  const handledProgram = pipe(
+    program,
+
+    // Since Effect.map() only runs on success, we use it to handle a successful login by redirecting the user.
+    Effect.map(() => redirect(next)),
+
+    Effect.catchTag("CreateAccount", (error) =>
+      Effect.succeed(submission.reply({ formErrors: [error.message] }))
+    ),
+
+    Effect.catchTags(handledErrors)
+  );
 
   // Execute the Effect
   return Effect.runPromise(handledProgram);

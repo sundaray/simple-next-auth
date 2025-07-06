@@ -3,12 +3,12 @@ import { cookies } from "next/headers";
 import { decodeJwt, JWTPayload } from "jose";
 import { Effect, Data, Console } from "effect";
 
-import { assignUserRole } from "@/lib/auth/shared/assign-user-role";
-import { createUser } from "@/lib/auth/shared/create-user";
 import { exchangeAuthorizationCodeForTokens } from "@/lib/auth/google/exchange-authorization-code-for-tokens";
 import { createUserSession } from "@/lib/auth/session/create-user-session";
 import { decrypt } from "@/lib/auth/session/decrypt";
 import { OAuthStateSchema } from "@/lib/auth/schema";
+import { assignUserRole } from "@/lib/auth/shared/assign-user-role";
+import { createUser } from "@/lib/auth/shared/create-user";
 
 /************************************************
  *

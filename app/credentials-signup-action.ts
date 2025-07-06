@@ -1,6 +1,6 @@
 "use server";
 
-import { Effect } from "effect";
+import { Effect, pipe } from "effect";
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
 import { SignUpEmailPasswordFormSchema } from "@/schema";
@@ -18,20 +18,6 @@ import { EmailService } from "@/lib/services/email-service";
  * Sign Up With Email and Password
  *
  ************************************************/
-
-const errorMessages: Record<string, string> = {
-  EmailTemplateRenderError:
-    "Failed to generate verification email. Please try again.",
-  EmailSendError: "Failed to send verification email. Please try again.",
-  PasswordHashingError: "Failed to hash password. Please try again.",
-  EncryptionError: "Encryption error. Please try again.",
-  DatabaseError: "Database error. Please try again.",
-  ConfigError: "Configuration error. Please try again.",
-  EmailVerificationSessionCreationError:
-    "Failed to create email verification session. Please try again.",
-  TokenGenerationError:
-    "Failed to generate verification token. Please try again.",
-};
 
 export async function signUpWithEmailAndPassword(
   next: string,
@@ -72,22 +58,75 @@ export async function signUpWithEmailAndPassword(
   // Provide the EmailService layer to satisfy the program's dependencies.
   const runnableProgram = program.pipe(Effect.provide(EmailService.Default));
 
-  // Handle the program's success or failure
-  const handledProgram = Effect.match(runnableProgram, {
-    onFailure: (error) => {
-      if (error._tag === "AccountAlreadyExistsError") {
-        return submission.reply({ formErrors: [error.message] });
-      }
-      const message =
-        errorMessages[error._tag] || "Something went wrong. Please try again.";
-      return submission.reply({
-        formErrors: [message],
-      });
-    },
-    onSuccess: () => {
-      redirect("/signup/verify-email");
-    },
-  });
+  const handledErrors = {
+    EmailVerificationSessionCreationError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: [
+            "Failed to create email verification session. Please try again.",
+          ],
+        })
+      ),
+    EmailTemplateRenderError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: [
+            "Failed to generate verification email. Please try again.",
+          ],
+        })
+      ),
+    EmailSendError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Failed to send verification email. Please try again."],
+        })
+      ),
+    PasswordHashingError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Failed to hash password. Please try again."],
+        })
+      ),
+    EncryptionError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Encryption error. Please try again."],
+        })
+      ),
+    TokenGenerationError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: [
+            "Failed to generate verification token. Please try again.",
+          ],
+        })
+      ),
+    DatabaseError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Database error. Please try again."],
+        })
+      ),
+    ConfigError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Configuration error. Please try again."],
+        })
+      ),
+  };
+
+  // Handle the success and failure channels of the Effect.
+  const handledProgram = pipe(
+    runnableProgram,
+
+    // Since Effect.map() only runs on success, we use it to handle a successful signup by redirecting the user.
+    Effect.map(() => redirect("/signup/verify-email")),
+
+    Effect.catchTag("AccountAlreadyExistsError", (error) =>
+      Effect.succeed(submission.reply({ formErrors: [error.message] }))
+    ),
+    Effect.catchTags(handledErrors)
+  );
 
   return Effect.runPromise(handledProgram);
 }

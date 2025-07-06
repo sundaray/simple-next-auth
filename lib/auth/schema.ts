@@ -10,3 +10,8 @@ export const UserSessionSchema = Schema.Struct({
   email: Schema.String,
   role: Schema.String,
 });
+
+export const PasswordResetSessionSchema = Schema.Struct({
+  email: Schema.String,
+  token: Schema.String,
+});

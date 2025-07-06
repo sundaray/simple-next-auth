@@ -89,7 +89,7 @@ export function findUserByEmailAndProvider(
 
 export function createUser(
   email: string,
-  role: string,
+  role: "admin" | "regular",
   provider: "google" | "credentials",
   picture?: string,
   password?: string
