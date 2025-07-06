@@ -8,7 +8,7 @@ import { createUserSession } from "@/lib/auth/session/create-user-session";
 import { decrypt } from "@/lib/auth/session/decrypt";
 import { OAuthStateSchema } from "@/lib/auth/schema";
 import { assignUserRole } from "@/lib/auth/shared/assign-user-role";
-import { createUser } from "@/lib/auth/shared/create-user";
+import { createUserWithProvider } from "@/lib/auth/shared/create-user-with-provider";
 
 /************************************************
  *
@@ -166,18 +166,12 @@ export async function GET(request: NextRequest) {
     const picture = claims.picture;
 
     // Assign user role
-    const role = yield* Effect.try({
-      try: () => assignUserRole(email),
-      catch: (error) =>
-        new RoleAssignmentError({
-          operation: "assignUserRole",
-          cause: error,
-        }),
-    });
+    const role = yield* assignUserRole(email);
 
     // Create user in database
     yield* Effect.tryPromise({
-      try: async () => await createUser(email, role, "google", picture),
+      try: async () =>
+        await createUserWithProvider(email, role, "google", picture),
       catch: (error) =>
         new UserCreationError({
           operation: "createUser",

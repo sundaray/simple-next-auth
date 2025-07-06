@@ -1,7 +1,7 @@
 import "server-only";
 
 import { verify } from "@node-rs/argon2";
-import { Effect, Data, Console } from "effect";
+import { Effect, Data, Option, pipe } from "effect";
 
 import { db } from "@/db";
 import { usersTable } from "@/db/schema";
@@ -27,6 +27,16 @@ class DatabaseError extends Data.TaggedError("DatabaseError")<{
   cause: unknown;
 }> {}
 
+class UserNotFoundError extends Data.TaggedError("UserNotFoundError")<{
+  operation: string;
+  cause: unknown;
+}> {}
+
+class PasswordNotSetError extends Data.TaggedError("PasswordNotSetError")<{
+  operation: string;
+  cause: unknown;
+}> {}
+
 export function verifyPassword(email: string, password: string) {
   return Effect.gen(function* () {
     const result = yield* Effect.tryPromise({
@@ -46,9 +56,24 @@ export function verifyPassword(email: string, password: string) {
         }),
     });
 
-    // We know the user exists and has a password because
-    // doesAccountExist already verified credentialEmailVerified
-    const hashedPassword = result[0]!.password!;
+    const user = yield* pipe(
+      Option.fromNullable(result[0]),
+      Effect.mapError(
+        (error) =>
+          new UserNotFoundError({
+            operation: "verifyPassword",
+            cause: error,
+          })
+      )
+    );
+
+    const hashedPassword = yield* pipe(
+      Option.fromNullable(user.password),
+      Effect.mapError(
+        (error) =>
+          new PasswordNotSetError({ operation: "verifyPassword", cause: error })
+      )
+    );
 
     // Verify the password using argon2
     const isValid = yield* Effect.tryPromise({
@@ -70,13 +95,13 @@ export function verifyPassword(email: string, password: string) {
     // Success - password is valid, return void
   }).pipe(
     Effect.tapErrorTag("PasswordVerificationError", (error) =>
-      Console.error("Password verification error: ", error)
+      Effect.logError(error)
     ),
     Effect.tapErrorTag("InvalidPasswordError", (error) =>
-      Console.error("Invalid password error: ", error)
+      Effect.logError(error)
     ),
-    Effect.tapErrorTag("DatabaseError", (error) =>
-      Console.error("Database error: ", error)
-    )
+    Effect.tapErrorTag("DatabaseError", (error) => Effect.logError(error)),
+    Effect.tapErrorTag("UserNotFoundError", (error) => Effect.logError(error)),
+    Effect.tapErrorTag("PasswordNotSetError", (error) => Effect.logError(error))
   );
 }

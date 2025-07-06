@@ -55,6 +55,18 @@ export async function signInWithEmailAndPassword(
   });
 
   const handledErrors = {
+    UserNotFoundError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Account doesn't exist. Sign up to create an account."],
+        })
+      ),
+    PasswordNotSetError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Account doesn't exist. Sign up to create an account."],
+        })
+      ),
     InvalidPasswordError: () =>
       Effect.succeed(
         submission.reply({ formErrors: ["Incorrect email or password."] })
