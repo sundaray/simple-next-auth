@@ -11,19 +11,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Icons } from "@/components/icons";
 import { signOut } from "@/app/auth-action";
-import {cn} from "@/lib/utils"
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-
 
 type UserAccountNavClientProps = {
   user: {
     email: string;
     role: string;
   };
-  className?: string
+  className?: string;
 };
 
-export function UserAccountNavClient({ user, className }: UserAccountNavClientProps) {
+export function UserAccountNavClient({
+  user,
+  className,
+}: UserAccountNavClientProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -48,19 +50,19 @@ export function UserAccountNavClient({ user, className }: UserAccountNavClientPr
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
-    <DropdownMenuTrigger
+      <DropdownMenuTrigger
         className={cn(
           "flex items-center space-x-1 rounded-full px-4 py-2 rounded-full",
           className
         )}
-      >        
-      <span className="text-sm font-medium text-gray-700">My Account</span>
+      >
+        <span className="text-sm font-medium text-gray-700">My Account</span>
         <Icons.chevronDown className="inline-block size-4 text-gray-500" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
-            {user.email && (
+            {user?.email && (
               <>
                 <p className="text-xs text-gray-500">signed in as</p>
                 <p className="w-[200px] truncate text-sm text-gray-600 font-medium">

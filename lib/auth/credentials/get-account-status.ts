@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Effect, Console, Data } from "effect";
+import { Effect, Data } from "effect";
 import { db } from "@/db";
 import { usersTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -16,14 +16,7 @@ class DatabaseError extends Data.TaggedError("DatabaseError")<{
   cause: unknown;
 }> {}
 
-type AccountStatus =
-  | { _tag: "NoAccount" }
-  | { _tag: "UnverifiedAccount" }
-  | { _tag: "VerifiedAccount" };
-
-export function getAccountStatus(
-  email: string
-): Effect.Effect<AccountStatus, DatabaseError, never> {
+export function getAccountStatus(email: string) {
   return Effect.gen(function* () {
     const users = yield* Effect.tryPromise({
       try: async () => {
@@ -53,5 +46,7 @@ export function getAccountStatus(
     }
 
     return { _tag: "VerifiedAccount" as const };
-  }).pipe(Effect.tapErrorTag("DatabaseError", (error) => Console.error(error)));
+  }).pipe(
+    Effect.tapErrorTag("DatabaseError", (error) => Effect.logError(error))
+  );
 }

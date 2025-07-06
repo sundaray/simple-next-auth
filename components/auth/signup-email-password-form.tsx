@@ -11,18 +11,18 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import { ErrorMessage } from "@/components/auth/error-message";
 
-import { signUpWithEmailAndPassword } from "@/app/signup-email-password-action";
+import { signUpWithEmailAndPassword } from "@/app/credentials-signup-action";
 import { SignUpEmailPasswordFormSchema } from "@/schema";
 
 export function SignUpEmailPasswordForm({ next }: { next: string }) {
   const boundSignUpWithEmailAndPassword = signUpWithEmailAndPassword.bind(
     null,
-    next,
+    next
   );
 
   const [lastResult, formAction, isPending] = useActionState(
     boundSignUpWithEmailAndPassword,
-    undefined,
+    undefined
   );
 
   const [form, fields] = useForm({

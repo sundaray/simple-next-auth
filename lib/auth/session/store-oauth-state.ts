@@ -2,7 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { Effect, Data, Console } from "effect";
-import { encrypt } from "@/lib/auth/session";
+import { encrypt } from "@/lib/auth/session/encrypt";
 
 class StoreOAuthStateError extends Data.TaggedError("StoreOAuthStateError")<{
   operation: string;

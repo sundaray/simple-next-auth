@@ -47,10 +47,10 @@ export function createUserSession(email: string, role: string) {
         }),
     });
   }).pipe(
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
-    Effect.tapErrorTag("EncryptionError", (error) => Console.error(error)),
+    Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)),
+    Effect.tapErrorTag("EncryptionError", (error) => Effect.logError(error)),
     Effect.tapErrorTag("UserSessionCreationError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     )
   );
 }

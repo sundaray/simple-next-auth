@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
-import { Effect, pipe } from "effect";
+import { Effect, Match, pipe, Logger } from "effect";
 import { SignInEmailPasswordFormSchema } from "@/schema";
 
 import { getAccountStatus } from "@/lib/auth/credentials/get-account-status";
@@ -33,14 +33,19 @@ export async function signInWithEmailAndPassword(
 
   // Define an Effect
   const program = Effect.gen(function* () {
-    const { _tag } = yield* getAccountStatus(email);
+    const accountStatus = yield* getAccountStatus(email);
 
-    if (_tag === "NoAccount" || _tag === "UnverifiedAccount") {
-      return yield* Effect.fail({
-        _tag: "CreateAccount" as const,
-        message: "Account doesn't exist. Sign up to create an account.",
-      });
-    }
+    yield* pipe(
+      Match.value(accountStatus),
+      Match.tag("VerifiedAccount", () => Effect.void),
+      Match.tag("NoAccount", "UnverifiedAccount", () =>
+        Effect.fail({
+          _tag: "CreateAccount" as const,
+          message: "Account doesn't exist. Sign up to create an account.",
+        })
+      ),
+      Match.exhaustive
+    );
 
     yield* verifyPassword(email, password);
 
@@ -86,7 +91,7 @@ export async function signInWithEmailAndPassword(
       ),
   };
 
-  // Handle the success and failure channels of the program.
+  // Handle the success and failure channels of the Effect.
   const handledProgram = pipe(
     program,
 
@@ -97,7 +102,9 @@ export async function signInWithEmailAndPassword(
       Effect.succeed(submission.reply({ formErrors: [error.message] }))
     ),
 
-    Effect.catchTags(handledErrors)
+    Effect.catchTags(handledErrors),
+
+    Effect.provide(Logger.pretty)
   );
 
   // Execute the Effect

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import { ErrorMessage } from "@/components/auth/error-message";
 
-import { signInWithEmailAndPassword } from "@/app/signin-email-password-action";
+import { signInWithEmailAndPassword } from "@/app/credentials-signin-action";
 import { SignInEmailPasswordFormSchema } from "@/schema";
 
 export function SignInEmailPasswordForm({ next }: { next: string }) {

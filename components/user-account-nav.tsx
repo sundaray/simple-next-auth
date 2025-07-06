@@ -1,10 +1,10 @@
 import React from "react";
 import Link from "next/link";
-import { getUserSession } from "@/lib/auth/session";
+import { getUserSession } from "@/lib/auth/session/get-user-session";
 import { UserAccountNavClient } from "@/components/user-account-nav-client";
 
 export async function UserAccountNav() {
-  const user  = await getUserSession();
+  const user = await getUserSession();
 
   if (!user) {
     return (
@@ -25,5 +25,7 @@ export async function UserAccountNav() {
       </nav>
     );
   }
-  return <UserAccountNavClient user={user} className="ml-auto hidden md:flex"/>;
+  return (
+    <UserAccountNavClient user={user.role} className="ml-auto hidden md:flex" />
+  );
 }
