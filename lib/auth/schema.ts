@@ -15,3 +15,9 @@ export const PasswordResetSessionSchema = Schema.Struct({
   email: Schema.String,
   token: Schema.String,
 });
+
+export const GoogleIDTokenSchema = Schema.Struct({
+  name: Schema.String,
+  email: Schema.String,
+  picture: Schema.String,
+});

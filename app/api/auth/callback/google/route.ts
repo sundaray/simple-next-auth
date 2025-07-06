@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { decodeJwt, JWTPayload } from "jose";
-import { Effect, Data, Console } from "effect";
+import { decodeJwt } from "jose";
+import { Effect, Data, Schema } from "effect";
 
 import { exchangeAuthorizationCodeForTokens } from "@/lib/auth/google/exchange-authorization-code-for-tokens";
 import { createUserSession } from "@/lib/auth/session/create-user-session";
@@ -9,6 +9,7 @@ import { decrypt } from "@/lib/auth/session/decrypt";
 import { OAuthStateSchema } from "@/lib/auth/schema";
 import { assignUserRole } from "@/lib/auth/shared/assign-user-role";
 import { createUserWithProvider } from "@/lib/auth/shared/create-user-with-provider";
+import { GoogleIDTokenSchema } from "@/lib/auth/schema";
 
 /************************************************
  *
@@ -44,12 +45,16 @@ class OAuthStateMismatchError extends Data.TaggedError(
   cause: unknown;
 }> {}
 
-class JWTDecodeError extends Data.TaggedError("JWTDecodeError")<{
+class GoogleIDTokenDecodeError extends Data.TaggedError(
+  "GoogleIDTokenDecodeError"
+)<{
   operation: string;
   cause: unknown;
 }> {}
 
-class RoleAssignmentError extends Data.TaggedError("RoleAssignmentError")<{
+class InvalidGoogleIdTokenPayloadError extends Data.TaggedError(
+  "InvalidGoogleIdTokenPayloadError"
+)<{
   operation: string;
   cause: unknown;
 }> {}
@@ -63,18 +68,6 @@ class CookieStoreError extends Data.TaggedError("CookieStoreError")<{
   operation: string;
   cause: unknown;
 }> {}
-
-/************************************************
- *
- * Type Definitions
- *
- ************************************************/
-
-interface GoogleIdTokenClaims extends JWTPayload {
-  name: string;
-  email: string;
-  picture: string;
-}
 
 /************************************************
  *
@@ -147,23 +140,35 @@ export async function GET(request: NextRequest) {
     }
 
     // Exchange authorization code for tokens
-    const tokenData = yield* exchangeAuthorizationCodeForTokens(
+    const token = yield* exchangeAuthorizationCodeForTokens(
       code,
       oauthState.codeVerifier
     );
 
     // Decode ID token
-    const claims = yield* Effect.try({
-      try: () => decodeJwt(tokenData.id_token) as GoogleIdTokenClaims,
+    const decodedToken = yield* Effect.try({
+      try: () => decodeJwt(token.id_token),
       catch: (error) =>
-        new JWTDecodeError({
+        new GoogleIDTokenDecodeError({
           operation: "GET /api/auth/callback/google",
           cause: error,
         }),
     });
 
-    const email = claims.email;
-    const picture = claims.picture;
+    // 2. Validate the payload's structure with the schema
+    const claims = yield* Schema.decodeUnknown(GoogleIDTokenSchema)(
+      decodedToken
+    ).pipe(
+      Effect.mapError(
+        (error) =>
+          new InvalidGoogleIdTokenPayloadError({
+            operation: "GET /api/auth/callback/google",
+            cause: error,
+          })
+      )
+    );
+
+    const { email, picture } = claims;
 
     // Assign user role
     const role = yield* assignUserRole(email);
@@ -192,7 +197,7 @@ export async function GET(request: NextRequest) {
   const handledProgram = program.pipe(
     // First, tap the error channel to log any failure cause for debugging.
     Effect.tapErrorCause((cause) =>
-      Console.error("Auth callback failed", cause)
+      Effect.logError("Auth callback failed", cause)
     ),
     // Now, handle both success and failure to create the final response.
     Effect.matchEffect({
