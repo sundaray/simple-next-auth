@@ -2,17 +2,15 @@
 
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
-import chalk from "chalk";
-import { hashPassword } from "@/lib/auth/credentials/hash-password";
+import { Effect, pipe } from "effect";
 
 import { ForgotPasswordFormSchema } from "@/schema";
 
 import { createPasswordResetSession } from "@/lib/auth/session/create-password-reset-session";
-import { getPasswordResetSession } from "@/lib/auth/session/get-password-reset-session";
-import { doesPasswordResetSessionExist } from "@/lib/auth/session/does-password-reset-session-exist";
 import { createPasswordResetToken } from "@/lib/auth/credentials/create-password-reset-token";
 import { createPasswordResetURL } from "@/lib/auth/credentials/create-password-reset-url";
 import { sendPasswordResetEmail } from "@/lib/auth/credentials/send-password-reset-email";
+import { EmailService } from "@/lib/services/email-service";
 
 /************************************************
  *
@@ -21,12 +19,6 @@ import { sendPasswordResetEmail } from "@/lib/auth/credentials/send-password-res
  ************************************************/
 
 export async function forgotPassword(prevState: unknown, formData: FormData) {
-  // const headersList = await headers();
-  // const clientIP = (await headersList).get("x-forwarded-for") ?? "127.0.0.1";
-
-  // check rate limit
-  // const rateLimitResult = await authRateLimit(clientIP);
-
   // Parse and validate form data using zod schema
   const submission = parseWithZod(formData, {
     schema: ForgotPasswordFormSchema,
@@ -37,40 +29,71 @@ export async function forgotPassword(prevState: unknown, formData: FormData) {
     return submission.reply();
   }
 
-  // Return rate limit error if any
-  // if (rateLimitResult.limited) {
-  //   return submission.reply({
-  //     formErrors: [rateLimitResult.message],
-  //   });
-  // }
-
   const { email } = submission.value;
 
-  let errorOccurred = false;
+  // Create an effect
+  const program = Effect.gen(function* () {
+    const token = yield* createPasswordResetToken();
 
-  try {
-    const token = createPasswordResetToken();
+    const url = yield* createPasswordResetURL(token);
 
-    const url = createPasswordResetURL(token);
+    yield* createPasswordResetSession(email, token);
 
-    await createPasswordResetSession(email, token);
+    yield* sendPasswordResetEmail(email, url);
+  });
 
-    await sendPasswordResetEmail(email, url);
-  } catch (error) {
-    errorOccurred = true;
+  // Provide the EmailService layer to satisfy the program's dependencies.
+  const runnableProgram = program.pipe(Effect.provide(EmailService.Default));
 
-    if (error instanceof Error) {
-      console.error(chalk.red("[forgotPassword] error: "), error.message);
-    } else {
-      console.error(chalk.red("[forgotPassword] error: "), error);
-    }
-    return submission.reply({
-      formErrors: ["Something went wrong. Please try again."],
-    });
-  } finally {
-    if (!errorOccurred) {
-      // Redirect to success page if no errors occurred
-      redirect("/forgot-password/check-email");
-    }
-  }
+  const handledErrors = {
+    TokenGenerationError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Failed to generate reset token. Please try again."],
+        })
+      ),
+    ConfigError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Configuration error. Please try again."],
+        })
+      ),
+    PasswordResetSessionCreationError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Failed to create reset session. Please try again."],
+        })
+      ),
+    EncryptionError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Encryption error. Please try again."],
+        })
+      ),
+    EmailTemplateRenderError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Failed to generate reset email. Please try again."],
+        })
+      ),
+    EmailSendError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Failed to send reset email. Please try again."],
+        })
+      ),
+  };
+
+  // Handle the success and failure channels of the Effect.
+  const handledProgram = pipe(
+    runnableProgram,
+
+    // Since Effect.map() only runs on success, we use it to handle a successful password reset by redirecting the user.
+    Effect.map(() => redirect("/forgot-password/check-email")),
+
+    Effect.catchTags(handledErrors)
+  );
+
+  // Execute the Effect
+  return Effect.runPromise(handledProgram);
 }

@@ -1,4 +1,5 @@
 import "server-only";
+
 import { base64url } from "jose";
 import { getRandomValues } from "uncrypto";
 import { Effect, Data } from "effect";
@@ -20,5 +21,9 @@ export function createEmailVerificationToken() {
         operation: "createEmailVerificationToken",
         cause: error,
       }),
-  });
+  }).pipe(
+    Effect.tapErrorTag("TokenGenerationError", (error) =>
+      Effect.logError(error)
+    )
+  );
 }

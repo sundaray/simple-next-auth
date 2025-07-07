@@ -1,46 +1,74 @@
 import "server-only";
 
+import { Effect, Console, Config, Data } from "effect";
+import { render } from "@react-email/render";
+import { EmailService } from "@/lib/services/email-service";
+import { PasswordResetTemplate } from "@/components/auth/password-reset-template";
+
+class EmailTemplateRenderError extends Data.TaggedError(
+  "EmailTemplateRenderError"
+)<{ operation: string; cause: unknown }> {}
+
+class EmailSendError extends Data.TaggedError("EmailSendError")<{
+  operation: string;
+  cause: unknown;
+}> {}
+
 /************************************************
  *
  * Send password reset verification email
  *
  ************************************************/
-import { render } from "@react-email/render";
-import { sesClient } from "@/lib/aws";
-import { SendEmailCommand } from "@aws-sdk/client-ses";
 
-import { PasswordResetTemplate } from "@/components/auth/password-reset-template";
+export function sendPasswordResetEmail(email: string, url: string) {
+  return Effect.gen(function* () {
+    const emailService = yield* EmailService;
 
-export async function sendPasswordResetEmail(email: string, url: string) {
-  // Convert the email to HTML
-  const emailHtml = await render(PasswordResetTemplate({ url }));
+    const emailFrom = yield* Config.string("EMAIL_FROM");
 
-  const sendEmailCommand = new SendEmailCommand({
-    Destination: {
-      ToAddresses: [email],
-    },
-    Message: {
-      Body: {
-        Html: {
-          Charset: "UTF-8",
-          Data: emailHtml,
+    const emailHtml = yield* Effect.tryPromise({
+      try: async () => await render(PasswordResetTemplate({ url })),
+      catch: (error) =>
+        new EmailTemplateRenderError({
+          operation: "sendPasswordResetEmail",
+          cause: error,
+        }),
+    });
+
+    yield* emailService
+      .send({
+        Destination: {
+          ToAddresses: [email],
         },
-      },
-      Subject: {
-        Charset: "UTF-8",
-        Data: "Reset your password for www.podwise.org",
-      },
-    },
-    Source: process.env.EMAIL_FROM,
-  });
-
-  try {
-    const response = await sesClient.send(sendEmailCommand);
-    console.log("send password reset email response: ", response);
-  } catch (error) {
-    console.log("[sendPasswordResetEmail] error: ", error);
-    const message =
-      error instanceof Error ? error.message : `Unknown error: ${error}`;
-    throw new Error(`Failed to send password reset email: ${message}`);
-  }
+        Message: {
+          Body: {
+            Html: {
+              Charset: "UTF-8",
+              Data: emailHtml,
+            },
+          },
+          Subject: {
+            Charset: "UTF-8",
+            Data: "Reset your password for www.podwise.org",
+          },
+        },
+        Source: emailFrom,
+      })
+      .pipe(
+        Effect.catchTag("EmailError", (error) =>
+          Effect.fail(
+            new EmailSendError({
+              operation: "sendPasswordResetEmail",
+              cause: error,
+            })
+          )
+        )
+      );
+  }).pipe(
+    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
+    Effect.tapErrorTag("EmailTemplateRenderError", (error) =>
+      Console.error(error)
+    ),
+    Effect.tapErrorTag("EmailSendError", (error) => Console.error(error))
+  );
 }

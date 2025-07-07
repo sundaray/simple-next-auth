@@ -4,7 +4,7 @@ import { getUserSession } from "@/lib/auth/session/get-user-session";
 
 export async function GET() {
   try {
-    const { user } = await getUserSession();
+    const user = await getUserSession();
 
     return NextResponse.json({ user });
   } catch (error) {

@@ -2,7 +2,6 @@ import "server-only";
 
 import { base64url, jwtDecrypt } from "jose";
 import { Effect, Data, Console, Config, Schema } from "effect";
-import { validate } from "effect/Config";
 
 class DecryptionError extends Data.TaggedError("DecryptionError")<{
   operation: string;
@@ -32,7 +31,7 @@ const jwtKey = Config.string("JWT_ENCRYPTION_KEY").pipe(
  *
  ************************************************/
 
-export function decrypt(jwt: string, schema) {
+export function decrypt<A>(jwt: string, schema: Schema.Schema<A>) {
   return Effect.gen(function* () {
     // Load the secret using Config
     const key = yield* jwtKey;

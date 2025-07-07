@@ -9,7 +9,7 @@ class PasswordUpdateError extends Data.TaggedError("PasswordUpdateError")<{
   operation: string;
   cause: unknown;
 }> {}
-
+  
 export function updatePassword(email: string, hashedPassword: string) {
   return Effect.gen(function* () {
     yield* Effect.tryPromise({

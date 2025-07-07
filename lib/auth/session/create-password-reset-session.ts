@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 import { encrypt } from "@/lib/auth/session/encrypt";
 
 class PasswordResetSessionCreationError extends Data.TaggedError(
@@ -47,10 +47,10 @@ export function createPasswordResetSession(email: string, token: string) {
         }),
     });
   }).pipe(
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
-    Effect.tapErrorTag("EncryptionError", (error) => Console.error(error)),
+    Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)),
+    Effect.tapErrorTag("EncryptionError", (error) => Effect.logError(error)),
     Effect.tapErrorTag("PasswordResetSessionCreationError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     )
   );
 }

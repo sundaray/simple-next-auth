@@ -7,5 +7,5 @@ export function createEmailVerificationURL(token: string) {
     const url = new URL("/api/auth/verify-email", baseUrl);
     url.searchParams.set("token", token);
     return url.toString();
-  });
+  }).pipe(Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)));
 }
