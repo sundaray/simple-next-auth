@@ -1,36 +1,77 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Effect, Data } from "effect";
 
-import {
-  doesPasswordResetSessionExist,
-  getPasswordResetSession,
-} from "@/lib/auth/credentials/session";
+import { getPasswordResetSession } from "@/lib/auth/session/get-password-reset-session";
 import { timingSafeCompare } from "@/lib/auth/credentials/timing-safe-compare";
 
+/************************************************
+ *
+ * Error Types
+ *
+ ************************************************/
+
+class MissingTokenQueryParameterError extends Data.TaggedError(
+  "MissingTokenQueryParameterError"
+)<{
+  operation: string;
+  cause: string;
+}> {}
+
+/************************************************
+ *
+ * Route Handler
+ *
+ ************************************************/
+
 export async function GET(request: NextRequest) {
-  try {
-    const url = request.nextUrl;
+  const url = request.nextUrl;
+
+  const program = Effect.gen(function* () {
+    // Extract token from URL
     const tokenFromUrl = url.searchParams.get("token");
-    const authErrorUrl = new URL("/forgot-password/error", url);
 
-    const sessionExists = await doesPasswordResetSessionExist();
-    const sessionData = await getPasswordResetSession();
-
-    if (!tokenFromUrl || !sessionExists || !sessionData) {
-      return NextResponse.redirect(authErrorUrl);
+    if (!tokenFromUrl) {
+      return yield* Effect.fail(
+        new MissingTokenQueryParameterError({
+          operation: "GET /api/auth/verify-password-reset",
+          cause: "Missing token query parameter",
+        })
+      );
     }
 
-    const { token: tokenFromSession } = sessionData;
+    // Get password reset session
+    const { token: tokenFromSession } = yield* getPasswordResetSession();
 
-    if (!timingSafeCompare(tokenFromUrl, tokenFromSession)) {
-      return NextResponse.redirect(authErrorUrl);
-    }
+    // Verify tokens match - this will fail if they don't match
+    yield* timingSafeCompare(tokenFromUrl, tokenFromSession);
 
-    return NextResponse.redirect(new URL("/reset-password", url));
-  } catch (error) {
-    const authErrorUrl = new URL(
-      "/forgot-password/error",
-      request.nextUrl,
-    );
-    return NextResponse.redirect(authErrorUrl);
-  }
+    // On success, return the URL to redirect to
+    return new URL("/reset-password", url);
+  });
+
+  const handledProgram = program.pipe(
+    // First, tap the error channel to log any failure cause for debugging
+    Effect.tapErrorCause((cause) =>
+      Effect.logError("Password reset verification failed", cause)
+    ),
+    // Now, handle both success and failure to create the final response
+    Effect.matchEffect({
+      onFailure: (error) => {
+        const authErrorUrl = new URL("/forgot-password/error", url);
+
+        // Add the error tag as a query parameter
+        const errorTag = "_tag" in error ? error._tag : "UnknownError";
+        authErrorUrl.searchParams.set("error", errorTag);
+
+        // Return a successful effect containing the redirect response
+        return Effect.succeed(NextResponse.redirect(authErrorUrl));
+      },
+      onSuccess: (redirectUrl) => {
+        // On success, redirect to the reset password page
+        return Effect.succeed(NextResponse.redirect(redirectUrl));
+      },
+    })
+  );
+
+  return Effect.runPromise(handledProgram);
 }

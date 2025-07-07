@@ -1,42 +1,112 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Effect, Data } from "effect";
 
-import {
-  deleteEmailVerificationSession,
-  doesEmailVerificationSessionExist,
-  getEmailVerificationSession,
-} from "@/lib/auth/credentials/session";
-import { assignUserRole } from "@/lib/assign-user-role";
-import { createUser } from "@/lib/create-user";
+import { getEmailVerificationSession } from "@/lib/auth/session/get-email-verification-session";
+import { deleteEmailVerificationSession } from "@/lib/auth/session/delete-email-verification-session";
+import { assignUserRole } from "@/lib/auth/shared/assign-user-role";
+import { createUserWithProvider } from "@/lib/auth/shared/create-user-with-provider";
 import { timingSafeCompare } from "@/lib/auth/credentials/timing-safe-compare";
 
+/************************************************
+ *
+ * Error Types
+ *
+ ************************************************/
+
+class MissingTokenQueryParameterError extends Data.TaggedError(
+  "MissingTokenQueryParameterError"
+)<{
+  operation: string;
+  cause: string;
+}> {}
+
+class UserCreationError extends Data.TaggedError("UserCreationError")<{
+  operation: string;
+  cause: unknown;
+}> {}
+
+/************************************************
+ *
+ * Route Handler
+ *
+ ************************************************/
+
 export async function GET(request: NextRequest) {
-  try {
-    const url = request.nextUrl;
+  const url = request.nextUrl;
+
+  const program = Effect.gen(function* () {
+    // Extract token from URL
     const tokenFromUrl = url.searchParams.get("token");
-    const authErrorUrl = new URL("/signup/verify-email/error", url);
 
-    const sessionExists = await doesEmailVerificationSessionExist();
-    const payload = await getEmailVerificationSession();
-
-    if (!tokenFromUrl || !sessionExists || !payload) {
-      return NextResponse.redirect(authErrorUrl);
+    if (!tokenFromUrl) {
+      return yield* Effect.fail(
+        new MissingTokenQueryParameterError({
+          operation: "GET /api/auth/verify-email",
+          cause: "Missing token query parameter",
+        })
+      );
     }
 
-    const { email, hashedPassword, token: tokenFromSession } = payload;
+    // Get email verification session
+    const {
+      email,
+      token: tokenFromSession,
+      hashedPassword,
+    } = yield* getEmailVerificationSession();
 
-    if (!timingSafeCompare(tokenFromUrl, tokenFromSession)) {
-      return NextResponse.redirect(authErrorUrl);
-    }
+    // Verify tokens match - this will fail if they don't match
+    yield* timingSafeCompare(tokenFromUrl, tokenFromSession);
 
-    const role = assignUserRole(email);
+    // Assign user role
+    const role = yield* assignUserRole(email);
 
-    await createUser(email, role, "credentials", undefined, hashedPassword);
+    // Create user in database
+    yield* Effect.tryPromise({
+      try: async () =>
+        await createUserWithProvider(
+          email,
+          role,
+          "credentials",
+          undefined,
+          hashedPassword
+        ),
+      catch: (error) =>
+        new UserCreationError({
+          operation: "createUserWithProvider",
+          cause: error,
+        }),
+    });
 
-    await deleteEmailVerificationSession();
+    // Delete email verification session
+    yield* deleteEmailVerificationSession();
 
-    return NextResponse.redirect(new URL("/signup/email-verified", url));
-  } catch (error) {
-    const authErrorUrl = new URL("/signup/verify-email/error", request.nextUrl);
-    return NextResponse.redirect(authErrorUrl);
-  }
+    // On success, return the URL to redirect to
+    return new URL("/signup/email-verified", url);
+  });
+
+  const handledProgram = program.pipe(
+    // First, tap the error channel to log any failure cause for debugging
+    Effect.tapErrorCause((cause) =>
+      Effect.logError("Email verification failed", cause)
+    ),
+    // Now, handle both success and failure to create the final response
+    Effect.matchEffect({
+      onFailure: (error) => {
+        const authErrorUrl = new URL("/signup/verify-email/error", url);
+
+        // Add the error tag as a query parameter
+        const errorTag = "_tag" in error ? error._tag : "UnknownError";
+        authErrorUrl.searchParams.set("error", errorTag);
+
+        // Return a successful effect containing the redirect response
+        return Effect.succeed(NextResponse.redirect(authErrorUrl));
+      },
+      onSuccess: (redirectUrl) => {
+        // On success, redirect to the email verified page
+        return Effect.succeed(NextResponse.redirect(redirectUrl));
+      },
+    })
+  );
+
+  return Effect.runPromise(handledProgram);
 }

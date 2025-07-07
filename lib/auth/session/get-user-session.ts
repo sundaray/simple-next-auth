@@ -5,7 +5,9 @@ import { Effect, Data, Console } from "effect";
 import { decrypt } from "@/lib/auth/session/decrypt";
 import { UserSessionSchema } from "@/lib/auth/schema";
 
-class CookieStoreError extends Data.TaggedError("CookieStoreError")<{
+class CookieStoreAccessError extends Data.TaggedError(
+  "CookieStoreAccessError"
+)<{
   operation: string;
   cause: unknown;
 }> {}
@@ -28,7 +30,7 @@ export function getUserSession() {
     const cookieStore = yield* Effect.tryPromise({
       try: async () => await cookies(),
       catch: (error) =>
-        new CookieStoreError({
+        new CookieStoreAccessError({
           operation: "getUserSession",
           cause: error,
         }),
@@ -45,11 +47,11 @@ export function getUserSession() {
       );
     }
 
-    const user = yield* decrypt(sessionCookie.value, UserSessionSchema);
-
-    return user;
+    return yield* decrypt(sessionCookie.value, UserSessionSchema);
   }).pipe(
-    Effect.tapErrorTag("CookieStoreError", (error) => Console.error(error)),
+    Effect.tapErrorTag("CookieStoreAccessError", (error) =>
+      Console.error(error)
+    ),
     Effect.tapErrorTag("UserSessionNotFoundError", (error) =>
       Console.error(error)
     ),
