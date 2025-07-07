@@ -1,12 +1,12 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 import { decrypt } from "@/lib/auth/session/decrypt";
 import { PasswordResetSessionSchema } from "@/lib/auth/schema";
 
-class PasswordResetCookieStoreError extends Data.TaggedError(
-  "PasswordResetCookieStoreError"
+class CookieStoreAccessError extends Data.TaggedError(
+  "CookieStoreAccessError"
 )<{
   operation: string;
   cause: unknown;
@@ -19,11 +19,6 @@ class PasswordResetSessionNotFoundError extends Data.TaggedError(
   cause: unknown;
 }> {}
 
-type PasswordResetSession = {
-  email: string;
-  token: string;
-};
-
 /************************************************
  *
  * Get password reset session
@@ -35,15 +30,15 @@ export function getPasswordResetSession() {
     const cookieStore = yield* Effect.tryPromise({
       try: async () => await cookies(),
       catch: (error) =>
-        new PasswordResetCookieStoreError({
+        new CookieStoreAccessError({
           operation: "getPasswordResetSession",
           cause: error,
         }),
     });
 
-    const sessionCookie = cookieStore.get("password-reset-session");
+    const session = cookieStore.get("password-reset-session");
 
-    if (!sessionCookie) {
+    if (!session) {
       return yield* Effect.fail(
         new PasswordResetSessionNotFoundError({
           operation: "getPasswordResetSession",
@@ -52,20 +47,18 @@ export function getPasswordResetSession() {
       );
     }
 
-    const session = yield* decrypt(
-      sessionCookie.value,
+    const sessionData = yield* decrypt(
+      session.value,
       PasswordResetSessionSchema
     );
 
-    return session;
+    return sessionData;
   }).pipe(
-    Effect.tapErrorTag("PasswordResetCookieStoreError", (error) =>
-      Console.error(error)
+    Effect.tapErrorTag("CookieStoreAccessError", (error) =>
+      Effect.logError(error)
     ),
     Effect.tapErrorTag("PasswordResetSessionNotFoundError", (error) =>
-      Console.error(error)
-    ),
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
-    Effect.tapErrorTag("DecryptionError", (error) => Console.error(error))
+      Effect.logError(error)
+    )
   );
 }

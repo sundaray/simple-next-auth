@@ -2,14 +2,13 @@
 
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
-import chalk from "chalk";
-import { hashPassword } from "@/lib/auth/credentials/hash-password";
+import { Effect, pipe } from "effect";
 
-import { updatePassword } from "@/lib/auth/credentials/update-password";
+import { hashPassword } from "@/lib/auth/credentials/hash-password";
+import { changePassword } from "@/lib/auth/credentials/change-password";
 import { ResetPasswordFormSchema } from "@/schema";
 import { deletePasswordResetSession } from "@/lib/auth/session/delete-password-reset-session";
 import { getPasswordResetSession } from "@/lib/auth/session/get-password-reset-session";
-import { doesPasswordResetSessionExist } from "@/lib/auth/session/does-password-reset-session-exist";
 
 /************************************************
  *
@@ -31,45 +30,86 @@ export async function resetPassword(prevState: unknown, formData: FormData) {
   // Extract validated password
   const { newPassword } = submission.value;
 
-  let errorOccurred = false;
-
-  try {
-    // Verify that there's an active password reset session
-    const sessionExists = await doesPasswordResetSessionExist();
-    if (!sessionExists) {
-      errorOccurred = true;
-      return submission.reply({
-        formErrors: [
-          "Your password reset session has expired. Please request a new password reset link.",
-        ],
-      });
-    }
-
+  // Create an effect
+  const program = Effect.gen(function* () {
     // Get email from the password reset session
-    const { email } = await getPasswordResetSession();
+    const { email } = yield* getPasswordResetSession();
 
     // Hash the new password
-    const hashedPassword = await hashPassword(newPassword);
+    const hashedPassword = yield* hashPassword(newPassword);
 
-    // Update the password in the database
-    await updatePassword(email, hashedPassword);
+    // Change the password in the database
+    yield* changePassword(email, hashedPassword);
 
     // Delete the password reset session
-    await deletePasswordResetSession();
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(chalk.red("[resetPassword] error: "), error.message);
-    } else {
-      console.error(chalk.red("[resetPassword] error: "), error);
-    }
-    errorOccurred = true;
-    return submission.reply({
-      formErrors: ["Something went wrong. Please try again."],
-    });
-  } finally {
-    if (!errorOccurred) {
-      // Redirect to success page if no errors occurred
-      redirect("/reset-password/success");
-    }
-  }
+    yield* deletePasswordResetSession();
+  });
+
+  const handledErrors = {
+    PasswordHashingError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Failed to hash password. Please try again."],
+        })
+      ),
+    DatabaseError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Database error. Please try again."],
+        })
+      ),
+    CookieStoreAccessError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Failed to access cookie store. Please try again."],
+        })
+      ),
+    ConfigError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Configuration error. Please try again."],
+        })
+      ),
+    InvalidJWTPayloadError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Invalid JWT payload error. Please try again."],
+        })
+      ),
+    DecryptionError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Decryption error. Please try again."],
+        })
+      ),
+    PasswordResetSessionNotFoundError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: [
+            "Password reset session not found. Please request a new password reset link.",
+          ],
+        })
+      ),
+    PasswordResetSessionDeletionError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: [
+            "Failed to delete password reset session. Please try again.",
+          ],
+        })
+      ),
+  };
+
+  // Handle the success and failure channels of the Effect.
+  const handledProgram = pipe(
+    program,
+
+    // Since Effect.map() only runs on success, we use it to handle a successful password reset by redirecting the user.
+    Effect.map(() => redirect("/reset-password/success")),
+
+    Effect.catchTags(handledErrors)
+  );
+
+  // Execute the Effect
+  return Effect.runPromise(handledProgram);
 }

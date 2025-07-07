@@ -5,12 +5,12 @@ import { db } from "@/db";
 import { usersTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-class PasswordUpdateError extends Data.TaggedError("PasswordUpdateError")<{
+class DatabaseError extends Data.TaggedError("DatabaseError")<{
   operation: string;
   cause: unknown;
 }> {}
-  
-export function updatePassword(email: string, hashedPassword: string) {
+
+export function changePassword(email: string, hashedPassword: string) {
   return Effect.gen(function* () {
     yield* Effect.tryPromise({
       try: () =>
@@ -19,12 +19,12 @@ export function updatePassword(email: string, hashedPassword: string) {
           .set({ password: hashedPassword })
           .where(eq(usersTable.email, email)),
       catch: (error) =>
-        new PasswordUpdateError({
+        new DatabaseError({
           operation: "updatePassword",
           cause: error,
         }),
     });
   }).pipe(
-    Effect.tapErrorTag("PasswordUpdateError", (error) => Effect.logError(error))
+    Effect.tapErrorTag("DatabaseError", (error) => Effect.logError(error))
   );
 }

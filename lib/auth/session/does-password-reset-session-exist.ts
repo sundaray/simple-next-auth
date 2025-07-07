@@ -1,36 +1,53 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 
-class PasswordResetSessionCheckError extends Data.TaggedError(
-  "PasswordResetSessionCheckError"
+class CookieStoreAccessError extends Data.TaggedError(
+  "CookieStoreAccessError"
 )<{
   operation: string;
   cause: unknown;
 }> {}
 
+class PasswordResetSessionNotFoundError extends Data.TaggedError(
+  "PasswordResetSessionNotFoundError"
+)<{
+  operation: string;
+  message: string;
+}> {}
+
 /************************************************
  *
- * Check if password reset session exists
+ * Ensure password reset session exists
  *
  ************************************************/
 
-export function doesPasswordResetSessionExist() {
+export function ensurePasswordResetSessionExists() {
   return Effect.gen(function* () {
     const cookieStore = yield* Effect.tryPromise({
       try: async () => await cookies(),
       catch: (error) =>
-        new PasswordResetSessionCheckError({
-          operation: "doesPasswordResetSessionExist",
+        new CookieStoreAccessError({
+          operation: "ensurePasswordResetSessionExists",
           cause: error,
         }),
     });
 
-    return cookieStore.has("password-reset-session");
+    if (!cookieStore.has("password-reset-session")) {
+      yield* Effect.fail(
+        new PasswordResetSessionNotFoundError({
+          operation: "ensurePasswordResetSessionExists",
+          message: "Password reset session not found",
+        })
+      );
+    }
   }).pipe(
-    Effect.tapErrorTag("PasswordResetSessionCheckError", (error) =>
-      Console.error(error)
+    Effect.tapErrorTag("CookieStoreAccessError", (error) =>
+      Effect.logError(error)
+    ),
+    Effect.tapErrorTag("PasswordResetSessionNotFoundError", (error) =>
+      Effect.logError(error)
     )
   );
 }

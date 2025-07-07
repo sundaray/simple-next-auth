@@ -49,7 +49,9 @@ export async function forgotPassword(prevState: unknown, formData: FormData) {
     TokenGenerationError: () =>
       Effect.succeed(
         submission.reply({
-          formErrors: ["Failed to generate reset token. Please try again."],
+          formErrors: [
+            "Failed to generate password reset token. Please try again.",
+          ],
         })
       ),
     ConfigError: () =>
@@ -61,7 +63,9 @@ export async function forgotPassword(prevState: unknown, formData: FormData) {
     PasswordResetSessionCreationError: () =>
       Effect.succeed(
         submission.reply({
-          formErrors: ["Failed to create reset session. Please try again."],
+          formErrors: [
+            "Failed to create password reset session. Please try again.",
+          ],
         })
       ),
     EncryptionError: () =>
@@ -73,13 +77,17 @@ export async function forgotPassword(prevState: unknown, formData: FormData) {
     EmailTemplateRenderError: () =>
       Effect.succeed(
         submission.reply({
-          formErrors: ["Failed to generate reset email. Please try again."],
+          formErrors: [
+            "Failed to generate password reset email. Please try again.",
+          ],
         })
       ),
     EmailSendError: () =>
       Effect.succeed(
         submission.reply({
-          formErrors: ["Failed to send reset email. Please try again."],
+          formErrors: [
+            "Failed to send password reset email. Please try again.",
+          ],
         })
       ),
   };

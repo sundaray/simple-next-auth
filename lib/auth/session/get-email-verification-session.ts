@@ -3,6 +3,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { Effect, Data, Console } from "effect";
 import { decrypt } from "@/lib/auth/session/decrypt";
+import { EmailVerificationSessionSchema } from "@/lib/auth/schema";
 
 class CookieStoreAccessError extends Data.TaggedError(
   "CookieStoreAccessError"
@@ -35,26 +36,24 @@ export function getEmailVerificationSession() {
         }),
     });
 
-    const sessionCookie = cookieStore.get("email-verification-session");
+    const session = cookieStore.get("email-verification-session");
 
-    if (!sessionCookie) {
+    if (!session) {
       return yield* Effect.fail(
         new EmailVerificationSessionNotFoundError({
           operation: "getEmailVerificationSession",
-          cause: "Email verification session cookie not found",
+          cause: "Email verification session not found",
         })
       );
     }
 
-    return yield* decrypt(sessionCookie.value);
+    return yield* decrypt(session.value, EmailVerificationSessionSchema);
   }).pipe(
     Effect.tapErrorTag("CookieStoreAccessError", (error) =>
       Console.error(error)
     ),
     Effect.tapErrorTag("EmailVerificationSessionNotFoundError", (error) =>
       Console.error(error)
-    ),
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
-    Effect.tapErrorTag("DecryptionError", (error) => Console.error(error))
+    )
   );
 }

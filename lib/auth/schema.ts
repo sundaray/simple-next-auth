@@ -11,6 +11,12 @@ export const UserSessionSchema = Schema.Struct({
   role: Schema.String,
 });
 
+export const EmailVerificationSessionSchema = Schema.Struct({
+  email: Schema.String,
+  token: Schema.String,
+  hashedPassword: Schema.String,
+});
+
 export const PasswordResetSessionSchema = Schema.Struct({
   email: Schema.String,
   token: Schema.String,
