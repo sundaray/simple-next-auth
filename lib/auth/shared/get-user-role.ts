@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 import { db } from "@/db";
 import { usersTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -14,6 +14,10 @@ import { eq } from "drizzle-orm";
 class DatabaseError extends Data.TaggedError("DatabaseError")<{
   operation: string;
   cause: unknown;
+}> {}
+
+class UserNotFoundError extends Data.TaggedError("UserNotFoundError")<{
+  operation: string;
 }> {}
 
 export function getUserRole(email: string) {
@@ -35,9 +39,13 @@ export function getUserRole(email: string) {
         }),
     });
 
-    // We know the user exists because doesAccountExist already verified
-    return result[0]!.role;
+    if (result.length === 0) {
+      yield* Effect.fail(new UserNotFoundError({ operation: "getUserRole" }));
+    }
+
+    return result[0].role;
   }).pipe(
-    Effect.tapErrorTag("DatabaseError", (error) => Effect.logError(error))
+    Effect.tapErrorTag("DatabaseError", (error) => Effect.logError(error)),
+    Effect.tapErrorTag("UserNotFoundError", (error) => Effect.logError(error))
   );
 }
