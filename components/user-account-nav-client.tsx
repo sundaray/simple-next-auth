@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
+import { UserSession } from "@/lib/auth/schema";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import { signOut } from "@/app/auth-action";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-export function UserAccountNavClient({ user }) {
+export function UserAccountNavClient({ user }: { user: UserSession }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 

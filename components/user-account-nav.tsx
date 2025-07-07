@@ -22,5 +22,5 @@ export async function UserAccountNav() {
     );
   }
 
-  return <UserAccountNavClient user={user.role} />;
+  return <UserAccountNavClient user={user} />;
 }

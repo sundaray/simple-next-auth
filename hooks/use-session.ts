@@ -1,34 +1,61 @@
 import { useEffect, useState } from "react";
 import { UserSession } from "@/lib/auth/schema";
 
+type SessionStatus = "loading" | "authenticated" | "unauthenticated" | "error";
+
+type SessionState = {
+  user: UserSession | null;
+  status: SessionStatus;
+  error: Error | null;
+};
+
 export function useSession() {
-  const [user, setUser] = useState<UserSession | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [state, setState] = useState<SessionState>({
+    user: null,
+    status: "loading",
+    error: null,
+  });
 
   useEffect(() => {
     async function fetchSession() {
       try {
         const response = await fetch("/api/auth/session");
+        const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error("Failed to get user session");
-        }
-        const { user } = await response.json();
-        setUser(user);
-      } catch (error) {
-        if (error instanceof Error) {
-          setError(error);
+        if (response.ok && data.success) {
+          // User is authenticated
+          setState({
+            user: data.data, // Note: using 'data.data' based on your API response
+            status: "authenticated",
+            error: null,
+          });
         } else {
-          setError(new Error("An unknown error occurred"));
+          // User is not authenticated (401 or success: false)
+          setState({
+            user: null,
+            status: "unauthenticated",
+            error: null,
+          });
         }
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        // Actual error (network issues, parsing errors, etc.)
+        setState({
+          user: null,
+          status: "error",
+          error:
+            error instanceof Error
+              ? error
+              : new Error("An unknown error occurred"),
+        });
       }
     }
 
     fetchSession();
   }, []);
 
-  return { user, loading, error };
+  return {
+    user: state.user,
+    status: state.status,
+    error: state.error,
+  };
 }

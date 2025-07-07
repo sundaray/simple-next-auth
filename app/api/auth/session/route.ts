@@ -37,7 +37,7 @@ export async function GET() {
           },
         };
 
-        return Effect.succeed(NextResponse.json(response, { status: 404 }));
+        return Effect.succeed(NextResponse.json(response, { status: 401 }));
       },
       onSuccess: (user) => {
         const response: ApiResponse<typeof user> = {
