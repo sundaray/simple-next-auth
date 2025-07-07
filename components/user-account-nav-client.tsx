@@ -14,18 +14,7 @@ import { signOut } from "@/app/auth-action";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-type UserAccountNavClientProps = {
-  user: {
-    email: string;
-    role: string;
-  };
-  className?: string;
-};
-
-export function UserAccountNavClient({
-  user,
-  className,
-}: UserAccountNavClientProps) {
+export function UserAccountNavClient({ user }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -52,8 +41,7 @@ export function UserAccountNavClient({
     <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger
         className={cn(
-          "flex items-center space-x-1 rounded-full px-4 py-2 rounded-full",
-          className
+          "flex items-center space-x-1 rounded-full px-4 py-2 rounded-full"
         )}
       >
         <span className="text-sm font-medium text-gray-700">My Account</span>

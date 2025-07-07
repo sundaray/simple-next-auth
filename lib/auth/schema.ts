@@ -11,6 +11,8 @@ export const UserSessionSchema = Schema.Struct({
   role: Schema.String,
 });
 
+export type UserSession = Schema.Schema.Type<typeof UserSessionSchema>;
+
 export const EmailVerificationSessionSchema = Schema.Struct({
   email: Schema.String,
   token: Schema.String,
@@ -27,3 +29,14 @@ export const GoogleIDTokenSchema = Schema.Struct({
   email: Schema.String,
   picture: Schema.String,
 });
+
+export const EncryptableSessionSchema = Schema.Union(
+  UserSessionSchema,
+  EmailVerificationSessionSchema,
+  PasswordResetSessionSchema,
+  OAuthStateSchema
+);
+
+export type EncryptableSession = Schema.Schema.Type<
+  typeof EncryptableSessionSchema
+>;

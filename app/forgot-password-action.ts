@@ -74,6 +74,12 @@ export async function forgotPassword(prevState: unknown, formData: FormData) {
           formErrors: ["Encryption error. Please try again."],
         })
       ),
+    InvalidPayloadError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Invalid payload error. Please try again."],
+        })
+      ),
     EmailTemplateRenderError: () =>
       Effect.succeed(
         submission.reply({

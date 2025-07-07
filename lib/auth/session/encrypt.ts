@@ -1,10 +1,18 @@
 import "server-only";
 
-import type { JWTPayload } from "jose";
 import { base64url, EncryptJWT } from "jose";
-import { Effect, Data, Console, Config } from "effect";
+import { Effect, Data, Console, Config, Schema } from "effect";
+import {
+  EncryptableSessionSchema,
+  EncryptableSession,
+} from "@/lib/auth/schema";
 
 class EncryptionError extends Data.TaggedError("EncryptionError")<{
+  operation: string;
+  cause: unknown;
+}> {}
+
+class InvalidPayloadError extends Data.TaggedError("InvalidPayloadError")<{
   operation: string;
   cause: unknown;
 }> {}
@@ -25,13 +33,25 @@ const jwtKey = Config.string("JWT_ENCRYPTION_KEY").pipe(
  *
  ************************************************/
 
-export function encrypt<T extends JWTPayload>(payload: T) {
+export function encrypt(payload: EncryptableSession) {
   return Effect.gen(function* () {
+    // 1. Validate the payload against the provided schema
+    const validatedPayload = yield* Schema.encode(EncryptableSessionSchema)(
+      payload
+    ).pipe(
+      Effect.mapError(
+        (error) =>
+          new InvalidPayloadError({
+            operation: "encrypt",
+            cause: error,
+          })
+      )
+    );
     const key = yield* jwtKey;
 
     const encryptedJWT = yield* Effect.tryPromise({
       try: async () =>
-        await new EncryptJWT(payload)
+        await new EncryptJWT(validatedPayload)
           .setProtectedHeader({ alg: "dir", enc: "A128CBC-HS256" })
           .setExpirationTime("1hr")
           .encrypt(key),
@@ -45,7 +65,7 @@ export function encrypt<T extends JWTPayload>(payload: T) {
     return encryptedJWT;
   }).pipe(
     Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
-
-    Effect.tapErrorTag("EncryptionError", (error) => Console.error(error))
+    Effect.tapErrorTag("EncryptionError", (error) => Console.error(error)),
+    Effect.tapErrorTag("InvalidPayloadError", (error) => Console.error(error))
   );
 }

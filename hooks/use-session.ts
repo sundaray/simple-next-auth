@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
-
-type User = {
-  email: string;
-  role: string;
-  annualAccessStatus: boolean;
-  lifetimeAccessStatus: boolean;
-};
+import { UserSession } from "@/lib/auth/schema";
 
 export function useSession() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 

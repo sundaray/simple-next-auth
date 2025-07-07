@@ -93,6 +93,12 @@ export async function signUpWithEmailAndPassword(
           formErrors: ["Encryption error. Please try again."],
         })
       ),
+    InvalidPayloadError: () =>
+      Effect.succeed(
+        submission.reply({
+          formErrors: ["Invalid payload error. Please try again."],
+        })
+      ),
     TokenGenerationError: () =>
       Effect.succeed(
         submission.reply({
