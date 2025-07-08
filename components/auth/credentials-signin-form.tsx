@@ -12,17 +12,17 @@ import { Icons } from "@/components/icons";
 import { FormErrorMessage } from "@/components/auth/form-error-message";
 import { FormFieldErrorMessage } from "@/components/auth/form-field-error-message";
 
-import { signUpWithEmailAndPassword } from "@/app/credentials-signup-action";
-import { SignUpEmailPasswordFormSchema } from "@/lib/schema";
+import { signInWithEmailAndPassword } from "@/app/credentials-signin-action";
+import { SignInEmailPasswordFormSchema } from "@/lib/schema";
 
-export function SignUpEmailPasswordForm({ next }: { next: string }) {
-  const boundSignUpWithEmailAndPassword = signUpWithEmailAndPassword.bind(
+export function CredentialsSignInForm({ next }: { next: string }) {
+  const boundSignInWithEmailAndPassword = signInWithEmailAndPassword.bind(
     null,
     next
   );
 
   const [lastResult, formAction, isPending] = useActionState(
-    boundSignUpWithEmailAndPassword,
+    boundSignInWithEmailAndPassword,
     undefined
   );
 
@@ -34,7 +34,7 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
     shouldRevalidate: "onInput",
     onValidate({ formData }) {
       return parseWithZod(formData, {
-        schema: SignUpEmailPasswordFormSchema,
+        schema: SignInEmailPasswordFormSchema,
       });
     },
   });
@@ -54,7 +54,7 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
       aria-describedby={form.errors ? "form-error" : undefined}
     >
       {form.errors && <FormErrorMessage errors={form.errors} />}
-      <div className="grid gap-1 mt-4">
+      <div className={`grid gap-1 ${form.errors ? "mt-4" : ""}`}>
         <div>
           <Label htmlFor="email">Email</Label>
           <Input
@@ -75,7 +75,17 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
           />
         </div>
         <div>
-          <Label htmlFor="password">Password</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            <div className="text-sm">
+              <Link
+                href="/forgot-password"
+                className="font-medium text-sky-600 hover:underline hover:underline-offset-2"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          </div>
           <div className="relative">
             <Input
               id={fields.password.id}
@@ -116,19 +126,19 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
           {isPending ? (
             <>
               <Icons.loader className="size-3 animate-spin" />
-              Signing up...
+              Signing in...
             </>
           ) : (
-            "Sign up"
+            "Sign in"
           )}
         </Button>
         <div className="mt-6 text-center text-sm font-medium">
-          <span className="text-gray-500">Already have an account? </span>
+          <span className="text-gray-500">Don&apos;t have an account? </span>
           <Link
-            href="/signin"
+            href="/signup"
             className="text-sky-600 transition-colors hover:underline hover:underline-offset-2"
           >
-            Sign in
+            Sign up
           </Link>
         </div>
       </div>

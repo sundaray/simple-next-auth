@@ -1,13 +1,12 @@
 import React from "react";
 import Link from "next/link";
-import { Effect } from "effect";
+import { Effect, Option } from "effect";
 import { getUserSession } from "@/lib/auth/session/get-user-session";
 import { UserAccountNavClient } from "@/components/user-account-nav-client";
 
 export async function UserAccountNav() {
-  const user = await Effect.runPromise(
-    getUserSession().pipe(Effect.catchAll(() => Effect.succeed(null)))
-  );
+  const userOption = await Effect.runPromise(getUserSession());
+  const user = Option.getOrNull(userOption);
 
   if (!user) {
     return (

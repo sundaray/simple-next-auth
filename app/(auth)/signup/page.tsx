@@ -1,5 +1,10 @@
 import { SignUpGoogleForm } from "@/components/auth/sign-up-google-form";
-import { SignUpEmailPasswordForm } from "@/components/auth/signup-email-password-form";
+import { CredentialsSignUpForm } from "@/components/auth/credentials-signup-form";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Sign up | Simple-Next-Auth",
+};
 
 export default async function SignUp({
   searchParams,
@@ -15,7 +20,7 @@ export default async function SignUp({
       <h2 className="text-center text-2xl font-semibold tracking-tight text-gray-900">
         Welcome
       </h2>
-      <p className="mt-2 text-center text-gray-600">Create a new account</p>
+      <p className="mt-1 text-center text-gray-600">Create a new account</p>
       <div className="mt-12 grid gap-4">
         <SignUpGoogleForm next={next} />
         <div className="relative">
@@ -26,7 +31,7 @@ export default async function SignUp({
             <span className="bg-background px-2">Or continue with</span>
           </div>
         </div>
-        <SignUpEmailPasswordForm next={next} />
+        <CredentialsSignUpForm next={next} />
       </div>
     </div>
   );
