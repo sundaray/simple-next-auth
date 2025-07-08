@@ -19,7 +19,7 @@ export function MainNav({ items }: MainNavProps) {
       <Link
         href="/"
         aria-label="Go to homepage"
-        className="mr-10 flex items-center space-x-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+        className="mr-10 flex items-center font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
       >
         Simple-Next-Auth
       </Link>

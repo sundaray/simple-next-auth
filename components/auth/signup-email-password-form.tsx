@@ -53,9 +53,14 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
       aria-describedby={form.errors ? "form-error" : undefined}
     >
       {form.errors && (
-        <ErrorMessage id="form-error" errors={form.errors} className="pb-4" />
+        <div
+          id="form-error"
+          className="bg-red-100 border-red-200 flex items-center min-h-10 rounded-md text-sm text-red-600 px-4 ease-out animate-in fade-in-0"
+        >
+          {form.errors[0]}
+        </div>
       )}
-      <div className="grid gap-2">
+      <div className="grid gap-2 mt-4">
         <div>
           <Label htmlFor="email">Email</Label>
           <Input
