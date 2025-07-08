@@ -2,10 +2,7 @@ import "server-only";
 
 import { base64url, EncryptJWT } from "jose";
 import { Effect, Data, Console, Config, Schema } from "effect";
-import {
-  EncryptableSessionSchema,
-  EncryptableSession,
-} from "@/lib/auth/schema";
+import { EncryptableSessionSchema, EncryptableSession } from "@/lib/schema";
 
 class EncryptionError extends Data.TaggedError("EncryptionError")<{
   operation: string;

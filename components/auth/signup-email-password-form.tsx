@@ -25,8 +25,11 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
     undefined
   );
 
+  const conformLastResult =
+    lastResult && "_tag" in lastResult ? undefined : lastResult;
+
   const [form, fields] = useForm({
-    lastResult,
+    lastResult: conformLastResult,
     // Validate when field loses focus
     shouldValidate: "onBlur",
     // Re-validate as user types
@@ -63,7 +66,11 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
             type="email"
             name="email"
             className="mt-2"
-            defaultValue={lastResult?.initialValue?.email as string}
+            defaultValue={
+              lastResult && "initialValue" in lastResult
+                ? (lastResult.initialValue?.email as string)
+                : undefined
+            }
             aria-invalid={fields.email.errors ? "true" : undefined}
             aria-describedby={fields.email.errors ? "email-error" : undefined}
           />
@@ -81,7 +88,11 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
               type={isPasswordVisible ? "text" : "password"}
               name="password"
               className="mt-2"
-              defaultValue={lastResult?.initialValue?.password as string}
+              defaultValue={
+                lastResult && "initialValue" in lastResult
+                  ? (lastResult.initialValue?.password as string)
+                  : undefined
+              }
               aria-invalid={fields.password.errors ? "true" : undefined}
               aria-describedby={
                 fields.password.errors ? "password-error" : undefined
@@ -125,7 +136,7 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
           <span className="text-gray-500">Already have an account? </span>
           <Link
             href="/signin"
-            className="text-sky-600 transition-colors hover:text-sky-700"
+            className="text-sky-600 transition-colors hover:underline hover:underline-offset-2"
           >
             Sign in
           </Link>

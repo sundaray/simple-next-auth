@@ -21,7 +21,7 @@ class EmailSendError extends Data.TaggedError("EmailSendError")<{
  *
  ************************************************/
 
-export function sendPasswordResetEmail(email: Email, url: Url) {
+export function sendPasswordResetEmail(email: string, url: string) {
   return Effect.gen(function* () {
     const emailService = yield* EmailService;
 

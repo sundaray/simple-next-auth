@@ -15,7 +15,7 @@ class EmailSendError extends Data.TaggedError("EmailSendError")<{
   cause: unknown;
 }> {}
 
-export function sendVerificationEmail(email: Email, url: Url) {
+export function sendVerificationEmail(email: string, url: string) {
   return Effect.gen(function* () {
     const emailService = yield* EmailService;
 

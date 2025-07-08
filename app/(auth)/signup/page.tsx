@@ -1,10 +1,5 @@
 import { SignUpGoogleForm } from "@/components/auth/sign-up-google-form";
 import { SignUpEmailPasswordForm } from "@/components/auth/signup-email-password-form";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Sign up | Podwise",
-};
 
 export default async function SignUp({
   searchParams,
@@ -20,9 +15,7 @@ export default async function SignUp({
       <h2 className="text-center text-2xl font-semibold tracking-tight text-gray-900">
         Welcome
       </h2>
-      <p className="mt-2 text-center text-sm text-gray-600">
-        Create a new account
-      </p>
+      <p className="mt-2 text-center text-gray-600">Create a new account</p>
       <div className="mt-12 grid gap-4">
         <SignUpGoogleForm next={next} />
         <div className="relative">

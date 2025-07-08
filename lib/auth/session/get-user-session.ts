@@ -3,7 +3,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { Effect, Data, Console } from "effect";
 import { decrypt } from "@/lib/auth/session/decrypt";
-import { UserSessionSchema } from "@/lib/auth/schema";
+import { UserSessionSchema } from "@/lib/schema";
 
 class CookieStoreAccessError extends Data.TaggedError(
   "CookieStoreAccessError"
@@ -42,7 +42,7 @@ export function getUserSession() {
       return yield* Effect.fail(
         new UserSessionNotFoundError({
           operation: "getUserSession",
-          cause: "Session cookie not found",
+          cause: "User session cookie not found",
         })
       );
     }

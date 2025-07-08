@@ -135,7 +135,7 @@ export function SignInEmailPasswordForm({ next }: { next: string }) {
           <span className="text-gray-500">Don&apos;t have an account? </span>
           <Link
             href="/signup"
-            className="text-sky-600 transition-colors hover:text-sky-700"
+            className="text-sky-600 transition-colors hover:underline hover:underline-offset-2"
           >
             Sign up
           </Link>
