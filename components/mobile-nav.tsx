@@ -10,7 +10,7 @@ import {
 } from "@headlessui/react";
 import clsx from "clsx";
 import { cn } from "@/lib/utils";
-import { useSession } from "@/hooks/use-session";
+import { useUser } from "@/hooks/use-user";
 import { UserAccountNavClient } from "@/components/user-account-nav-client";
 import { Icons } from "@/components/icons";
 
@@ -32,7 +32,7 @@ function MobileNavLink({
       className={cn(
         "flex w-fit items-center rounded-full px-4 py-2 font-medium text-gray-700 transition-colors",
         "hover:text-gray-900",
-        isActive && "bg-gray-100 text-gray-900",
+        isActive && "bg-gray-100 text-gray-900"
       )}
     >
       {children}
@@ -54,14 +54,14 @@ function MobileNavIcon({ open }: { open: boolean }) {
         d="M0 1H14M0 7H14M0 13H14"
         className={clsx(
           "origin-center transition",
-          open && "scale-90 opacity-0",
+          open && "scale-90 opacity-0"
         )}
       />
       <path
         d="M2 2L12 12M12 2L2 12"
         className={clsx(
           "origin-center transition",
-          !open && "scale-90 opacity-0",
+          !open && "scale-90 opacity-0"
         )}
       />
     </svg>
@@ -71,11 +71,7 @@ function MobileNavIcon({ open }: { open: boolean }) {
 /* ——— the menu ——— */
 export function MobileNav() {
   /* fetch the user session */
-  const { user, loading } = useSession();
-
-  /* figure out whether to show “Go Premium” */
-  const needsPremium =
-    !!user && !user.annualAccessStatus && !user.lifetimeAccessStatus;
+  const { user, loading } = useUser();
 
   return (
     <Popover className="ml-auto md:hidden">
@@ -132,15 +128,6 @@ export function MobileNav() {
 
         {!loading && user && (
           <>
-            {needsPremium && (
-              <PopoverButton
-                as={Link}
-                href="/premium"
-                className="inline-flex w-full items-center justify-center rounded-full bg-linear-to-b from-amber-400 to-amber-500 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-amber-400 hover:text-gray-900"
-              >
-                Go Premium
-              </PopoverButton>
-            )}
             <UserAccountNavClient user={user} />
           </>
         )}
