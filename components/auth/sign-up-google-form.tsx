@@ -4,7 +4,7 @@ import { useActionState } from "react";
 
 import { Icons } from "@/components/icons";
 import { signInWithGoogle } from "@/app/google-action";
-import { ErrorMessage } from "@/components/auth/error-message";
+import { FormErrorMessage } from "@/components/auth/form-error-message";
 
 export function SignUpGoogleForm({ next }: { next: string }) {
   const boundGoogleSignIn = signInWithGoogle.bind(null, next);
@@ -16,13 +16,7 @@ export function SignUpGoogleForm({ next }: { next: string }) {
 
   return (
     <form action={formAction}>
-      {formState?.errors && (
-        <ErrorMessage
-          id="form-error"
-          errors={formState?.errors}
-          className="pb-4"
-        />
-      )}
+      {formState?.errors && <FormErrorMessage errors={formState?.errors} />}
       <button
         type="submit"
         disabled={isPending}

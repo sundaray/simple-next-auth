@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
-import { ErrorMessage } from "@/components/auth/error-message";
+import { FormErrorMessage } from "@/components/auth/form-error-message";
+import { FormFieldErrorMessage } from "@/components/auth/form-field-error-message";
 
 import { signInWithEmailAndPassword } from "@/app/credentials-signin-action";
 import { SignInEmailPasswordFormSchema } from "@/lib/schema";
@@ -52,9 +53,7 @@ export function SignInEmailPasswordForm({ next }: { next: string }) {
       noValidate
       aria-describedby={form.errors ? "form-error" : undefined}
     >
-      {form.errors && (
-        <ErrorMessage id="form-error" errors={form.errors} className="pb-4" />
-      )}
+      {form.errors && <FormErrorMessage errors={form.errors} />}
       <div className="grid gap-2">
         <div>
           <Label htmlFor="email">Email</Label>
@@ -67,8 +66,9 @@ export function SignInEmailPasswordForm({ next }: { next: string }) {
             aria-invalid={fields.email.errors ? "true" : undefined}
             aria-describedby={fields.email.errors ? "email-error" : undefined}
           />
-          <ErrorMessage
-            id="email-error"
+          <FormFieldErrorMessage
+            id={fields.email.errorId}
+            name={fields.email.name}
             errors={fields.email.errors}
             className="mt-1"
           />
@@ -111,8 +111,9 @@ export function SignInEmailPasswordForm({ next }: { next: string }) {
               )}
             </button>
           </div>
-          <ErrorMessage
-            id="password-error"
+          <FormFieldErrorMessage
+            id={fields.password.errorId}
+            name={fields.password.name}
             errors={fields.password.errors}
             className="mt-1"
           />

@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
-import { ErrorMessage } from "@/components/auth/error-message";
+import { ErrorMessage } from "@/components/auth/form-field-error-message";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { ForgotPasswordFormSchema } from "@/lib/schema";

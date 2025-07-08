@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
-import { ErrorMessage } from "@/components/auth/error-message";
+import { FormErrorMessage } from "@/components/auth/form-error-message";
+import { FormFieldErrorMessage } from "@/components/auth/form-field-error-message";
 
 import { signUpWithEmailAndPassword } from "@/app/credentials-signup-action";
 import { SignUpEmailPasswordFormSchema } from "@/lib/schema";
@@ -52,28 +53,24 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
       noValidate
       aria-describedby={form.errors ? "form-error" : undefined}
     >
-      {form.errors && (
-        <div
-          id="form-error"
-          className="bg-red-100 border-red-200 flex items-center min-h-10 rounded-md text-sm text-red-600 px-4 ease-out animate-in fade-in-0"
-        >
-          {form.errors[0]}
-        </div>
-      )}
+      {form.errors && <FormErrorMessage errors={form.errors} />}
       <div className="grid gap-2 mt-4">
         <div>
           <Label htmlFor="email">Email</Label>
           <Input
-            id="email"
+            id={fields.email.id}
             type="email"
-            name="email"
+            name={fields.email.name}
             className="mt-2"
             defaultValue={lastResult?.initialValue?.email as string}
-            aria-invalid={fields.email.errors ? "true" : undefined}
-            aria-describedby={fields.email.errors ? "email-error" : undefined}
+            aria-invalid={!fields.email.valid ? true : undefined}
+            aria-describedby={
+              !fields.email.valid ? fields.email.errorId : undefined
+            }
           />
-          <ErrorMessage
-            id="email-error"
+          <FormFieldErrorMessage
+            id={fields.email.errorId}
+            name={fields.email.name}
             errors={fields.email.errors}
             className="mt-1"
           />
@@ -82,14 +79,14 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
           <Label htmlFor="password">Password</Label>
           <div className="relative">
             <Input
-              id="password"
+              id={fields.password.id}
               type={isPasswordVisible ? "text" : "password"}
-              name="password"
+              name={fields.password.name}
               className="mt-2"
               defaultValue={lastResult?.initialValue?.password as string}
               aria-invalid={fields.password.errors ? "true" : undefined}
               aria-describedby={
-                fields.password.errors ? "password-error" : undefined
+                fields.password.errors ? fields.password.errorId : undefined
               }
             />
             <button
@@ -106,8 +103,9 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
               )}
             </button>
           </div>
-          <ErrorMessage
-            id="password-error"
+          <FormFieldErrorMessage
+            id={fields.password.errorId}
+            name={fields.password.name}
             errors={fields.password.errors}
             className="mt-1"
           />
