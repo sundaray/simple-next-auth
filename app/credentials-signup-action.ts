@@ -126,7 +126,7 @@ export async function signUpWithEmailAndPassword(
     runnableProgram,
 
     // Since Effect.map() only runs on success, we use it to handle a successful signup by redirecting the user.
-    Effect.map(() => ({ _tag: "Success" as const })),
+    Effect.map(() => ({ status: "success" as const })),
 
     Effect.catchTag("AccountAlreadyExistsError", (error) =>
       Effect.succeed(
@@ -140,7 +140,7 @@ export async function signUpWithEmailAndPassword(
 
   const result = await Effect.runPromise(resultProgram);
 
-  if ("_tag" in result && result._tag === "Success") {
+  if (result.status === "success") {
     return redirect("/signup/verify-email");
   } else {
     return result;

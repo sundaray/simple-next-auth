@@ -25,11 +25,8 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
     undefined
   );
 
-  const conformLastResult =
-    lastResult && "_tag" in lastResult ? undefined : lastResult;
-
   const [form, fields] = useForm({
-    lastResult: conformLastResult,
+    lastResult,
     // Validate when field loses focus
     shouldValidate: "onBlur",
     // Re-validate as user types
@@ -66,11 +63,7 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
             type="email"
             name="email"
             className="mt-2"
-            defaultValue={
-              lastResult && "initialValue" in lastResult
-                ? (lastResult.initialValue?.email as string)
-                : undefined
-            }
+            defaultValue={lastResult?.initialValue?.email as string}
             aria-invalid={fields.email.errors ? "true" : undefined}
             aria-describedby={fields.email.errors ? "email-error" : undefined}
           />
@@ -88,11 +81,7 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
               type={isPasswordVisible ? "text" : "password"}
               name="password"
               className="mt-2"
-              defaultValue={
-                lastResult && "initialValue" in lastResult
-                  ? (lastResult.initialValue?.password as string)
-                  : undefined
-              }
+              defaultValue={lastResult?.initialValue?.password as string}
               aria-invalid={fields.password.errors ? "true" : undefined}
               aria-describedby={
                 fields.password.errors ? "password-error" : undefined
