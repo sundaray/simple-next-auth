@@ -1,7 +1,7 @@
 import "server-only";
 
 import { base64url, jwtDecrypt } from "jose";
-import { Effect, Data, Console, Config, Schema } from "effect";
+import { Effect, Data, Config, Schema } from "effect";
 
 class DecryptionError extends Data.TaggedError("DecryptionError")<{
   operation: string;
@@ -59,10 +59,10 @@ export function decrypt<A>(jwt: string, schema: Schema.Schema<A>) {
 
     return validatedPayload;
   }).pipe(
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
-    Effect.tapErrorTag("DecryptionError", (error) => Console.error(error)),
+    Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)),
+    Effect.tapErrorTag("DecryptionError", (error) => Effect.logError(error)),
     Effect.tapErrorTag("InvalidJWTPayloadError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     )
   );
 }

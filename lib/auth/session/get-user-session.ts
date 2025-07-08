@@ -1,19 +1,12 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { Effect, Data, Console } from "effect";
+import { Effect, Data, Option } from "effect";
 import { decrypt } from "@/lib/auth/session/decrypt";
 import { UserSessionSchema } from "@/lib/schema";
 
 class CookieStoreAccessError extends Data.TaggedError(
   "CookieStoreAccessError"
-)<{
-  operation: string;
-  cause: unknown;
-}> {}
-
-class UserSessionNotFoundError extends Data.TaggedError(
-  "UserSessionNotFoundError"
 )<{
   operation: string;
   cause: unknown;
@@ -36,26 +29,28 @@ export function getUserSession() {
         }),
     });
 
-    const sessionCookie = cookieStore.get("user-session");
+    const session = cookieStore.get("user-session");
 
-    if (!sessionCookie) {
-      return yield* Effect.fail(
-        new UserSessionNotFoundError({
-          operation: "getUserSession",
-          cause: "User session cookie not found",
-        })
-      );
+    if (!session) {
+      return Option.none();
     }
 
-    return yield* decrypt(sessionCookie.value, UserSessionSchema);
+    const decryptionEffect = decrypt(session.value, UserSessionSchema);
+
+    const user = yield* decryptionEffect.pipe(
+      Effect.tapErrorCause((cause) =>
+        Effect.logError("Failed to decrypt user session: ", {
+          operation: "getUserSession",
+          cause,
+        })
+      ),
+      Effect.option
+    );
+
+    return user;
   }).pipe(
     Effect.tapErrorTag("CookieStoreAccessError", (error) =>
-      Console.error(error)
-    ),
-    Effect.tapErrorTag("UserSessionNotFoundError", (error) =>
-      Console.error(error)
-    ),
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
-    Effect.tapErrorTag("DecryptionError", (error) => Console.error(error))
+      Effect.logError(error)
+    )
   );
 }
