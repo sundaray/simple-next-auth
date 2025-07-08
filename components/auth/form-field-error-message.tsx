@@ -14,7 +14,7 @@ export function FormFieldErrorMessage({
   className,
 }: FormFieldErrorMessageProps) {
   if (!errors || errors.length === 0) {
-    return null;
+    return <div className="min-h-7"></div>;
   }
 
   const isPasswordValidationError =
@@ -26,7 +26,7 @@ export function FormFieldErrorMessage({
     <div id={id} className={cn("text-sm text-red-600", className)}>
       {isPasswordValidationError ? (
         <>
-          <p className="mb-1">Password must:</p>
+          <p>Password must:</p>
           <ul className="list-disc space-y-1 pl-8">
             {errors.map((error) => (
               <li key={error}>{error}</li>
@@ -34,7 +34,9 @@ export function FormFieldErrorMessage({
           </ul>
         </>
       ) : (
-        <p>{errors[0]}</p>
+        <div className="min-h-7 flex items-center ease-out animate-in fade-in-0">
+          <p>{errors[0]}</p>
+        </div>
       )}
     </div>
   );

@@ -54,7 +54,7 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
       aria-describedby={form.errors ? "form-error" : undefined}
     >
       {form.errors && <FormErrorMessage errors={form.errors} />}
-      <div className="grid gap-2 mt-4">
+      <div className="grid gap-1 mt-4">
         <div>
           <Label htmlFor="email">Email</Label>
           <Input
@@ -72,7 +72,6 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
             id={fields.email.errorId}
             name={fields.email.name}
             errors={fields.email.errors}
-            className="mt-1"
           />
         </div>
         <div>
@@ -107,7 +106,6 @@ export function SignUpEmailPasswordForm({ next }: { next: string }) {
             id={fields.password.errorId}
             name={fields.password.name}
             errors={fields.password.errors}
-            className="mt-1"
           />
         </div>
         <Button
