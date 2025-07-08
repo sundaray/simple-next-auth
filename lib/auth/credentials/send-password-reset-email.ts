@@ -4,6 +4,7 @@ import { Effect, Console, Config, Data } from "effect";
 import { render } from "@react-email/render";
 import { EmailService } from "@/lib/services/email-service";
 import { PasswordResetTemplate } from "@/components/auth/password-reset-template";
+import { Email, Url } from "@/lib/schema";
 
 class EmailTemplateRenderError extends Data.TaggedError(
   "EmailTemplateRenderError"
@@ -20,7 +21,7 @@ class EmailSendError extends Data.TaggedError("EmailSendError")<{
  *
  ************************************************/
 
-export function sendPasswordResetEmail(email: string, url: string) {
+export function sendPasswordResetEmail(email: Email, url: Url) {
   return Effect.gen(function* () {
     const emailService = yield* EmailService;
 

@@ -4,6 +4,7 @@ import { Effect, Console, Config, Data } from "effect";
 import { render } from "@react-email/render";
 import { EmailService } from "@/lib/services/email-service";
 import { EmailVerificationTemplate } from "@/components/auth/email-verification-template";
+import { Email, Url } from "@/lib/schema";
 
 class EmailTemplateRenderError extends Data.TaggedError(
   "EmailTemplateRenderError"
@@ -14,7 +15,7 @@ class EmailSendError extends Data.TaggedError("EmailSendError")<{
   cause: unknown;
 }> {}
 
-export function sendVerificationEmail(email: string, url: string) {
+export function sendVerificationEmail(email: Email, url: Url) {
   return Effect.gen(function* () {
     const emailService = yield* EmailService;
 

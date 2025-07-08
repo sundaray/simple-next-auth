@@ -8,13 +8,13 @@ import { Icons } from "@/components/icons";
 import { ErrorMessage } from "@/components/auth/error-message";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { ForgotPasswordFormSchema } from "@/schema";
+import { ForgotPasswordFormSchema } from "@/lib/schema";
 import { forgotPassword } from "@/app/password-reset-actions";
 
 export function ForgotPasswordForm() {
   const [lastResult, formAction, isPending] = useActionState(
     forgotPassword,
-    undefined,
+    undefined
   );
 
   const [form, fields] = useForm({

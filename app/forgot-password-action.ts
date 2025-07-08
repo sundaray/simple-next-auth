@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
 import { Effect, pipe } from "effect";
 
-import { ForgotPasswordFormSchema } from "@/schema";
+import { ForgotPasswordFormSchema } from "@/lib/schema";
 
 import { createPasswordResetSession } from "@/lib/auth/session/create-password-reset-session";
 import { createPasswordResetToken } from "@/lib/auth/credentials/create-password-reset-token";

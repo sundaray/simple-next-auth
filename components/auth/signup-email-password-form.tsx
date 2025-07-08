@@ -12,7 +12,7 @@ import { Icons } from "@/components/icons";
 import { ErrorMessage } from "@/components/auth/error-message";
 
 import { signUpWithEmailAndPassword } from "@/app/credentials-signup-action";
-import { SignUpEmailPasswordFormSchema } from "@/schema";
+import { SignUpEmailPasswordFormSchema } from "@/lib/schema";
 
 export function SignUpEmailPasswordForm({ next }: { next: string }) {
   const boundSignUpWithEmailAndPassword = signUpWithEmailAndPassword.bind(

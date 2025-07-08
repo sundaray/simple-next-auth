@@ -6,7 +6,7 @@ import { Effect, pipe } from "effect";
 
 import { hashPassword } from "@/lib/auth/credentials/hash-password";
 import { changePassword } from "@/lib/auth/credentials/change-password";
-import { ResetPasswordFormSchema } from "@/schema";
+import { ResetPasswordFormSchema } from "@/lib/schema";
 import { deletePasswordResetSession } from "@/lib/auth/session/delete-password-reset-session";
 import { getPasswordResetSession } from "@/lib/auth/session/get-password-reset-session";
 

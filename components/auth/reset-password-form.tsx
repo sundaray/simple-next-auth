@@ -8,13 +8,13 @@ import { Icons } from "@/components/icons";
 import { ErrorMessage } from "@/components/auth/error-message";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { ResetPasswordFormSchema } from "@/schema";
+import { ResetPasswordFormSchema } from "@/lib/schema";
 import { resetPassword } from "@/app/password-reset-actions";
 
 export function ResetPasswordForm() {
   const [lastResult, formAction, isPending] = useActionState(
     resetPassword,
-    undefined,
+    undefined
   );
 
   const [form, fields] = useForm({

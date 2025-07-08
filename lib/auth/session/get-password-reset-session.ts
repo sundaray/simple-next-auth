@@ -3,7 +3,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { Effect, Data } from "effect";
 import { decrypt } from "@/lib/auth/session/decrypt";
-import { PasswordResetSessionSchema } from "@/lib/auth/schema";
+import { PasswordResetSessionSchema } from "@/lib/schema";
 
 class CookieStoreAccessError extends Data.TaggedError(
   "CookieStoreAccessError"
@@ -42,7 +42,7 @@ export function getPasswordResetSession() {
       return yield* Effect.fail(
         new PasswordResetSessionNotFoundError({
           operation: "getPasswordResetSession",
-          cause: "Password reset session cookie not found",
+          cause: "Password reset session not found",
         })
       );
     }

@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
 import { Effect, Match, pipe, Logger } from "effect";
-import { SignInEmailPasswordFormSchema } from "@/schema";
+import { SignInEmailPasswordFormSchema } from "@/lib/schema";
 
 import { getAccountStatus } from "@/lib/auth/credentials/get-account-status";
 import { verifyPassword } from "@/lib/auth/credentials/verify-password";
