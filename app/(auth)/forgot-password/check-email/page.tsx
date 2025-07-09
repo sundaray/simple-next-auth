@@ -7,10 +7,10 @@ export default function VerifyPasswordReset() {
       <h2 className="mb-2 text-2xl font-semibold tracking-tight text-gray-900">
         Password reset request received
       </h2>
-      <p className="mb-4 text-sm text-pretty text-gray-600">
-        If an account exists with the email address you provided, we&apos;ll
-        send a password reset link. Please check your email inbox, including
-        your spam folder.
+      <p className="mb-4 text-pretty text-gray-600">
+        If an account exists for the email you provided, a password reset link
+        has been sent. If it doesn&apos;t arrive within a few minutes, be sure
+        to check your spam or junk folder.
       </p>
       <Link
         href="/signin"

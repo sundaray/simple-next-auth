@@ -1,19 +1,12 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { Effect, Data } from "effect";
+import { Effect, Data, Option } from "effect";
 import { decrypt } from "@/lib/auth/session/decrypt";
-import { PasswordResetSessionSchema } from "@/lib/schema";
+import { PasswordResetSessionSchema } from "@/lib/schema"; // Assuming this schema exists
 
 class CookieStoreAccessError extends Data.TaggedError(
   "CookieStoreAccessError"
-)<{
-  operation: string;
-  cause: unknown;
-}> {}
-
-class PasswordResetSessionNotFoundError extends Data.TaggedError(
-  "PasswordResetSessionNotFoundError"
 )<{
   operation: string;
   cause: unknown;
@@ -39,25 +32,24 @@ export function getPasswordResetSession() {
     const session = cookieStore.get("password-reset-session");
 
     if (!session) {
-      return yield* Effect.fail(
-        new PasswordResetSessionNotFoundError({
-          operation: "getPasswordResetSession",
-          cause: "Password reset session not found",
-        })
-      );
+      return Option.none();
     }
 
-    const sessionData = yield* decrypt(
-      session.value,
-      PasswordResetSessionSchema
+    const decryptionEffect = decrypt(session.value, PasswordResetSessionSchema);
+
+    const passwordResetOption = yield* decryptionEffect.pipe(
+      Effect.tapErrorCause((cause) =>
+        Effect.logError("Failed to decrypt password reset session: ", {
+          operation: "getPasswordResetSession",
+          cause,
+        })
+      ),
+      Effect.option
     );
 
-    return sessionData;
+    return passwordResetOption;
   }).pipe(
     Effect.tapErrorTag("CookieStoreAccessError", (error) =>
-      Effect.logError(error)
-    ),
-    Effect.tapErrorTag("PasswordResetSessionNotFoundError", (error) =>
       Effect.logError(error)
     )
   );

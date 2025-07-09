@@ -39,7 +39,7 @@ export default async function VerifyEmailErrorPage({
       <p className="mb-4 text-pretty text-gray-600">{errorDescription}</p>
       <Link
         href="/signup"
-        className="inline-flex items-center gap-1 rounded-full px-4 py-3 text-sm font-medium text-sky-700 transition-colors hover:bg-gray-100"
+        className="inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-sky-700 transition-colors hover:bg-gray-100"
       >
         Back to sign up
         <Icons.chevronRight className="size-4" />

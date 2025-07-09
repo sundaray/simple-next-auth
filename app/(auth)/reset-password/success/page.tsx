@@ -8,8 +8,7 @@ export default function PasswordReset() {
         Password reset
       </h2>
       <p className="mb-4 text-pretty text-sm text-gray-600">
-        Your password has been successfully reset. You can now sign in with your
-        updated password.
+        You&apos;ve successfully changed your password.
       </p>
       <Link
         href="/signin"

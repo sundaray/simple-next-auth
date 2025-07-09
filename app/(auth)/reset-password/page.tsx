@@ -12,7 +12,7 @@ export default function ResetPassword() {
         Reset password
       </h2>
       <p className="mt-2 text-center text-sm text-gray-600">
-        Enter your new password
+        Enter a new password to reset the password for your account.
       </p>
       <div className="mt-12">
         <ResetPasswordForm />
