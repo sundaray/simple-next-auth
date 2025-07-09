@@ -114,7 +114,7 @@ export async function signInWithEmailAndPassword(
     program,
 
     // Since Effect.map() only runs on success, we use it to handle a successful login by redirecting the user.
-    Effect.map(() => redirect(next)),
+    Effect.map(() => ({ status: "success" as const })),
 
     Effect.catchTag("CreateAccount", (error) =>
       Effect.succeed(submission.reply({ formErrors: [error.message] }))
@@ -125,6 +125,11 @@ export async function signInWithEmailAndPassword(
     Effect.provide(Logger.pretty)
   );
 
-  // Execute the Effect
-  return Effect.runPromise(handledProgram);
+  const result = await Effect.runPromise(handledProgram);
+
+  if (result.status === "success") {
+    redirect(next);
+  } else {
+    return result;
+  }
 }

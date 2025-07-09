@@ -103,11 +103,17 @@ export async function forgotPassword(prevState: unknown, formData: FormData) {
     runnableProgram,
 
     // Since Effect.map() only runs on success, we use it to handle a successful password reset by redirecting the user.
-    Effect.map(() => redirect("/forgot-password/check-email")),
+    Effect.map(() => ({ status: "success" as const })),
 
     Effect.catchTags(handledErrors)
   );
 
   // Execute the Effect
-  return Effect.runPromise(handledProgram);
+  const result = await Effect.runPromise(handledProgram);
+
+  if (result.status === "success") {
+    redirect("/forgot-password/check-email");
+  } else {
+    return result;
+  }
 }

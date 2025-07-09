@@ -37,7 +37,7 @@ export function getUserSession() {
 
     const decryptionEffect = decrypt(session.value, UserSessionSchema);
 
-    const user = yield* decryptionEffect.pipe(
+    const userOption = yield* decryptionEffect.pipe(
       Effect.tapErrorCause((cause) =>
         Effect.logError("Failed to decrypt user session: ", {
           operation: "getUserSession",
@@ -47,7 +47,7 @@ export function getUserSession() {
       Effect.option
     );
 
-    return user;
+    return userOption;
   }).pipe(
     Effect.tapErrorTag("CookieStoreAccessError", (error) =>
       Effect.logError(error)

@@ -5,11 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
-import { ErrorMessage } from "@/components/auth/form-field-error-message";
+import { FormErrorMessage } from "@/components/auth/form-error-message";
+import { FormFieldErrorMessage } from "@/components/auth/form-field-error-message";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { ForgotPasswordFormSchema } from "@/lib/schema";
-import { forgotPassword } from "@/app/password-reset-actions";
+import { forgotPassword } from "@/app/forgot-password-action";
 
 export function ForgotPasswordForm() {
   const [lastResult, formAction, isPending] = useActionState(
@@ -32,26 +33,25 @@ export function ForgotPasswordForm() {
 
   return (
     <form id={form.id} onSubmit={form.onSubmit} action={formAction} noValidate>
-      {form.errors && (
-        <ErrorMessage id="form-error" errors={form.errors} className="pb-4" />
-      )}
-      <div className="grid gap-2">
+      {form.errors && <FormErrorMessage errors={form.errors} />}
+      <div className={`grid gap-1 ${form.errors ? "mt-4" : ""}`}>
         <div className="grid">
           <Label htmlFor="email">Email</Label>
           <Input
-            id="email"
+            id={fields.email.id}
             type="email"
-            name="email"
+            name={fields.email.name}
             className="mt-2"
-            placeholder="you@example.com"
             defaultValue={lastResult?.initialValue?.email as string}
-            aria-invalid={fields.email.errors ? "true" : undefined}
-            aria-describedby={fields.email.errors ? "email-error" : undefined}
+            aria-invalid={!fields.email.valid ? true : undefined}
+            aria-describedby={
+              !fields.email.valid ? fields.email.errorId : undefined
+            }
           />
-          <ErrorMessage
-            id="email-error"
+          <FormFieldErrorMessage
+            id={fields.email.errorId}
+            name={fields.email.name}
             errors={fields.email.errors}
-            className="mt-1"
           />
         </div>
         <Button type="submit" disabled={isPending} className="rounded-full">

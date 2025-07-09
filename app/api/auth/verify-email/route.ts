@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Effect, Data } from "effect";
+import { Effect, Data, Option } from "effect";
 
 import { getEmailVerificationSession } from "@/lib/auth/session/get-email-verification-session";
 import { deleteEmailVerificationSession } from "@/lib/auth/session/delete-email-verification-session";
@@ -20,7 +20,9 @@ class MissingTokenQueryParameterError extends Data.TaggedError(
   cause: string;
 }> {}
 
-class UserCreationError extends Data.TaggedError("UserCreationError")<{
+class InvalidEmailVerificationSessionError extends Data.TaggedError(
+  "InvalidEmailVerificationSessionError"
+)<{
   operation: string;
   cause: unknown;
 }> {}
@@ -48,11 +50,22 @@ export async function GET(request: NextRequest) {
     }
 
     // Get email verification session
+    const sessionOption = yield* getEmailVerificationSession();
+
+    if (Option.isNone(sessionOption)) {
+      return yield* Effect.fail(
+        new InvalidEmailVerificationSessionError({
+          operation: "GET api/auth/verify-email",
+          cause: "Email verification session is not found or is invalid.",
+        })
+      );
+    }
+    // Option.isSome is true, so we can safely access .value
     const {
       email,
       token: tokenFromSession,
       hashedPassword,
-    } = yield* getEmailVerificationSession();
+    } = sessionOption.value;
 
     // Verify tokens match - this will fail if they don't match
     yield* timingSafeCompare(tokenFromUrl, tokenFromSession);
@@ -61,21 +74,13 @@ export async function GET(request: NextRequest) {
     const role = yield* assignUserRole(email);
 
     // Create user in database
-    yield* Effect.tryPromise({
-      try: async () =>
-        await createUserWithProvider(
-          email,
-          role,
-          "credentials",
-          undefined,
-          hashedPassword
-        ),
-      catch: (error) =>
-        new UserCreationError({
-          operation: "createUserWithProvider",
-          cause: error,
-        }),
-    });
+    yield* createUserWithProvider(
+      email,
+      role,
+      "credentials",
+      undefined,
+      hashedPassword
+    );
 
     // Delete email verification session
     yield* deleteEmailVerificationSession();

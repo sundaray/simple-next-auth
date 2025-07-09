@@ -122,7 +122,7 @@ export async function signUpWithEmailAndPassword(
   };
 
   // Handle the success and failure channels of the Effect.
-  const resultProgram = pipe(
+  const handledProgram = pipe(
     runnableProgram,
 
     // Since Effect.map() only runs on success, we use it to handle a successful signup by redirecting the user.
@@ -138,7 +138,7 @@ export async function signUpWithEmailAndPassword(
     Effect.catchTags(handledErrors)
   );
 
-  const result = await Effect.runPromise(resultProgram);
+  const result = await Effect.runPromise(handledProgram);
 
   if (result.status === "success") {
     return redirect("/signup/verify-email");

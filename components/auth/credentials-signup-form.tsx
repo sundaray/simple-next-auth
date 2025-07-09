@@ -83,9 +83,9 @@ export function CredentialsSignUpForm({ next }: { next: string }) {
               name={fields.password.name}
               className="mt-2"
               defaultValue={lastResult?.initialValue?.password as string}
-              aria-invalid={fields.password.errors ? "true" : undefined}
+              aria-invalid={!fields.password.valid ? true : undefined}
               aria-describedby={
-                fields.password.errors ? fields.password.errorId : undefined
+                !fields.password.valid ? fields.password.errorId : undefined
               }
             />
             <button
