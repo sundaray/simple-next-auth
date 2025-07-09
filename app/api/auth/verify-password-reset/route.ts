@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Effect, Data } from "effect";
+import { Effect, Data, Option } from "effect";
 
 import { getPasswordResetSession } from "@/lib/auth/session/get-password-reset-session";
 import { timingSafeCompare } from "@/lib/auth/credentials/timing-safe-compare";
@@ -17,6 +17,13 @@ class MissingTokenQueryParameterError extends Data.TaggedError(
   cause: string;
 }> {}
 
+class InvalidPasswordResetSessionError extends Data.TaggedError(
+  "InvalidPasswordResetSessionError"
+)<{
+  operation: string;
+  cause: string;
+}> {}
+
 /************************************************
  *
  * Route Handler
@@ -27,7 +34,6 @@ export async function GET(request: NextRequest) {
   const url = request.nextUrl;
 
   const program = Effect.gen(function* () {
-    // Extract token from URL
     const tokenFromUrl = url.searchParams.get("token");
 
     if (!tokenFromUrl) {
@@ -39,13 +45,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get password reset session
-    const { token: tokenFromSession } = yield* getPasswordResetSession();
+    const sessionOption = yield* getPasswordResetSession();
 
-    // Verify tokens match - this will fail if they don't match
+    if (Option.isNone(sessionOption)) {
+      return yield* Effect.fail(
+        new InvalidPasswordResetSessionError({
+          operation: "GET /api/auth/verify-password-reset",
+          cause: "Password reset session is not found or is invalid.",
+        })
+      );
+    }
+    const { token: tokenFromSession } = sessionOption.value;
+
     yield* timingSafeCompare(tokenFromUrl, tokenFromSession);
 
-    // On success, return the URL to redirect to
     return new URL("/reset-password", url);
   });
 

@@ -5,10 +5,11 @@ export default function PasswordReset() {
   return (
     <div className="mx-auto max-w-md px-4 text-center">
       <h2 className="mb-2 text-2xl font-semibold tracking-tight text-gray-900">
-        Password reset
+        Password Reset Successful
       </h2>
-      <p className="mb-4 text-pretty text-sm text-gray-600">
-        You&apos;ve successfully changed your password.
+      <p className="mb-4 text-pretty text-gray-600">
+        Your password has been successfully reset. You can use your new password
+        to sign in to your account.
       </p>
       <Link
         href="/signin"

@@ -3,19 +3,23 @@ import { Icons } from "@/components/icons";
 
 const errorMessages: Record<string, string> = {
   InvalidEmailVerificationSessionError:
-    "The email verification session is not found or is invalid. Please request a new verification link.",
+    "The email verification session is not found or is invalid. Please sign up again.",
   MissingTokenQueryParameterError:
-    "The email verification link is invalid because it is missing the required token. Please request a new verification link.",
+    "The email verification link is invalid because it is missing the required token. Please sign up again.",
   CookieStoreAccessError:
-    "Failed to access the email verification session. Please request a new verification link.",
+    "Failed to access the email verification session. Please sign up again.",
   TokenMismatchError:
-    "The verification link is invalid because its token does not match our records. Please request a new verification link.",
+    "The token in your email verification link is incorrect. Please sign up again.",
+  InvalidTokenTypeError:
+    "The token in your email verification link is incorrect. Please sign up again.",
+  TokenLengthMismatchError:
+    "The token in your email verification link is incorrect. Please sign up again.",
   DatabaseError:
-    "A database error occurred while creating your account. Please request a new verification link.",
+    "A database error occurred while creating your account. Please sign up again.",
   ConfigError:
-    "A server error occurred while trying to verify your email. Please request a new verification link.",
+    "A server error occurred while trying to verify your email. Please sign up again.",
   Default:
-    "Something went wrong while verifying your email. Please try again or request a new verification link.",
+    "Something went wrong while verifying your email. Please sign up again.",
 };
 
 type VerifyEmailErrorPageProps = {
@@ -34,7 +38,7 @@ export default async function VerifyEmailErrorPage({
   return (
     <div className="mx-auto max-w-md px-4 text-center">
       <h2 className="mb-2 text-2xl font-semibold tracking-tight text-red-600">
-        Email verification failed
+        Email Verification Error
       </h2>
       <p className="mb-4 text-pretty text-gray-600">{errorDescription}</p>
       <Link

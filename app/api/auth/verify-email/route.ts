@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     yield* deleteEmailVerificationSession();
 
     // On success, return the URL to redirect to
-    return new URL("/signup/email-verified", url);
+    return new URL("/signup/success", url);
   });
 
   const handledProgram = program.pipe(
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     // Now, handle both success and failure to create the final response
     Effect.matchEffect({
       onFailure: (error) => {
-        const authErrorUrl = new URL("/signup/verify-email/error", url);
+        const authErrorUrl = new URL("/signup/error", url);
 
         // Add the error tag as a query parameter
         const errorTag = "_tag" in error ? error._tag : "UnknownError";

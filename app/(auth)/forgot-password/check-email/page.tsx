@@ -5,7 +5,7 @@ export default function VerifyPasswordReset() {
   return (
     <div className="mx-auto max-w-md px-4 text-center">
       <h2 className="mb-2 text-2xl font-semibold tracking-tight text-gray-900">
-        Password reset request received
+        Check Your Email
       </h2>
       <p className="mb-4 text-pretty text-gray-600">
         If an account exists for the email you provided, a password reset link

@@ -1,4 +1,4 @@
-import { SignUpGoogleForm } from "@/components/auth/sign-up-google-form";
+import { SignUpGoogleForm } from "@/components/auth/google-signup-form";
 import { CredentialsSignUpForm } from "@/components/auth/credentials-signup-form";
 import type { Metadata } from "next";
 

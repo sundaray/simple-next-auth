@@ -141,7 +141,7 @@ export async function signUpWithEmailAndPassword(
   const result = await Effect.runPromise(handledProgram);
 
   if (result.status === "success") {
-    return redirect("/signup/verify-email");
+    return redirect("/signup/check-email");
   } else {
     return result;
   }

@@ -2,13 +2,17 @@
 
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
-import { Effect, pipe } from "effect";
+import { Effect, Data, Option, pipe } from "effect";
 
 import { hashPassword } from "@/lib/auth/credentials/hash-password";
 import { changePassword } from "@/lib/auth/credentials/change-password";
 import { ResetPasswordFormSchema } from "@/lib/schema";
 import { deletePasswordResetSession } from "@/lib/auth/session/delete-password-reset-session";
 import { getPasswordResetSession } from "@/lib/auth/session/get-password-reset-session";
+
+class PasswordResetSessionNotFoundError extends Data.TaggedError(
+  "PasswordResetSessionNotFoundError"
+) {}
 
 /************************************************
  *
@@ -17,25 +21,25 @@ import { getPasswordResetSession } from "@/lib/auth/session/get-password-reset-s
  ************************************************/
 
 export async function resetPassword(prevState: unknown, formData: FormData) {
-  // Parse and validate form data using zod schema
   const submission = parseWithZod(formData, {
     schema: ResetPasswordFormSchema,
   });
 
-  // Return validation errors if any
   if (submission.status !== "success") {
     return submission.reply();
   }
 
-  // Extract validated password
   const { newPassword } = submission.value;
 
-  // Create an effect
   const program = Effect.gen(function* () {
-    // Get email from the password reset session
-    const { email } = yield* getPasswordResetSession();
+    const sessionOption = yield* getPasswordResetSession();
 
-    // Hash the new password
+    if (Option.isNone(sessionOption)) {
+      return yield* Effect.fail(new PasswordResetSessionNotFoundError());
+    }
+
+    const { email } = sessionOption.value;
+
     const hashedPassword = yield* hashPassword(newPassword);
 
     // Change the password in the database
@@ -62,24 +66,6 @@ export async function resetPassword(prevState: unknown, formData: FormData) {
       Effect.succeed(
         submission.reply({
           formErrors: ["Failed to access cookie store. Please try again."],
-        })
-      ),
-    ConfigError: () =>
-      Effect.succeed(
-        submission.reply({
-          formErrors: ["Configuration error. Please try again."],
-        })
-      ),
-    InvalidJWTPayloadError: () =>
-      Effect.succeed(
-        submission.reply({
-          formErrors: ["Invalid JWT payload error. Please try again."],
-        })
-      ),
-    DecryptionError: () =>
-      Effect.succeed(
-        submission.reply({
-          formErrors: ["Decryption error. Please try again."],
         })
       ),
     PasswordResetSessionNotFoundError: () =>
