@@ -45,12 +45,8 @@ export function CredentialsSignInForm({ next }: { next: string }) {
     setIsPasswordVisible((prevState) => !prevState);
   }
 
-  // ===================================================================
-  // ==  NEW CONSOLE.LOG FOR PROPS                                    ==
-  // ===================================================================
   const emailProps = getInputProps(fields.email, { type: "email" });
-  console.dir("Props being passed to email input:", emailProps);
-  // ===================================================================
+  console.log("Email props: ", emailProps);
 
   return (
     <form {...getFormProps(form)} action={formAction}>
