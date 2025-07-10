@@ -9,9 +9,9 @@ export default function ResetPassword() {
   return (
     <div className="mx-auto max-w-[380px] px-4">
       <h2 className="text-center text-2xl font-semibold tracking-tight text-gray-900">
-        Reset password
+        Reset Password
       </h2>
-      <p className="mt-2 text-center text-sm text-gray-600">
+      <p className="mt-2 text-center text-gray-600">
         Enter a new password to reset the password for your account.
       </p>
       <div className="mt-12">

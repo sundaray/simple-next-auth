@@ -28,7 +28,7 @@ export default function Home() {
           href="https://github.com/sundaray/simple-next-auth"
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition-colors hover:bg-gray-100 focus:outline-none focus:ring"
+          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition-colors hover:bg-gray-100 focus:outline-none focus:ring"
         >
           View on GitHub
         </Link>

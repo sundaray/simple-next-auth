@@ -33,7 +33,7 @@ export function ForgotPasswordForm() {
 
   return (
     <form id={form.id} onSubmit={form.onSubmit} action={formAction} noValidate>
-      {form.errors && <FormErrorMessage errors={form.errors} />}
+      {form.errors && <FormErrorMessage error={form.errors[0]} />}
       <div className={`grid gap-1 ${form.errors ? "mt-4" : ""}`}>
         <div className="grid">
           <Label htmlFor="email">Email</Label>

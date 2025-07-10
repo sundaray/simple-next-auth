@@ -6,10 +6,9 @@ import { Effect, Data, Schema } from "effect";
 import { exchangeAuthorizationCodeForTokens } from "@/lib/auth/google/exchange-authorization-code-for-tokens";
 import { createUserSession } from "@/lib/auth/session/create-user-session";
 import { decrypt } from "@/lib/auth/session/decrypt";
-import { OAuthStateSchema } from "@/lib/auth/schema";
+import { OAuthStateSchema, GoogleIDTokenSchema } from "@/lib/schema";
 import { assignUserRole } from "@/lib/auth/shared/assign-user-role";
 import { createUserWithProvider } from "@/lib/auth/shared/create-user-with-provider";
-import { GoogleIDTokenSchema } from "@/lib/auth/schema";
 
 /************************************************
  *

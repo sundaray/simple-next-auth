@@ -9,7 +9,7 @@ export default function ForgotPassword() {
   return (
     <div className="mx-auto max-w-[380px] px-4">
       <h2 className="text-center text-2xl font-semibold tracking-tight text-gray-900">
-        Forgot password?
+        Forgot Password?
       </h2>
       <p className="mt-2 text-center text-gray-600">
         Enter your email address below and we'll send you a link to reset your

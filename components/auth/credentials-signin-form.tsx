@@ -2,7 +2,7 @@
 
 import { useState, useActionState } from "react";
 import Link from "next/link";
-import { useForm } from "@conform-to/react";
+import { useForm, getInputProps, getFormProps } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 
 import { Label } from "@/components/ui/label";
@@ -45,28 +45,22 @@ export function CredentialsSignInForm({ next }: { next: string }) {
     setIsPasswordVisible((prevState) => !prevState);
   }
 
+  // ===================================================================
+  // ==  NEW CONSOLE.LOG FOR PROPS                                    ==
+  // ===================================================================
+  const emailProps = getInputProps(fields.email, { type: "email" });
+  console.dir("Props being passed to email input:", emailProps);
+  // ===================================================================
+
   return (
-    <form
-      id={form.id}
-      onSubmit={form.onSubmit}
-      action={formAction}
-      noValidate
-      aria-describedby={form.errors ? "form-error" : undefined}
-    >
+    <form {...getFormProps(form)} action={formAction}>
       {form.errors && <FormErrorMessage error={form.errors[0]} />}
       <div className={`grid gap-1 ${form.errors ? "mt-4" : ""}`}>
         <div>
           <Label htmlFor="email">Email</Label>
           <Input
-            id={fields.email.id}
-            type="email"
-            name={fields.email.name}
+            {...getInputProps(fields.email, { type: "email" })}
             className="mt-2"
-            defaultValue={lastResult?.initialValue?.email as string}
-            aria-invalid={!fields.email.valid ? true : undefined}
-            aria-describedby={
-              !fields.email.valid ? fields.email.errorId : undefined
-            }
           />
           <FormFieldErrorMessage
             id={fields.email.errorId}
@@ -88,15 +82,10 @@ export function CredentialsSignInForm({ next }: { next: string }) {
           </div>
           <div className="relative">
             <Input
-              id={fields.password.id}
-              type={isPasswordVisible ? "text" : "password"}
-              name={fields.password.name}
+              {...getInputProps(fields.password, {
+                type: isPasswordVisible ? "text" : "password",
+              })}
               className="mt-2"
-              defaultValue={lastResult?.initialValue?.password as string}
-              aria-invalid={!fields.password.valid ? true : undefined}
-              aria-describedby={
-                !fields.password.valid ? fields.password.errorId : undefined
-              }
             />
             <button
               type="button"
