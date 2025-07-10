@@ -6,7 +6,7 @@ import { Icons } from "@/components/icons";
 function Spinner() {
   return (
     <div className="flex items-center justify-center">
-      <Icons.loader className="size-6 animate-spin text-gray-600" />
+      <Icons.loader className="size-4 animate-spin text-gray-600" />
     </div>
   );
 }

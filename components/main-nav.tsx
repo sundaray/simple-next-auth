@@ -21,7 +21,7 @@ export function MainNav({ items }: MainNavProps) {
         aria-label="Go to homepage"
         className="mr-10 flex items-center font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
       >
-        Simple-Next-Auth
+        Simple Next Auth
       </Link>
       <nav className="hidden md:block mr-auto">
         <ul className="flex space-x-4">
