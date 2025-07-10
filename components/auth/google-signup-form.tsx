@@ -22,7 +22,7 @@ export function GoogleSignUpForm({ next }: { next: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className={`item-center flex w-full justify-center rounded-md border border-2 border-gray-950/10 py-2 text-sm font-medium text-gray-900 shadow-xs transition-colors hover:bg-gray-100 ${formState?.errors ? "mt-4" : ""}`}
+        className={`item-center flex w-full justify-center rounded-md border border-2 border-gray-950/10 py-2 text-sm font-medium text-gray-900 shadow-xs transition-colors hover:bg-gray-100 ${formState?.status === "error" ? "mt-4" : ""}`}
       >
         <Icons.google className="mr-2 inline-block size-5" />
         Sign up with Google

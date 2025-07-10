@@ -39,7 +39,7 @@ export async function GET() {
       Effect.gen(function* () {
         yield* Effect.logError("Failed to access cookie store", error);
 
-        // Step 2: Create and return the 500 response
+        // Create and return the 500 response
         const response: ApiResponse<never> = {
           success: false,
           error: {

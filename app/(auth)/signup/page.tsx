@@ -1,4 +1,4 @@
-import { SignUpGoogleForm } from "@/components/auth/google-signup-form";
+import { GoogleSignUpForm } from "@/components/auth/google-signup-form";
 import { CredentialsSignUpForm } from "@/components/auth/credentials-signup-form";
 import type { Metadata } from "next";
 
@@ -22,7 +22,7 @@ export default async function SignUp({
       </h2>
       <p className="mt-1 text-center text-gray-600">Create a new account</p>
       <div className="mt-12 grid gap-4">
-        <SignUpGoogleForm next={next} />
+        <GoogleSignUpForm next={next} />
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />

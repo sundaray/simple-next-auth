@@ -1,4 +1,4 @@
-import { SignInGoogleForm } from "@/components/auth/google-signin-form";
+import { GoogleSignInForm } from "@/components/auth/google-signin-form";
 import { CredentialsSignInForm } from "@/components/auth/credentials-signin-form";
 import type { Metadata } from "next";
 
@@ -22,7 +22,7 @@ export default async function SignIn({
       </h2>
       <p className="mt-1 text-center text-gray-600">Sign in to your account</p>
       <div className="mt-12 grid gap-4">
-        <SignInGoogleForm next={next} />
+        <GoogleSignInForm next={next} />
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />

@@ -53,7 +53,7 @@ export function CredentialsSignInForm({ next }: { next: string }) {
       noValidate
       aria-describedby={form.errors ? "form-error" : undefined}
     >
-      {form.errors && <FormErrorMessage errors={form.errors} />}
+      {form.errors && <FormErrorMessage error={form.errors[0]} />}
       <div className={`grid gap-1 ${form.errors ? "mt-4" : ""}`}>
         <div>
           <Label htmlFor="email">Email</Label>
