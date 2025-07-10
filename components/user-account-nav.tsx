@@ -10,10 +10,10 @@ export async function UserAccountNav() {
 
   if (!user) {
     return (
-      <nav className="ml-auto flex hidden items-center md:block">
+      <nav className="flex hidden items-center md:block">
         <Link
           href="/signin"
-          className="inline-flex items-center rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-900 hover:text-white"
+          className="inline-flex items-center rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-900/90 hover:text-white"
         >
           Sign in
         </Link>

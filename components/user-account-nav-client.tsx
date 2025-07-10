@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UserSession } from "@/lib/auth/schema";
+import { UserSession } from "@/lib/schema";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +44,7 @@ export function UserAccountNavClient({ user }: { user: UserSession }) {
           "flex items-center space-x-1 rounded-full px-4 py-2 rounded-full"
         )}
       >
-        <span className="text-sm font-medium text-gray-700">My Account</span>
+        <span className="text-sm font-medium text-gray-600">My Account</span>
         <Icons.chevronDown className="inline-block size-4 text-gray-500" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

@@ -23,8 +23,8 @@ export function MainNav({ items }: MainNavProps) {
       >
         Simple-Next-Auth
       </Link>
-      <nav className="hidden md:block">
-        <ul className="flex space-x-3">
+      <nav className="hidden md:block mr-auto">
+        <ul className="flex space-x-4">
           {items.map((item) => (
             <li key={item.title}>
               <NavItem title={item.title} href={item.href} />
