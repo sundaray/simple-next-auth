@@ -2,7 +2,7 @@ import "server-only";
 
 import { base64url } from "jose";
 import { getRandomValues } from "uncrypto";
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 
 class StateGenerationError extends Data.TaggedError("StateGenerationError")<{
   operation: string;
@@ -22,6 +22,8 @@ export function generateState() {
         cause: error,
       }),
   }).pipe(
-    Effect.tapErrorTag("StateGenerationError", (error) => Console.error(error))
+    Effect.tapErrorTag("StateGenerationError", (error) =>
+      Effect.logError(error)
+    )
   );
 }
