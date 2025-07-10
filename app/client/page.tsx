@@ -5,7 +5,7 @@ import { Icons } from "@/components/icons";
 
 function Spinner() {
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex items-center justify-center">
       <Icons.loader className="size-6 animate-spin text-gray-600" />
     </div>
   );
@@ -51,22 +51,22 @@ export default function ClientPage() {
         Client-Side Session
       </h2>
       {user ? (
-        // 3a. User is authenticated
         <div>
           <p className="mb-4 text-pretty text-gray-600">
             You are currently signed in.
           </p>
-          <div className="mt-4 rounded-md border bg-gray-50 p-4 text-left text-sm">
-            <p>
-              <span className="font-medium">User Email:</span> {user.email}
-            </p>
-            <p>
-              <span className="font-medium">User Role:</span> {user.role}
-            </p>
-          </div>
+          <dl className="mt-4 space-y-2 text-sm">
+            <div>
+              <dt className="inline font-medium text-gray-900">User Email: </dt>
+              <dd className="inline text-gray-900">{user.email}</dd>
+            </div>
+            <div>
+              <dt className="inline font-medium text-gray-900">User Role: </dt>
+              <dd className="inline text-gray-900">{user.role}</dd>
+            </div>
+          </dl>
         </div>
       ) : (
-        // 3b. User is not authenticated
         <p className="mb-4 text-pretty text-gray-600">
           No active user session was found.
         </p>

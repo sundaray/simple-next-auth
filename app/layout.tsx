@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { navbarLinks } from "@/config/navbar";
 import { MainNav } from "@/components/main-nav";
+import { Footer } from "@/components/footer";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
 
@@ -33,6 +34,7 @@ export default function RootLayout({
           <MainNav items={navbarLinks.main} />
         </header>
         <main className="flex-1 py-32">{children}</main>
+        <Footer />
       </body>
     </html>
   );
