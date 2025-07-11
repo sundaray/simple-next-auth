@@ -1,5 +1,5 @@
-import MenuIcon from "@/components/menu";
+import { MobileNav } from "@/components/mobile-nav";
 
 export default function Page() {
-  return <MenuIcon size={28} className="m-10" />;
+  return <MobileNav />;
 }

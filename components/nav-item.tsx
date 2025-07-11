@@ -21,7 +21,7 @@ export function NavItem({ href, title }: NavItemProps) {
         "relative py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900",
 
         // Pseudo-element for the underline
-        "after:content-[''] after:absolute after:bottom-1.5 after:left-0 after:h-px after:w-0 after:bg-gray-900 after:transition-all after:duration-200",
+        "after:content-[''] after:absolute after:bottom-1.5 after:left-0 after:h-[1.5px] after:w-0 after:bg-gray-900 after:transition-all after:duration-200 after:ease-out",
 
         // Hover state for the pseudo-element
         "hover:after:w-full",

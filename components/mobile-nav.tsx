@@ -1,137 +1,253 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Popover,
-  PopoverButton,
-  PopoverBackdrop,
-  PopoverPanel,
-} from "@headlessui/react";
-import clsx from "clsx";
+import { motion, MotionConfig, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/hooks/use-user";
-import { UserAccountNavClient } from "@/components/user-account-nav-client";
-import { Icons } from "@/components/icons";
+import { navbarLinks } from "@/config/navbar"; // Importing the navigation links
 
-/* ——— single link ——— */
-function MobileNavLink({
-  href,
-  children,
-}: {
+// ============================================================================
+// Main Exported Component: MobileNav
+// This is the only component exported from this file. It is self-contained
+// and manages its own state, orchestrating the icon, backdrop, and drawer.
+// ============================================================================
+
+interface MobileNavProps {
+  menuIconSize?: number;
+  iconLineColor?: string;
+  iconLineHeight?: number;
+  iconLineRounded?: boolean;
+}
+
+export function MobileNav({
+  menuIconSize = 25,
+  iconLineColor = "bg-gray-600",
+  iconLineHeight = 1.5,
+  iconLineRounded = true,
+}: MobileNavProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsOpen((prev) => !prev);
+  };
+
+  // Effect to handle closing the menu with the 'Escape' key
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isOpen && event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className="md:hidden">
+      <MenuIcon
+        isOpen={isOpen}
+        onToggle={toggleMenu}
+        size={menuIconSize}
+        lineColor={iconLineColor}
+        lineHeight={iconLineHeight}
+        lineRounded={iconLineRounded}
+      />
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <Backdrop onToggle={toggleMenu} />
+            <MenuDrawer onLinkClick={() => setIsOpen(false)} />
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ============================================================================
+// Internal Component: MenuIcon
+// ============================================================================
+
+interface MenuIconProps {
+  isOpen: boolean;
+  onToggle: () => void;
+  size: number;
+  lineColor: string;
+  lineHeight: number;
+  lineRounded: boolean;
+}
+
+function MenuIcon({
+  isOpen,
+  onToggle,
+  size,
+  lineColor,
+  lineHeight,
+  lineRounded,
+}: MenuIconProps) {
+  const duration = 0.3;
+  const lineWidth = size * 0.7;
+  const lineSpacing = size * 0.2;
+
+  const topVariants = {
+    closed: { y: -lineSpacing, rotate: 0 },
+    open: { y: [-lineSpacing, 0, 0], rotate: [0, 0, 45] },
+  };
+  const centerVariants = {
+    closed: { opacity: 1, transition: { duration: duration * 0.5 } },
+    open: { opacity: [1, 1, 0] },
+  };
+  const bottomVariants = {
+    closed: { y: lineSpacing, rotate: 0 },
+    open: { y: [lineSpacing, 0, 0], rotate: [0, 0, -45] },
+  };
+
+  return (
+    <MotionConfig
+      transition={{ duration, ease: "easeOut", times: [0, 0.5, 1] }}
+    >
+      <motion.button
+        onClick={onToggle}
+        className="relative flex items-center justify-center z-50"
+        style={{ width: size, height: size }}
+        aria-label={isOpen ? "Close menu" : "Open menu"}
+        initial="closed"
+        animate={isOpen ? "open" : "closed"}
+      >
+        <motion.div
+          className={cn(
+            "absolute origin-center",
+            {
+              "rounded-full": lineRounded,
+            },
+            lineColor
+          )}
+          style={{
+            width: lineWidth,
+            height: lineHeight,
+            backgroundColor: lineColor,
+          }}
+          variants={topVariants}
+        />
+        <motion.div
+          className={cn(
+            "absolute origin-center",
+            {
+              "rounded-full": lineRounded,
+            },
+            lineColor
+          )}
+          style={{
+            width: lineWidth,
+            height: lineHeight,
+            backgroundColor: lineColor,
+          }}
+          variants={centerVariants}
+        />
+        <motion.div
+          className={cn(
+            "absolute origin-center",
+            {
+              "rounded-full": lineRounded,
+            },
+            lineColor
+          )}
+          style={{
+            width: lineWidth,
+            height: lineHeight,
+            backgroundColor: lineColor,
+          }}
+          variants={bottomVariants}
+        />
+      </motion.button>
+    </MotionConfig>
+  );
+}
+
+// ============================================================================
+// Internal Component: Backdrop
+// ============================================================================
+
+interface BackdropProps {
+  onToggle: () => void;
+}
+
+function Backdrop({ onToggle }: BackdropProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      onClick={onToggle}
+      className="fixed inset-x-0 top-20 bottom-0 z-30 bg-gray-950/20 backdrop-blur-xs"
+      aria-hidden="true"
+    />
+  );
+}
+
+// ============================================================================
+// Internal Component: MenuDrawer
+// ============================================================================
+
+interface MenuDrawerProps {
+  onLinkClick: () => void;
+}
+
+function MenuDrawer({ onLinkClick }: MenuDrawerProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95, y: -20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, y: -20 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="absolute inset-x-4 top-24 z-40 origin-top rounded-xl bg-white p-6 shadow-xl ring-1 ring-gray-900/5 h-fit"
+    >
+      <nav>
+        <ul className="flex flex-col space-y-2">
+          {navbarLinks.main.map((item) => (
+            <li key={item.href}>
+              <MobileNavLink href={item.href} onClick={onLinkClick}>
+                {item.title}
+              </MobileNavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </motion.div>
+  );
+}
+
+// ============================================================================
+// Internal Component: MobileNavLink
+// ============================================================================
+
+interface MobileNavLinkProps {
   href: string;
+  onClick: () => void;
   children: React.ReactNode;
-}) {
+}
+
+function MobileNavLink({ href, onClick, children }: MobileNavLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
 
   return (
-    <PopoverButton
-      as={Link}
+    <Link
       href={href}
+      onClick={onClick}
       className={cn(
-        "flex w-fit items-center rounded-full px-4 py-2 font-medium text-gray-700 transition-colors",
-        "hover:text-gray-900",
-        isActive && "bg-gray-100 text-gray-900"
+        "block rounded-md px-4 py-2 text-base font-medium transition-colors",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500",
+        isActive
+          ? "bg-gray-100 text-gray-900"
+          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
       )}
     >
       {children}
-    </PopoverButton>
-  );
-}
-
-/* ——— icon ——— */
-function MobileNavIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-3.5 w-3.5 overflow-visible stroke-gray-700"
-      fill="none"
-      strokeWidth={2}
-      strokeLinecap="round"
-    >
-      <path
-        d="M0 1H14M0 7H14M0 13H14"
-        className={clsx(
-          "origin-center transition",
-          open && "scale-90 opacity-0"
-        )}
-      />
-      <path
-        d="M2 2L12 12M12 2L2 12"
-        className={clsx(
-          "origin-center transition",
-          !open && "scale-90 opacity-0"
-        )}
-      />
-    </svg>
-  );
-}
-
-/* ——— the menu ——— */
-export function MobileNav() {
-  /* fetch the user session */
-  const { user, loading } = useUser();
-
-  return (
-    <Popover className="ml-auto md:hidden">
-      {/* hamburger */}
-      <PopoverButton
-        className="relative z-10 flex size-8 items-center justify-center focus:not-data-focus:outline-hidden"
-        aria-label="Toggle Navigation"
-      >
-        {({ open }) => <MobileNavIcon open={open} />}
-      </PopoverButton>
-
-      {/* backdrop */}
-      <PopoverBackdrop
-        transition
-        className="fixed inset-0 bg-gray-950/30 duration-150 data-closed:opacity-0 data-enter:ease-out data-leave:ease-in"
-      />
-
-      {/* panel */}
-      <PopoverPanel
-        transition
-        className="text-md absolute inset-x-0 top-16 mx-4 flex origin-top flex-col gap-3 rounded-xl bg-white p-4 tracking-tight text-gray-900 shadow-xl ring-1 ring-gray-900/5 data-closed:scale-95 data-closed:opacity-0 data-enter:duration-150 data-enter:ease-out data-leave:duration-100 data-leave:ease-in"
-      >
-        <MobileNavLink href="/about">About</MobileNavLink>
-        <MobileNavLink href="/podcasts">Podcasts</MobileNavLink>
-        <MobileNavLink href="/tags">Tags</MobileNavLink>
-        <MobileNavLink href="/blog">Blog</MobileNavLink>
-        <hr className="border-gray-200" />
-
-        {/* ---- auth / pricing area ---- */}
-        {loading && (
-          <div className="flex w-full items-center justify-center py-2">
-            <Icons.loader className="size-4 animate-spin text-gray-500" />
-          </div>
-        )}
-
-        {!loading && !user && (
-          <>
-            <PopoverButton
-              as={Link}
-              href="/premium"
-              className="inline-flex w-full items-center justify-center rounded-full bg-linear-to-b from-amber-400 to-amber-500 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-amber-400 hover:text-gray-900"
-            >
-              Go Premium
-            </PopoverButton>
-            <PopoverButton
-              as={Link}
-              href="/signin"
-              className="inline-flex w-full items-center justify-center rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-900/90 hover:text-white"
-            >
-              Sign in
-            </PopoverButton>
-          </>
-        )}
-
-        {!loading && user && (
-          <>
-            <UserAccountNavClient user={user} />
-          </>
-        )}
-      </PopoverPanel>
-    </Popover>
+    </Link>
   );
 }
