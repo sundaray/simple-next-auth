@@ -35,7 +35,7 @@ export function UserAccountNavClient({ user }: { user: UserSession }) {
       const result = await signOut();
 
       if (result && result._tag === "Error") {
-        setError("Error. Try again.");
+        setError("Sign out error. Try again.");
       }
     });
   }
@@ -64,30 +64,31 @@ export function UserAccountNavClient({ user }: { user: UserSession }) {
           </div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">
-          <Button
-            onClick={handleSignOut}
-            className={cn("w-full rounded-full", {
-              "mt-2": error,
-            })}
-            disabled={isPending}
-          >
-            {isPending ? (
-              <>
-                <Icons.loader className="mr-2 size-3 animate-spin text-gray-400 strokeWidth={3}" />
-                <p className="text-sm">Sign out</p>
-              </>
-            ) : (
-              <>
-                <Icons.logOut
-                  className="mr-2 size-3 text-gray-400"
-                  strokeWidth={3}
-                />
-                <p className="text-sm">Sign out</p>
-              </>
-            )}
-          </Button>
-        </DropdownMenuItem>
+        <div className="px-2 py-1">
+          <div className="flex w-full flex-col items-center">
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
+            <Button
+              onClick={handleSignOut}
+              className={cn("w-full rounded-full", {
+                "mt-2": error,
+              })}
+              disabled={isPending}
+            >
+              {isPending ? (
+                <>
+                  <Icons.loader className="mr-2 size-3 animate-spin" />
+                  <p className="text-sm">Signing out...</p>
+                </>
+              ) : (
+                <>
+                  <Icons.logOut className="mr-2 size-3" />
+                  <p className="text-sm">Sign out</p>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
