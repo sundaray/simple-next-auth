@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { Schema } from "effect";
+
+// --- Form Schemas ---
 
 export const CredentialsSignInFormSchema = z.object({
   email: z
@@ -49,47 +50,46 @@ export const ResetPasswordFormSchema = z
   })
   .refine((data) => data.newPassword === data.confirmNewPassword, {
     message: "Passwords do not match",
-    // This tells Zod which field to attach the error to
     path: ["confirmNewPassword"],
   });
 
-export const OAuthStateSchema = Schema.Struct({
-  state: Schema.String,
-  codeVerifier: Schema.String,
-  redirect: Schema.String,
+// --- Session and Token Schemas ---
+
+export const OAuthStateSchema = z.object({
+  state: z.string(),
+  codeVerifier: z.string(),
+  redirect: z.string(),
 });
 
-export const UserSessionSchema = Schema.Struct({
-  email: Schema.String,
-  role: Schema.String,
+export const UserSessionSchema = z.object({
+  email: z.string().email(),
+  role: z.string(),
 });
 
-export type UserSession = Schema.Schema.Type<typeof UserSessionSchema>;
+export type UserSession = z.infer<typeof UserSessionSchema>;
 
-export const EmailVerificationSessionSchema = Schema.Struct({
-  email: Schema.String,
-  token: Schema.String,
-  hashedPassword: Schema.String,
+export const EmailVerificationSessionSchema = z.object({
+  email: z.string().email(),
+  token: z.string(),
+  hashedPassword: z.string(),
 });
 
-export const PasswordResetSessionSchema = Schema.Struct({
-  email: Schema.String,
-  token: Schema.String,
+export const PasswordResetSessionSchema = z.object({
+  email: z.string().email(),
+  token: z.string(),
 });
 
-export const GoogleIDTokenSchema = Schema.Struct({
-  name: Schema.String,
-  email: Schema.String,
-  picture: Schema.String,
+export const GoogleIDTokenSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  picture: z.string().url({ message: "Invalid URL for picture" }),
 });
 
-export const EncryptableSessionSchema = Schema.Union(
+export const EncryptableSessionSchema = z.union([
   UserSessionSchema,
   EmailVerificationSessionSchema,
   PasswordResetSessionSchema,
-  OAuthStateSchema
-);
+  OAuthStateSchema,
+]);
 
-export type EncryptableSession = Schema.Schema.Type<
-  typeof EncryptableSessionSchema
->;
+export type EncryptableSession = z.infer<typeof EncryptableSessionSchema>;
