@@ -6,6 +6,9 @@ import { usePathname } from "next/navigation";
 import { motion, MotionConfig, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { navbarLinks } from "@/config/navbar";
+import { useUser } from "@/hooks/use-user";
+import { UserAccountNavClient } from "@/components/user-account-nav-client";
+import { Icons } from "@/components/icons";
 
 // ============================================================================
 // MobileNav
@@ -196,6 +199,8 @@ interface MenuDrawerProps {
 }
 
 function MenuDrawer({ onLinkClick }: MenuDrawerProps) {
+  const { user, loading } = useUser();
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -205,7 +210,7 @@ function MenuDrawer({ onLinkClick }: MenuDrawerProps) {
       className="absolute inset-x-4 top-24 z-40 origin-top rounded-xl bg-white p-6 shadow-xl ring-1 ring-gray-900/5 h-fit"
     >
       <nav>
-        <ul className="flex flex-col divide-y divide-dashed">
+        <ul className="flex flex-col space-y-2">
           {navbarLinks.main.map((item) => (
             <li key={item.href}>
               <MobileNavLink href={item.href} onClick={onLinkClick}>
@@ -215,6 +220,26 @@ function MenuDrawer({ onLinkClick }: MenuDrawerProps) {
           ))}
         </ul>
       </nav>
+
+      <hr className="my-4 border-gray-200" />
+
+      <div className="flex flex-col items-center">
+        {loading ? (
+          <div className="flex justify-center py-2">
+            <Icons.loader className="size-4 animate-spin text-gray-600" />
+          </div>
+        ) : user ? (
+          <UserAccountNavClient user={user} />
+        ) : (
+          <Link
+            href="/signin"
+            onClick={onLinkClick}
+            className="flex w-full items-center justify-center rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-900/90"
+          >
+            Sign In
+          </Link>
+        )}
+      </div>
     </motion.div>
   );
 }
@@ -238,7 +263,7 @@ function MobileNavLink({ href, onClick, children }: MobileNavLinkProps) {
       href={href}
       onClick={onClick}
       className={cn(
-        "block rounded-md px-4 py-3 text-base font-medium transition-colors",
+        "block rounded-md px-4 py-2 text-base font-medium transition-colors",
         isActive
           ? "text-gray-900 font-semibold"
           : "text-gray-600 hover:text-gray-900"
