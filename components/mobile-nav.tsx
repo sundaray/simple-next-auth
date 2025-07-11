@@ -19,7 +19,7 @@ type MobileNavProps = {
 };
 
 export function MobileNav({
-  menuIconSize = 25,
+  menuIconSize = 24,
   iconLineColor = "bg-gray-600",
   iconLineHeight = 1.5,
   iconLineRounded = true,
@@ -69,14 +69,14 @@ export function MobileNav({
 // MenuIcon
 // ============================================================================
 
-interface MenuIconProps {
+type MenuIconProps = {
   isOpen: boolean;
   onToggle: () => void;
   size: number;
   lineColor: string;
   lineHeight: number;
   lineRounded: boolean;
-}
+};
 
 function MenuIcon({
   isOpen,
@@ -88,7 +88,7 @@ function MenuIcon({
 }: MenuIconProps) {
   const duration = 0.3;
   const lineWidth = size * 0.7;
-  const lineSpacing = size * 0.2;
+  const lineSpacing = size * 0.17;
 
   const topVariants = {
     closed: { y: -lineSpacing, rotate: 0 },
@@ -109,7 +109,7 @@ function MenuIcon({
     >
       <motion.button
         onClick={onToggle}
-        className="relative flex items-center justify-center z-50"
+        className="relative flex items-center justify-center z-50 hover:bg-gray-100 rounded-full p-4"
         style={{ width: size, height: size }}
         aria-label={isOpen ? "Close menu" : "Open menu"}
         initial="closed"
