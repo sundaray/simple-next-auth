@@ -31,7 +31,7 @@ export default function MenuIcon({
   onToggle,
   className,
   lineClassName,
-  duration = 0.5,
+  duration = 0.3,
   ease = "easeOut",
 }: MenuIconProps) {
   const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(false);

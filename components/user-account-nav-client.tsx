@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { UserSession } from "@/lib/schema";
 import {
   DropdownMenu,
@@ -16,25 +16,28 @@ import { Button } from "@/components/ui/button";
 
 export function UserAccountNavClient({ user }: { user: UserSession }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   // Prevent dropdown from closing during sign out
   function handleOpenChange(open: boolean) {
-    if (isSigningOut) return;
+    if (isPending) return;
     setIsOpen(open);
+    if (!open) {
+      setError(null);
+    }
   }
 
   // Handle the sign out process
-  async function handleSignOut() {
-    try {
-      setIsSigningOut(true);
-      await signOut();
-    } catch (error) {
-      console.error("Unable to sign out:", error);
-    } finally {
-      setIsSigningOut(false);
-      setIsOpen(false);
-    }
+  function handleSignOut() {
+    startTransition(async () => {
+      setError(null);
+      const result = await signOut();
+
+      if (result && result._tag === "Error") {
+        setError("Error. Try again.");
+      }
+    });
   }
 
   return (
@@ -62,8 +65,14 @@ export function UserAccountNavClient({ user }: { user: UserSession }) {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer">
-          <Button onClick={handleSignOut} className="w-full rounded-full">
-            {isSigningOut ? (
+          <Button
+            onClick={handleSignOut}
+            className={cn("w-full rounded-full", {
+              "mt-2": error,
+            })}
+            disabled={isPending}
+          >
+            {isPending ? (
               <>
                 <Icons.loader className="mr-2 size-3 animate-spin text-gray-400 strokeWidth={3}" />
                 <p className="text-sm">Sign out</p>
