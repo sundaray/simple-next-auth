@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useActionState } from "react";
+import { useState, useActionState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,22 @@ export function ResetPasswordForm() {
       });
     },
   });
+
+  // TEMPORARY FIX: Prevents form reset on form-level errors.
+  // For context, see: https://github.com/edmundhung/conform/issues/681#issuecomment-2174388025
+  useEffect(() => {
+    const preventDefault = (event: Event) => {
+      if (event.target === document.forms.namedItem(form.id)) {
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener("reset", preventDefault, true);
+
+    return () => {
+      document.removeEventListener("reset", preventDefault, true);
+    };
+  }, [form.id]);
 
   const [isNewPasswordVisible, setIsNewPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =

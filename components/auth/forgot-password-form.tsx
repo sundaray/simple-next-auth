@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,22 @@ export function ForgotPasswordForm() {
       });
     },
   });
+
+  // TEMPORARY FIX: Prevents form reset on form-level errors.
+  // For context, see: https://github.com/edmundhung/conform/issues/681#issuecomment-2174388025
+  useEffect(() => {
+    const preventDefault = (event: Event) => {
+      if (event.target === document.forms.namedItem(form.id)) {
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener("reset", preventDefault, true);
+
+    return () => {
+      document.removeEventListener("reset", preventDefault, true);
+    };
+  }, [form.id]);
 
   return (
     <form id={form.id} onSubmit={form.onSubmit} action={formAction} noValidate>
