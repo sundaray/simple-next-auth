@@ -4,7 +4,6 @@ import { Effect, Console, Config, Data } from "effect";
 import { render } from "@react-email/render";
 import { EmailService } from "@/lib/services/email-service";
 import { EmailVerificationTemplate } from "@/components/auth/email-verification-template";
-import { Email, Url } from "@/lib/schema";
 
 class EmailTemplateRenderError extends Data.TaggedError(
   "EmailTemplateRenderError"
@@ -44,7 +43,7 @@ export function sendVerificationEmail(email: string, url: string) {
           },
           Subject: {
             Charset: "UTF-8",
-            Data: "Sign-up link for www.podwise.org",
+            Data: "Sign-up link for Simple Next Auth",
           },
         },
         Source: emailFrom,

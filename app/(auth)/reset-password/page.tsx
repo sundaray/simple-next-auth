@@ -2,7 +2,7 @@ import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Reset password | Podwise",
+  title: "Reset password | Simple Next Auth",
 };
 
 export default function ResetPassword() {

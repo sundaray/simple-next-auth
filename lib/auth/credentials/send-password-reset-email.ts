@@ -4,7 +4,6 @@ import { Effect, Console, Config, Data } from "effect";
 import { render } from "@react-email/render";
 import { EmailService } from "@/lib/services/email-service";
 import { PasswordResetTemplate } from "@/components/auth/password-reset-template";
-import { Email, Url } from "@/lib/schema";
 
 class EmailTemplateRenderError extends Data.TaggedError(
   "EmailTemplateRenderError"
@@ -50,7 +49,7 @@ export function sendPasswordResetEmail(email: string, url: string) {
           },
           Subject: {
             Charset: "UTF-8",
-            Data: "Reset your password for www.podwise.org",
+            Data: "Reset your password for Simple Next Auth",
           },
         },
         Source: emailFrom,

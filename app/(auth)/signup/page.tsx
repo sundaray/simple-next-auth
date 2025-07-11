@@ -3,7 +3,7 @@ import { CredentialsSignUpForm } from "@/components/auth/credentials-signup-form
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sign up | Simple-Next-Auth",
+  title: "Sign up | Simple Next Auth",
 };
 
 export default async function SignUp({
