@@ -3,11 +3,7 @@ import Link from "next/link";
 import { NavItem } from "@/components/nav-item";
 import { MobileNav } from "@/components/mobile-nav";
 import { UserAccountNav } from "@/components/user-account-nav";
-
-type NavItemType = {
-  title: string;
-  href: string;
-};
+import type { NavItem as NavItemType } from "@/types/navigation";
 
 type MainNavProps = {
   items: NavItemType[];
