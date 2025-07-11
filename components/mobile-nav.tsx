@@ -5,20 +5,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, MotionConfig, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { navbarLinks } from "@/config/navbar"; // Importing the navigation links
+import { navbarLinks } from "@/config/navbar";
 
 // ============================================================================
-// Main Exported Component: MobileNav
-// This is the only component exported from this file. It is self-contained
-// and manages its own state, orchestrating the icon, backdrop, and drawer.
+// MobileNav
 // ============================================================================
 
-interface MobileNavProps {
+type MobileNavProps = {
   menuIconSize?: number;
   iconLineColor?: string;
   iconLineHeight?: number;
   iconLineRounded?: boolean;
-}
+};
 
 export function MobileNav({
   menuIconSize = 25,
@@ -68,7 +66,7 @@ export function MobileNav({
 }
 
 // ============================================================================
-// Internal Component: MenuIcon
+// MenuIcon
 // ============================================================================
 
 interface MenuIconProps {
@@ -168,7 +166,7 @@ function MenuIcon({
 }
 
 // ============================================================================
-// Internal Component: Backdrop
+// Backdrop
 // ============================================================================
 
 interface BackdropProps {
@@ -190,7 +188,7 @@ function Backdrop({ onToggle }: BackdropProps) {
 }
 
 // ============================================================================
-// Internal Component: MenuDrawer
+// MenuDrawer
 // ============================================================================
 
 interface MenuDrawerProps {
@@ -200,14 +198,14 @@ interface MenuDrawerProps {
 function MenuDrawer({ onLinkClick }: MenuDrawerProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95, y: -20 }}
+      initial={{ opacity: 0, scale: 0.95, y: -10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95, y: -20 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       className="absolute inset-x-4 top-24 z-40 origin-top rounded-xl bg-white p-6 shadow-xl ring-1 ring-gray-900/5 h-fit"
     >
       <nav>
-        <ul className="flex flex-col space-y-2">
+        <ul className="flex flex-col divide-y divide-dashed">
           {navbarLinks.main.map((item) => (
             <li key={item.href}>
               <MobileNavLink href={item.href} onClick={onLinkClick}>
@@ -222,14 +220,14 @@ function MenuDrawer({ onLinkClick }: MenuDrawerProps) {
 }
 
 // ============================================================================
-// Internal Component: MobileNavLink
+// MobileNavLink
 // ============================================================================
 
-interface MobileNavLinkProps {
+type MobileNavLinkProps = {
   href: string;
   onClick: () => void;
   children: React.ReactNode;
-}
+};
 
 function MobileNavLink({ href, onClick, children }: MobileNavLinkProps) {
   const pathname = usePathname();
@@ -240,11 +238,10 @@ function MobileNavLink({ href, onClick, children }: MobileNavLinkProps) {
       href={href}
       onClick={onClick}
       className={cn(
-        "block rounded-md px-4 py-2 text-base font-medium transition-colors",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500",
+        "block rounded-md px-4 py-3 text-base font-medium transition-colors",
         isActive
-          ? "bg-gray-100 text-gray-900"
-          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+          ? "text-gray-900 font-semibold"
+          : "text-gray-600 hover:text-gray-900"
       )}
     >
       {children}

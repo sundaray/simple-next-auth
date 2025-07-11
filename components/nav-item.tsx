@@ -27,7 +27,7 @@ export function NavItem({ href, title }: NavItemProps) {
         "hover:after:w-full",
 
         // Active state styles
-        isActive && "text-gray-900"
+        isActive && "text-gray-900 font-semibold"
       )}
       href={href}
     >
