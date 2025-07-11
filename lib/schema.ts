@@ -1,13 +1,7 @@
 import { z } from "zod";
 import { Schema } from "effect";
 
-export const EmailSchema = z.string().email().brand("Email");
-export type Email = z.infer<typeof EmailSchema>;
-
-export const UrlSchema = z.string().url().brand("Url");
-export type Url = z.infer<typeof UrlSchema>;
-
-export const SignInEmailPasswordFormSchema = z.object({
+export const CredentialsSignInFormSchema = z.object({
   email: z
     .string({ required_error: "Email is required" })
     .email({ message: "Invalid email" })
@@ -15,12 +9,11 @@ export const SignInEmailPasswordFormSchema = z.object({
   password: z.string({ required_error: "Password is required" }).trim(),
 });
 
-export const SignUpEmailPasswordFormSchema = z.object({
+export const CredentialsSignUpFormSchema = z.object({
   email: z
     .string({ required_error: "Email is required" })
     .email({ message: "Invalid email" })
-    .trim()
-    .pipe(EmailSchema),
+    .trim(),
   password: z
     .string({ required_error: "Password is required" })
     .min(8, { message: "be at least 8 characters long" })

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/icons";
 import { FormErrorMessage } from "@/components/auth/form-error-message";
 import { FormFieldErrorMessage } from "@/components/auth/form-field-error-message";
-import { useForm } from "@conform-to/react";
+import { useForm, getInputProps, getFormProps } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { ResetPasswordFormSchema } from "@/lib/schema";
 import { resetPassword } from "@/app/reset-password-action";
@@ -20,9 +20,7 @@ export function ResetPasswordForm() {
 
   const [form, fields] = useForm({
     lastResult,
-    // Validate when field loses focus
     shouldValidate: "onBlur",
-    // Re-validate as user types
     shouldRevalidate: "onInput",
     onValidate({ formData }) {
       return parseWithZod(formData, {
@@ -60,23 +58,17 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <form id={form.id} onSubmit={form.onSubmit} action={formAction} noValidate>
+    <form {...getFormProps(form)} action={formAction}>
       {form.errors && <FormErrorMessage error={form.errors[0]} />}
       <div className={`grid gap-1 ${form.errors ? "mt-4" : ""}`}>
         <div className="grid">
           <Label htmlFor="newPassword">New password</Label>
           <div className="relative mt-2">
             <Input
-              id={fields.newPassword.id}
-              type={isNewPasswordVisible ? "text" : "password"}
-              name={fields.newPassword.name}
-              defaultValue={lastResult?.initialValue?.newPassword as string}
-              aria-invalid={!fields.newPassword.valid ? true : undefined}
-              aria-describedby={
-                !fields.newPassword.valid
-                  ? fields.newPassword.errorId
-                  : undefined
-              }
+              {...getInputProps(fields.newPassword, {
+                type: isNewPasswordVisible ? "text" : "password",
+              })}
+              className="mt-2"
             />
             <button
               type="button"
@@ -105,18 +97,10 @@ export function ResetPasswordForm() {
           <Label htmlFor="confirmNewPassword">Confirm new password</Label>
           <div className="relative mt-2">
             <Input
-              id={fields.confirmNewPassword.id}
-              type={isConfirmPasswordVisible ? "text" : "password"}
-              name={fields.confirmNewPassword.name}
-              defaultValue={
-                lastResult?.initialValue?.confirmNewPassword as string
-              }
-              aria-invalid={!fields.confirmNewPassword.valid ? true : undefined}
-              aria-describedby={
-                !fields.confirmNewPassword.valid
-                  ? fields.confirmNewPassword.errorId
-                  : undefined
-              }
+              {...getInputProps(fields.confirmNewPassword, {
+                type: isConfirmPasswordVisible ? "text" : "password",
+              })}
+              className="mt-2"
             />
             <button
               type="button"

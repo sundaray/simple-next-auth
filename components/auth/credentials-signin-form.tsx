@@ -13,7 +13,7 @@ import { FormErrorMessage } from "@/components/auth/form-error-message";
 import { FormFieldErrorMessage } from "@/components/auth/form-field-error-message";
 
 import { signInWithEmailAndPassword } from "@/app/credentials-signin-action";
-import { SignInEmailPasswordFormSchema } from "@/lib/schema";
+import { CredentialsSignInFormSchema } from "@/lib/schema";
 
 export function CredentialsSignInForm({ next }: { next: string }) {
   const boundSignInWithEmailAndPassword = signInWithEmailAndPassword.bind(
@@ -28,13 +28,11 @@ export function CredentialsSignInForm({ next }: { next: string }) {
 
   const [form, fields] = useForm({
     lastResult,
-    // Validate when field loses focus
     shouldValidate: "onBlur",
-    // Re-validate as user types
     shouldRevalidate: "onInput",
     onValidate({ formData }) {
       return parseWithZod(formData, {
-        schema: SignInEmailPasswordFormSchema,
+        schema: CredentialsSignInFormSchema,
       });
     },
   });

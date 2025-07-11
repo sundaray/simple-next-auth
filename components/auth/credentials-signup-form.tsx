@@ -2,7 +2,7 @@
 
 import { useState, useActionState, useEffect } from "react";
 import Link from "next/link";
-import { useForm } from "@conform-to/react";
+import { useForm, getInputProps, getFormProps } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,7 @@ import { FormErrorMessage } from "@/components/auth/form-error-message";
 import { FormFieldErrorMessage } from "@/components/auth/form-field-error-message";
 
 import { signUpWithEmailAndPassword } from "@/app/credentials-signup-action";
-import { SignUpEmailPasswordFormSchema } from "@/lib/schema";
+import { CredentialsSignUpFormSchema } from "@/lib/schema";
 
 export function CredentialsSignUpForm({ next }: { next: string }) {
   const boundSignUpWithEmailAndPassword = signUpWithEmailAndPassword.bind(
@@ -28,13 +28,11 @@ export function CredentialsSignUpForm({ next }: { next: string }) {
 
   const [form, fields] = useForm({
     lastResult,
-    // Validate when field loses focus
     shouldValidate: "onBlur",
-    // Re-validate as user types
     shouldRevalidate: "onInput",
     onValidate({ formData }) {
       return parseWithZod(formData, {
-        schema: SignUpEmailPasswordFormSchema,
+        schema: CredentialsSignUpFormSchema,
       });
     },
   });
@@ -62,27 +60,14 @@ export function CredentialsSignUpForm({ next }: { next: string }) {
   }
 
   return (
-    <form
-      id={form.id}
-      onSubmit={form.onSubmit}
-      action={formAction}
-      noValidate
-      aria-describedby={form.errors ? "form-error" : undefined}
-    >
+    <form {...getFormProps(form)} action={formAction}>
       {form.errors && <FormErrorMessage error={form.errors[0]} />}
       <div className={`grid gap-1 ${form.errors ? "mt-4" : ""}`}>
         <div>
           <Label htmlFor="email">Email</Label>
           <Input
-            id={fields.email.id}
-            type="email"
-            name={fields.email.name}
+            {...getInputProps(fields.email, { type: "email" })}
             className="mt-2"
-            defaultValue={lastResult?.initialValue?.email as string}
-            aria-invalid={!fields.email.valid ? true : undefined}
-            aria-describedby={
-              !fields.email.valid ? fields.email.errorId : undefined
-            }
           />
           <FormFieldErrorMessage
             id={fields.email.errorId}
@@ -94,15 +79,10 @@ export function CredentialsSignUpForm({ next }: { next: string }) {
           <Label htmlFor="password">Password</Label>
           <div className="relative">
             <Input
-              id={fields.password.id}
-              type={isPasswordVisible ? "text" : "password"}
-              name={fields.password.name}
+              {...getInputProps(fields.password, {
+                type: isPasswordVisible ? "text" : "password",
+              })}
               className="mt-2"
-              defaultValue={lastResult?.initialValue?.password as string}
-              aria-invalid={!fields.password.valid ? true : undefined}
-              aria-describedby={
-                !fields.password.valid ? fields.password.errorId : undefined
-              }
             />
             <button
               type="button"
