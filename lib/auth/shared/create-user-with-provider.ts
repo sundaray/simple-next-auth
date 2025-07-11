@@ -1,7 +1,7 @@
 import { Effect, Data, Option } from "effect";
 import { db } from "@/db";
 import { usersTable } from "@/db/schema";
-import type { User, InsertUser } from "@/db/schema";
+import type { InsertUser } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 /************************************************
