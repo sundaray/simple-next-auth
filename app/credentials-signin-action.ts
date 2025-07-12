@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
 import { Effect, Match, pipe, Logger } from "effect";
-import { SignInEmailPasswordFormSchema } from "@/lib/schema";
+import { CredentialsSignInFormSchema } from "@/lib/schema";
 
 import { getAccountStatus } from "@/lib/auth/credentials/get-account-status";
 import { verifyPassword } from "@/lib/auth/credentials/verify-password";
@@ -22,7 +22,7 @@ export async function signInWithEmailAndPassword(
   formData: FormData
 ) {
   const submission = parseWithZod(formData, {
-    schema: SignInEmailPasswordFormSchema,
+    schema: CredentialsSignInFormSchema,
   });
 
   if (submission.status !== "success") {
@@ -89,7 +89,7 @@ export async function signInWithEmailAndPassword(
           formErrors: ["Encryption error. Please try again."],
         })
       ),
-    InvalidPayloadError: () =>
+    InvalidJWTPayloadError: () =>
       Effect.succeed(
         submission.reply({
           formErrors: ["Invalid payload error. Please try again."],

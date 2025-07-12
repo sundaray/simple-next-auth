@@ -3,7 +3,7 @@
 import { Effect, pipe } from "effect";
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
-import { SignUpEmailPasswordFormSchema } from "@/lib/schema";
+import { CredentialsSignUpFormSchema } from "@/lib/schema";
 
 import { getAccountStatus } from "@/lib/auth/credentials/get-account-status";
 import { hashPassword } from "@/lib/auth/credentials/hash-password";
@@ -25,7 +25,7 @@ export async function signUpWithEmailAndPassword(
   formData: FormData
 ) {
   const submission = parseWithZod(formData, {
-    schema: SignUpEmailPasswordFormSchema,
+    schema: CredentialsSignUpFormSchema,
   });
 
   if (submission.status !== "success") {
@@ -93,7 +93,7 @@ export async function signUpWithEmailAndPassword(
           formErrors: ["Encryption error. Please try again."],
         })
       ),
-    InvalidPayloadError: () =>
+    InvalidJWTPayloadError: () =>
       Effect.succeed(
         submission.reply({
           formErrors: ["Invalid payload error. Please try again."],
