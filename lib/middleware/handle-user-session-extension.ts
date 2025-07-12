@@ -7,7 +7,7 @@ import { extendUserSession } from "@/lib/auth/session/extend-user-session";
  * This helps extend session lifetime for active users
  */
 
-export function handleSessionExtension(request: NextRequest) {
+export function handleUserSessionExtension(request: NextRequest) {
   return Effect.gen(function* () {
     if (request.method !== "GET") {
       return Option.none();
