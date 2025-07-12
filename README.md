@@ -1,8 +1,10 @@
+# Next.js + Effect Auth Starter
+
+![Simple Next Auth Demo](https://raw.githubusercontent.com/sundaray/simple-next-auth/main/public/simple-next-auth.png)
+
 ## About
 
 A starter project for **Google (OAuth) and Email/Password (Credentials) authentication** in Next.js applications. I built this project as a learning exercise to explore the integration of Effect — a production-grade TypeScript library — into a Next.js 15 application.
-
-![Simple Next Auth Demo](https://raw.githubusercontent.com/sundaray/simple-next-auth/main/public/simple-next-auth.png)
 
 ## 🛠️ Tech Stack & Libraries
 
