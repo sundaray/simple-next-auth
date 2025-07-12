@@ -9,7 +9,9 @@ class EncryptionError extends Data.TaggedError("EncryptionError")<{
   cause: unknown;
 }> {}
 
-class InvalidPayloadError extends Data.TaggedError("InvalidPayloadError")<{
+class InvalidJWTPayloadError extends Data.TaggedError(
+  "InvalidJWTPayloadError"
+)<{
   operation: string;
   cause: unknown;
 }> {}
@@ -38,7 +40,7 @@ export function encrypt(payload: EncryptableSession) {
     ).pipe(
       Effect.mapError(
         (error) =>
-          new InvalidPayloadError({
+          new InvalidJWTPayloadError({
             operation: "encrypt",
             cause: error,
           })
@@ -63,6 +65,8 @@ export function encrypt(payload: EncryptableSession) {
   }).pipe(
     Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
     Effect.tapErrorTag("EncryptionError", (error) => Console.error(error)),
-    Effect.tapErrorTag("InvalidPayloadError", (error) => Console.error(error))
+    Effect.tapErrorTag("InvalidJWTPayloadError", (error) =>
+      Console.error(error)
+    )
   );
 }

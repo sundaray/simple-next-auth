@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Schema } from "effect";
 
 // --- Form Schemas ---
 
@@ -55,41 +56,43 @@ export const ResetPasswordFormSchema = z
 
 // --- Session and Token Schemas ---
 
-export const OAuthStateSchema = z.object({
-  state: z.string(),
-  codeVerifier: z.string(),
-  redirect: z.string(),
+export const OAuthStateSchema = Schema.Struct({
+  state: Schema.String,
+  codeVerifier: Schema.String,
+  redirect: Schema.String,
 });
 
-export const UserSessionSchema = z.object({
-  email: z.string().email(),
-  role: z.string(),
+export const UserSessionSchema = Schema.Struct({
+  email: Schema.String,
+  role: Schema.String,
 });
 
-export type UserSession = z.infer<typeof UserSessionSchema>;
+export type UserSession = Schema.Schema.Type<typeof UserSessionSchema>;
 
-export const EmailVerificationSessionSchema = z.object({
-  email: z.string().email(),
-  token: z.string(),
-  hashedPassword: z.string(),
+export const EmailVerificationSessionSchema = Schema.Struct({
+  email: Schema.String,
+  token: Schema.String,
+  hashedPassword: Schema.String,
 });
 
-export const PasswordResetSessionSchema = z.object({
-  email: z.string().email(),
-  token: z.string(),
+export const PasswordResetSessionSchema = Schema.Struct({
+  email: Schema.String,
+  token: Schema.String,
 });
 
-export const GoogleIDTokenSchema = z.object({
-  name: z.string(),
-  email: z.string().email(),
-  picture: z.string().url({ message: "Invalid URL for picture" }),
+export const GoogleIDTokenSchema = Schema.Struct({
+  name: Schema.String,
+  email: Schema.String,
+  picture: Schema.String,
 });
 
-export const EncryptableSessionSchema = z.union([
+export const EncryptableSessionSchema = Schema.Union(
   UserSessionSchema,
   EmailVerificationSessionSchema,
   PasswordResetSessionSchema,
-  OAuthStateSchema,
-]);
+  OAuthStateSchema
+);
 
-export type EncryptableSession = z.infer<typeof EncryptableSessionSchema>;
+export type EncryptableSession = Schema.Schema.Type<
+  typeof EncryptableSessionSchema
+>;
