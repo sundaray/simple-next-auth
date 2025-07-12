@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -71,6 +72,15 @@ export function ForgotPasswordForm() {
             "Send password reset link"
           )}
         </Button>
+        <div className="mt-6 text-center text-sm font-medium">
+          <span className="text-gray-500">Already have an account? </span>
+          <Link
+            href="/signin"
+            className="text-sky-600 transition-colors hover:underline hover:underline-offset-2"
+          >
+            Sign in
+          </Link>
+        </div>
       </div>
     </form>
   );
