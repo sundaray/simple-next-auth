@@ -114,4 +114,3 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the application in action.
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the application in action.
