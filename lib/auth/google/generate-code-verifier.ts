@@ -2,7 +2,7 @@ import "server-only";
 
 import { base64url } from "jose";
 import { getRandomValues } from "uncrypto";
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 
 class CodeVerifierGenerationError extends Data.TaggedError(
   "CodeVerifierGenerationError"
@@ -25,7 +25,7 @@ export function generateCodeVerifier() {
       }),
   }).pipe(
     Effect.tapErrorTag("CodeVerifierGenerationError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     )
   );
 }

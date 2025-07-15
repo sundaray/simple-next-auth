@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 
 /************************************************
  *
- * Check if an account exists with a verified email
+ * Check account status
  *
  ************************************************/
 

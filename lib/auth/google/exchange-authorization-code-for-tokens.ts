@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Effect, Data, Config, Console } from "effect";
+import { Effect, Data, Config } from "effect";
 import { encodeClientCredentials } from "@/lib/auth/google/encode-client-credentials";
 
 const tokenEndpoint = "https://oauth2.googleapis.com/token";
@@ -76,16 +76,18 @@ export function exchangeAuthorizationCodeForTokens(
 
     return tokenData;
   }).pipe(
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
+    Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)),
     Effect.tapErrorTag("ClientCredentialsEncodingError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     ),
     Effect.tapErrorTag("GoogleTokenFetchError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     ),
     Effect.tapErrorTag("GoogleTokenResponseError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     ),
-    Effect.tapErrorTag("GoogleTokenParseError", (error) => Console.error(error))
+    Effect.tapErrorTag("GoogleTokenParseError", (error) =>
+      Effect.logError(error)
+    )
   );
 }

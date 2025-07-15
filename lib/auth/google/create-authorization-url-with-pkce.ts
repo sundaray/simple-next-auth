@@ -1,5 +1,5 @@
 import "server-only";
-import { Effect, Config, Console } from "effect";
+import { Effect, Config } from "effect";
 import { generateS256CodeChallenge } from "@/lib/auth/google/generate-s256-code-challenge";
 
 const authorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -30,9 +30,9 @@ export function createAuthorizationURLWithPKCE(
 
     return url;
   }).pipe(
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
+    Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)),
     Effect.tapErrorTag("CodeChallengeGenerationError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     )
   );
 }

@@ -33,10 +33,10 @@ export async function signInWithEmailAndPassword(
 
   // Define an Effect
   const program = Effect.gen(function* () {
-    const accountStatus = yield* getAccountStatus(email);
+    const status = yield* getAccountStatus(email);
 
     yield* pipe(
-      Match.value(accountStatus),
+      Match.value(status),
       Match.tag("VerifiedAccount", () => Effect.void),
       Match.tag("NoAccount", "UnverifiedAccount", () =>
         Effect.fail({

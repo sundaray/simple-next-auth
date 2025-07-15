@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 import { encrypt } from "@/lib/auth/session/encrypt";
 
 class StoreOAuthStateError extends Data.TaggedError("StoreOAuthStateError")<{
@@ -48,8 +48,10 @@ export function storeOAuthState(
         }),
     });
   }).pipe(
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
-    Effect.tapErrorTag("EncryptionError", (error) => Console.error(error)),
-    Effect.tapErrorTag("StoreOAuthStateError", (error) => Console.error(error))
+    Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)),
+    Effect.tapErrorTag("EncryptionError", (error) => Effect.logError(error)),
+    Effect.tapErrorTag("StoreOAuthStateError", (error) =>
+      Effect.logError(error)
+    )
   );
 }

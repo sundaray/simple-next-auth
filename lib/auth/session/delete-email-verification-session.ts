@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 
 class EmailVerificationSessionDeletionError extends Data.TaggedError(
   "EmailVerificationSessionDeletionError"
@@ -31,7 +31,7 @@ export function deleteEmailVerificationSession() {
     });
   }).pipe(
     Effect.tapErrorTag("EmailVerificationSessionDeletionError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     )
   );
 }

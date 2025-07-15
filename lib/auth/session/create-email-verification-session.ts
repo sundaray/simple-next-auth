@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 import { encrypt } from "@/lib/auth/session/encrypt";
 import { cookies } from "next/headers";
 
@@ -36,10 +36,10 @@ export function createEmailVerificationSession(
         }),
     });
   }).pipe(
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
-    Effect.tapErrorTag("EncryptionError", (error) => Console.error(error)),
+    Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)),
+    Effect.tapErrorTag("EncryptionError", (error) => Effect.logError(error)),
     Effect.tapErrorTag("EmailVerificationSessionCreationError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     )
   );
 }

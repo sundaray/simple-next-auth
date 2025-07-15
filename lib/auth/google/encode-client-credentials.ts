@@ -1,6 +1,6 @@
 import "server-only";
 import { base64url } from "jose";
-import { Effect, Data, Config, Console } from "effect";
+import { Effect, Data, Config } from "effect";
 
 class ClientCredentialsEncodingError extends Data.TaggedError(
   "ClientCredentialsEncodingError"
@@ -26,9 +26,9 @@ export function encodeClientCredentials() {
         }),
     });
   }).pipe(
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
+    Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)),
     Effect.tapErrorTag("ClientCredentialsEncodingError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     )
   );
 }

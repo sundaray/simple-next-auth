@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 
 class PasswordResetSessionDeletionError extends Data.TaggedError(
   "PasswordResetSessionDeletionError"
@@ -31,7 +31,7 @@ export function deletePasswordResetSession() {
     });
   }).pipe(
     Effect.tapErrorTag("PasswordResetSessionDeletionError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     )
   );
 }

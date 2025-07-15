@@ -2,7 +2,7 @@ import "server-only";
 
 import { subtle } from "uncrypto";
 import { base64url } from "jose";
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 
 class CodeChallengeGenerationError extends Data.TaggedError(
   "CodeChallengeGenerationError"
@@ -27,7 +27,7 @@ export function generateS256CodeChallenge(codeVerifier: string) {
     return base64url.encode(new Uint8Array(hash));
   }).pipe(
     Effect.tapErrorTag("CodeChallengeGenerationError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     )
   );
 }
