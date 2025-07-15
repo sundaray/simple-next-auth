@@ -18,7 +18,7 @@ const errorMessages: Record<string, string> = {
     "A database error occurred while creating your account. Please sign up again.",
   ConfigError:
     "A server error occurred while trying to verify your email. Please sign up again.",
-  Default:
+  UnknownError:
     "Something went wrong while verifying your email. Please sign up again.",
 };
 
@@ -33,7 +33,7 @@ export default async function VerifyEmailErrorPage({
   const errorTag = Array.isArray(errorParam) ? errorParam[0] : errorParam;
 
   const errorDescription =
-    (errorTag && errorMessages[errorTag]) || errorMessages.Default;
+    (errorTag && errorMessages[errorTag]) || errorMessages.UnknownError;
 
   return (
     <div className="mx-auto max-w-md px-4 text-center">

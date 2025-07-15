@@ -4,12 +4,6 @@ import { Effect, Data, Option } from "effect";
 import { getPasswordResetSession } from "@/lib/auth/session/get-password-reset-session";
 import { timingSafeCompare } from "@/lib/auth/credentials/timing-safe-compare";
 
-/************************************************
- *
- * Error Types
- *
- ************************************************/
-
 class MissingTokenQueryParameterError extends Data.TaggedError(
   "MissingTokenQueryParameterError"
 )<{

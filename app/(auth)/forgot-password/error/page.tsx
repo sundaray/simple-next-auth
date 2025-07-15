@@ -18,7 +18,7 @@ const errorMessages: Record<string, string> = {
   CookieStoreAccessError:
     "A server error occurred while trying to verify your password reset request. Please request a new reset link.",
 
-  Default:
+  UnknownError:
     "Something went wrong during the password reset process. Please try again or request a new reset link.",
 };
 
@@ -33,7 +33,7 @@ export default async function ForgotPasswordErrorPage({
   const errorTag = Array.isArray(errorParam) ? errorParam[0] : errorParam;
 
   const errorDescription =
-    (errorTag && errorMessages[errorTag]) || errorMessages.Default;
+    (errorTag && errorMessages[errorTag]) || errorMessages.UnknownError;
 
   return (
     <div className="mx-auto max-w-md px-4 text-center">

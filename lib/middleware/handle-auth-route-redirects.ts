@@ -13,6 +13,7 @@ const authRoutes = [
   "/signup/check-email",
   "/signup/error",
   "/signup/success",
+  "/auth-error",
 ];
 
 export function handleAuthRouteRedirects(request: NextRequest) {
