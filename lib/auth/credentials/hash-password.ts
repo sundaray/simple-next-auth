@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Effect, Data, Console } from "effect";
+import { Effect, Data } from "effect";
 import { hash } from "@node-rs/argon2";
 
 /************************************************
@@ -23,6 +23,8 @@ export function hashPassword(password: string) {
 
     return hashedPassword;
   }).pipe(
-    Effect.tapErrorTag("PasswordHashingError", (error) => Console.error(error))
+    Effect.tapErrorTag("PasswordHashingError", (error) =>
+      Effect.logError(error)
+    )
   );
 }

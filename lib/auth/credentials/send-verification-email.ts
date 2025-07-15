@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Effect, Console, Config, Data } from "effect";
+import { Effect, Config, Data } from "effect";
 import { render } from "@react-email/render";
 import { EmailService } from "@/lib/services/email-service";
 import { EmailVerificationTemplate } from "@/components/auth/email-verification-template";
@@ -59,10 +59,10 @@ export function sendVerificationEmail(email: string, url: string) {
         )
       );
   }).pipe(
-    Effect.tapErrorTag("ConfigError", (error) => Console.error(error)),
+    Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)),
     Effect.tapErrorTag("EmailTemplateRenderError", (error) =>
-      Console.error(error)
+      Effect.logError(error)
     ),
-    Effect.tapErrorTag("EmailSendError", (error) => Console.error(error))
+    Effect.tapErrorTag("EmailSendError", (error) => Effect.logError(error))
   );
 }
