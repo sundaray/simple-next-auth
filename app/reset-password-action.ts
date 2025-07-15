@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
-import { Effect, Data, Option, pipe } from "effect";
+import { Effect, Data, Option, pipe, Logger } from "effect";
 
 import { hashPassword } from "@/lib/auth/credentials/hash-password";
 import { changePassword } from "@/lib/auth/credentials/change-password";
@@ -93,7 +93,9 @@ export async function resetPassword(prevState: unknown, formData: FormData) {
     // Since Effect.map() only runs on success, we use it to handle a successful password reset by redirecting the user.
     Effect.map(() => ({ status: "success" as const })),
 
-    Effect.catchTags(handledErrors)
+    Effect.catchTags(handledErrors),
+
+    Effect.provide(Logger.pretty)
   );
 
   // Execute the Effect

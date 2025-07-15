@@ -1,6 +1,6 @@
 "use server";
 
-import { Effect, pipe } from "effect";
+import { Effect, pipe, Logger } from "effect";
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
 import { CredentialsSignUpFormSchema } from "@/lib/schema";
@@ -135,7 +135,9 @@ export async function signUpWithEmailAndPassword(
         })
       )
     ),
-    Effect.catchTags(handledErrors)
+    Effect.catchTags(handledErrors),
+
+    Effect.provide(Logger.pretty)
   );
 
   const result = await Effect.runPromise(handledProgram);

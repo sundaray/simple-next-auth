@@ -68,7 +68,7 @@ export async function authenticateWithGoogle(next: string) {
           status: "error" as const,
           message: "Failed to store OAuth state. Please try again.",
         }),
-      InvalidPayloadError: () =>
+      InvalidJWTPayloadError: () =>
         Effect.succeed({
           status: "error" as const,
           message: "Invalid payload error. Please try again.",
