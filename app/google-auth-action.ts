@@ -1,11 +1,13 @@
 "use server";
 
 import { Effect, pipe } from "effect";
+import { AppRuntime } from "@/lib/runtime";
 import { redirect } from "next/navigation";
 import { generateState } from "@/lib/auth/google/generate-state";
 import { generateCodeVerifier } from "@/lib/auth/google/generate-code-verifier";
 import { createAuthorizationURLWithPKCE } from "@/lib/auth/google/create-authorization-url-with-pkce";
 import { storeOAuthState } from "@/lib/auth/session/store-oauth-state";
+import App from "next/app";
 
 /************************************************
  *
@@ -77,7 +79,7 @@ export async function authenticateWithGoogle(next: string) {
   );
 
   // Execute the Effect
-  const result = await Effect.runPromise(handledProgram);
+  const result = await AppRuntime.runPromise(handledProgram);
 
   if (result.status === "success") {
     redirect(result.redirectUrl);

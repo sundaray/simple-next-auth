@@ -1,12 +1,11 @@
 import React from "react";
 import Link from "next/link";
 import { Effect, Option } from "effect";
-import { getUserSession } from "@/lib/auth/session/get-user-session";
+import { getUser } from "@/lib/auth/shared/get-user";
 import { UserAccountNavClient } from "@/components/user-account-nav-client";
 
 export async function UserAccountNav() {
-  const userOption = await Effect.runPromise(getUserSession());
-  const user = Option.getOrNull(userOption);
+  const user = await getUser();
 
   return (
     <div className="hidden md:block">

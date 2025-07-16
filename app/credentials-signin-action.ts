@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
 import { Effect, Match, pipe, Logger } from "effect";
+import { AppRuntime } from "@/lib/runtime";
 import { CredentialsSignInFormSchema } from "@/lib/schema";
 
 import { getAccountStatus } from "@/lib/auth/credentials/get-account-status";
@@ -125,7 +126,7 @@ export async function signInWithEmailAndPassword(
     Effect.provide(Logger.pretty)
   );
 
-  const result = await Effect.runPromise(handledProgram);
+  const result = await AppRuntime.runPromise(handledProgram);
 
   if (result.status === "success") {
     redirect(next);

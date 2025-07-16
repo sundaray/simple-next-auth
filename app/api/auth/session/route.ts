@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Effect, Option } from "effect";
 import { getUserSession } from "@/lib/auth/session/get-user-session";
 import { UserSession } from "@/lib/schema";
+import { AppRuntime } from "@/lib/runtime";
 
 type ApiResponse<T> =
   | { success: true; data: T }
@@ -53,5 +54,5 @@ export async function GET() {
     )
   );
 
-  return Effect.runPromise(handledProgram);
+  return AppRuntime.runPromise(handledProgram);
 }

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
 import { Effect, Data, Option, pipe, Logger } from "effect";
+import { AppRuntime } from "@/lib/runtime";
 
 import { hashPassword } from "@/lib/auth/credentials/hash-password";
 import { changePassword } from "@/lib/auth/credentials/change-password";
@@ -99,7 +100,7 @@ export async function resetPassword(prevState: unknown, formData: FormData) {
   );
 
   // Execute the Effect
-  const result = await Effect.runPromise(handledProgram);
+  const result = await AppRuntime.runPromise(handledProgram);
 
   if (result.status === "success") {
     redirect("/reset-password/success");

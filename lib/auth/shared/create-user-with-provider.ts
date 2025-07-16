@@ -46,7 +46,7 @@ function createUser(
     },
     catch: (error) =>
       new DatabaseError({
-        operation: "_createUserRecord",
+        operation: "createUser",
         cause: error,
       }),
   });

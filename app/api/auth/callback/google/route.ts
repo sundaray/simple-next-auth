@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { decodeJwt } from "jose";
 import { Effect, Data, Schema } from "effect";
+import { AppRuntime } from "@/lib/runtime";
 
 import { exchangeAuthorizationCodeForTokens } from "@/lib/auth/google/exchange-authorization-code-for-tokens";
 import { createUserSession } from "@/lib/auth/session/create-user-session";
@@ -217,5 +218,5 @@ export async function GET(request: NextRequest) {
     })
   );
 
-  return Effect.runPromise(handledProgram);
+  return AppRuntime.runPromise(handledProgram);
 }

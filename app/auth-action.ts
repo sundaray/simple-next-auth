@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Effect, Data, pipe } from "effect";
+import { AppRuntime } from "@/lib/runtime";
 
 /************************************************
  *
@@ -35,7 +36,7 @@ export async function signOut() {
     )
   );
 
-  const result = await Effect.runPromise(handledProgram);
+  const result = await AppRuntime.runPromise(handledProgram);
 
   if (result._tag === "Success") {
     redirect("/");

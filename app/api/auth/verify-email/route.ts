@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Effect, Data, Option } from "effect";
+import { AppRuntime } from "@/lib/runtime";
 
 import { getEmailVerificationSession } from "@/lib/auth/session/get-email-verification-session";
 import { deleteEmailVerificationSession } from "@/lib/auth/session/delete-email-verification-session";
 import { assignUserRole } from "@/lib/auth/shared/assign-user-role";
 import { createUserWithProvider } from "@/lib/auth/shared/create-user-with-provider";
 import { timingSafeCompare } from "@/lib/auth/credentials/timing-safe-compare";
-
 
 class MissingTokenQueryParameterError extends Data.TaggedError(
   "MissingTokenQueryParameterError"
@@ -108,5 +108,5 @@ export async function GET(request: NextRequest) {
     })
   );
 
-  return Effect.runPromise(handledProgram);
+  return AppRuntime.runPromise(handledProgram);
 }

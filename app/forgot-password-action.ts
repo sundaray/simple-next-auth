@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
 import { Effect, pipe, Logger } from "effect";
-
+import { AppRuntime } from "@/lib/runtime";
 import { ForgotPasswordFormSchema } from "@/lib/schema";
 
 import { createPasswordResetSession } from "@/lib/auth/session/create-password-reset-session";
@@ -41,9 +41,6 @@ export async function forgotPassword(prevState: unknown, formData: FormData) {
 
     yield* sendPasswordResetEmail(email, url);
   });
-
-  // Provide the EmailService layer to satisfy the program's dependencies.
-  const runnableProgram = program.pipe(Effect.provide(EmailService.Default));
 
   const handledErrors = {
     TokenGenerationError: () =>
@@ -100,7 +97,7 @@ export async function forgotPassword(prevState: unknown, formData: FormData) {
 
   // Handle the success and failure channels of the Effect.
   const handledProgram = pipe(
-    runnableProgram,
+    program,
 
     // Since Effect.map() only runs on success, we use it to handle a successful password reset by redirecting the user.
     Effect.map(() => ({ status: "success" as const })),
@@ -111,7 +108,7 @@ export async function forgotPassword(prevState: unknown, formData: FormData) {
   );
 
   // Execute the Effect
-  const result = await Effect.runPromise(handledProgram);
+  const result = await AppRuntime.runPromise(handledProgram);
 
   if (result.status === "success") {
     redirect("/forgot-password/check-email");

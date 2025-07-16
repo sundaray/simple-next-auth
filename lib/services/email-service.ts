@@ -1,6 +1,6 @@
 import { Effect, Data } from "effect";
 import { SESClient } from "@aws-sdk/client-ses";
-import { SesClient } from "@/lib/aws/ses";
+import { SesClient } from "@/lib/aws/ses-client";
 
 class EmailError extends Data.TaggedError("EmailError")<{ cause: unknown }> {}
 

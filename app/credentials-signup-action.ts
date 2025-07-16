@@ -3,6 +3,7 @@
 import { Effect, pipe, Logger } from "effect";
 import { redirect } from "next/navigation";
 import { parseWithZod } from "@conform-to/zod";
+import { AppRuntime } from "@/lib/runtime";
 import { CredentialsSignUpFormSchema } from "@/lib/schema";
 
 import { getAccountStatus } from "@/lib/auth/credentials/get-account-status";
@@ -54,9 +55,6 @@ export async function signUpWithEmailAndPassword(
 
     yield* sendVerificationEmail(email, url);
   });
-
-  // Provide the EmailService layer to satisfy the program's dependencies.
-  const runnableProgram = program.pipe(Effect.provide(EmailService.Default));
 
   const handledErrors = {
     EmailVerificationSessionCreationError: () =>
@@ -123,7 +121,7 @@ export async function signUpWithEmailAndPassword(
 
   // Handle the success and failure channels of the Effect.
   const handledProgram = pipe(
-    runnableProgram,
+    program,
 
     // Since Effect.map() only runs on success, we use it to handle a successful signup by redirecting the user.
     Effect.map(() => ({ status: "success" as const })),
@@ -140,7 +138,7 @@ export async function signUpWithEmailAndPassword(
     Effect.provide(Logger.pretty)
   );
 
-  const result = await Effect.runPromise(handledProgram);
+  const result = await AppRuntime.runPromise(handledProgram);
 
   if (result.status === "success") {
     return redirect("/signup/check-email");

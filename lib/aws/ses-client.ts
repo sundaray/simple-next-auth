@@ -1,5 +1,5 @@
 import { SESClient } from "@aws-sdk/client-ses";
-import { Config, Console, Effect, Redacted } from "effect";
+import { Config, Effect, Redacted } from "effect";
 
 export class SesClient extends Effect.Service<SesClient>()("SesClient", {
   effect: Effect.gen(function* () {
@@ -16,5 +16,5 @@ export class SesClient extends Effect.Service<SesClient>()("SesClient", {
         secretAccessKey: Redacted.value(config.secretAccessKey),
       },
     });
-  }).pipe(Effect.tapErrorTag("ConfigError", (error) => Console.error(error))),
+  }).pipe(Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error))),
 }) {}

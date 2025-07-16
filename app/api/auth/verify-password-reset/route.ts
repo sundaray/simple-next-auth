@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Effect, Data, Option } from "effect";
+import { AppRuntime } from "@/lib/runtime";
 
 import { getPasswordResetSession } from "@/lib/auth/session/get-password-reset-session";
 import { timingSafeCompare } from "@/lib/auth/credentials/timing-safe-compare";
@@ -80,5 +81,5 @@ export async function GET(request: NextRequest) {
     })
   );
 
-  return Effect.runPromise(handledProgram);
+  return AppRuntime.runPromise(handledProgram);
 }
