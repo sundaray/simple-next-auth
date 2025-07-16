@@ -4,6 +4,7 @@ import { Effect, Config, Data } from "effect";
 import { render } from "@react-email/render";
 import { EmailService } from "@/lib/services/email-service";
 import { EmailVerificationTemplate } from "@/components/auth/email-verification-template";
+import { SendEmailCommand, SendEmailCommandInput } from "@aws-sdk/client-ses";
 
 class EmailTemplateRenderError extends Data.TaggedError(
   "EmailTemplateRenderError"
@@ -29,25 +30,29 @@ export function sendVerificationEmail(email: string, url: string) {
         }),
     });
 
-    yield* emailService
-      .send({
-        Destination: {
-          ToAddresses: [email],
-        },
-        Message: {
-          Body: {
-            Html: {
-              Charset: "UTF-8",
-              Data: emailHtml,
-            },
-          },
-          Subject: {
+    const emailInput: SendEmailCommandInput = {
+      Destination: {
+        ToAddresses: [email],
+      },
+      Message: {
+        Body: {
+          Html: {
             Charset: "UTF-8",
-            Data: "Sign-up link for Simple Next Auth",
+            Data: emailHtml,
           },
         },
-        Source: emailFrom,
-      })
+        Subject: {
+          Charset: "UTF-8",
+          Data: "Sign-up link for Simple Next Auth",
+        },
+      },
+      Source: emailFrom,
+    };
+
+    const command = new SendEmailCommand(emailInput);
+
+    yield* emailService
+      .use((client) => client.send(command))
       .pipe(
         Effect.catchTag("EmailError", (error) =>
           Effect.fail(

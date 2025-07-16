@@ -1,9 +1,10 @@
 import "server-only";
 
-import { Effect, Console, Config, Data } from "effect";
+import { Effect, Config, Data } from "effect";
 import { render } from "@react-email/render";
 import { EmailService } from "@/lib/services/email-service";
 import { PasswordResetTemplate } from "@/components/auth/password-reset-template";
+import { SendEmailCommand, SendEmailCommandInput } from "@aws-sdk/client-ses";
 
 class EmailTemplateRenderError extends Data.TaggedError(
   "EmailTemplateRenderError"
@@ -35,25 +36,29 @@ export function sendPasswordResetEmail(email: string, url: string) {
         }),
     });
 
-    yield* emailService
-      .send({
-        Destination: {
-          ToAddresses: [email],
-        },
-        Message: {
-          Body: {
-            Html: {
-              Charset: "UTF-8",
-              Data: emailHtml,
-            },
-          },
-          Subject: {
+    const emailInput: SendEmailCommandInput = {
+      Destination: {
+        ToAddresses: [email],
+      },
+      Message: {
+        Body: {
+          Html: {
             Charset: "UTF-8",
-            Data: "Reset your password for Simple Next Auth",
+            Data: emailHtml,
           },
         },
-        Source: emailFrom,
-      })
+        Subject: {
+          Charset: "UTF-8",
+          Data: "reset your password for Simple Next Auth",
+        },
+      },
+      Source: emailFrom,
+    };
+
+    const command = new SendEmailCommand(emailInput);
+
+    yield* emailService
+      .use((client) => client.send(command))
       .pipe(
         Effect.catchTag("EmailError", (error) =>
           Effect.fail(

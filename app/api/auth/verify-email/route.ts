@@ -7,11 +7,6 @@ import { assignUserRole } from "@/lib/auth/shared/assign-user-role";
 import { createUserWithProvider } from "@/lib/auth/shared/create-user-with-provider";
 import { timingSafeCompare } from "@/lib/auth/credentials/timing-safe-compare";
 
-/************************************************
- *
- * Error Types
- *
- ************************************************/
 
 class MissingTokenQueryParameterError extends Data.TaggedError(
   "MissingTokenQueryParameterError"

@@ -204,7 +204,7 @@ export async function GET(request: NextRequest) {
         const authErrorUrl = new URL("/auth-error", url);
         // Use the error's tag for the query parameter.
         // Provide a fallback for untagged errors.
-        const errorTag = "_tag" in error ? error._tag : "UnknownAuthError";
+        const errorTag = "_tag" in error ? error._tag : "UnknownError";
         authErrorUrl.searchParams.set("error", errorTag);
 
         // Return a successful effect containing the redirect response.
