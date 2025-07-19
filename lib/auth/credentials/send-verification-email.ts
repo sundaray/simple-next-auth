@@ -10,11 +10,6 @@ class EmailTemplateRenderError extends Data.TaggedError(
   "EmailTemplateRenderError"
 )<{ operation: string; cause: unknown }> {}
 
-class EmailSendError extends Data.TaggedError("EmailSendError")<{
-  operation: string;
-  cause: unknown;
-}> {}
-
 export function sendVerificationEmail(email: string, url: string) {
   return Effect.gen(function* () {
     const emailService = yield* EmailService;
@@ -51,23 +46,14 @@ export function sendVerificationEmail(email: string, url: string) {
 
     const command = new SendEmailCommand(emailInput);
 
-    yield* emailService
-      .use((client) => client.send(command))
-      .pipe(
-        Effect.catchTag("EmailError", (error) =>
-          Effect.fail(
-            new EmailSendError({
-              operation: "sendVerificationEmail",
-              cause: error,
-            })
-          )
-        )
-      );
+    yield* emailService.use((client) => client.send(command));
   }).pipe(
     Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)),
+    Effect.tapErrorTag("EmailError", (error) =>
+      Effect.logError({ error, operation: "sendVerificationEmail" })
+    ),
     Effect.tapErrorTag("EmailTemplateRenderError", (error) =>
       Effect.logError(error)
-    ),
-    Effect.tapErrorTag("EmailSendError", (error) => Effect.logError(error))
+    )
   );
 }
