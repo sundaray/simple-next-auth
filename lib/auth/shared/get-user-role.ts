@@ -1,9 +1,10 @@
 import "server-only";
 
 import { Effect, Data } from "effect";
-import { db } from "@/db";
+// import { db } from "@/db";
 import { usersTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { DatabaseService } from "@/lib/services/database-service";
 
 /************************************************
  *
@@ -22,6 +23,7 @@ class UserNotFoundError extends Data.TaggedError("UserNotFoundError")<{
 
 export function getUserRole(email: string) {
   return Effect.gen(function* () {
+    const { db } = yield* DatabaseService;
     const result = yield* Effect.tryPromise({
       try: async () => {
         const result = await db

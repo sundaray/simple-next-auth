@@ -1,14 +1,13 @@
 import "server-only";
 
 import { Layer, ManagedRuntime } from "effect";
-import { SesClient } from "@/lib/aws/ses-client";
 import { EmailService } from "@/lib/services/email-service";
-
-const SesClientLayer = SesClient.Default;
+import { DatabaseService } from "./services/database-service";
 
 const EmailServiceLayer = EmailService.Default;
+const DatabaseLayer = DatabaseService.Default;
 
-const AppLayer = Layer.provide(EmailServiceLayer, SesClientLayer);
+const AppLayer = Layer.mergeAll(EmailServiceLayer, DatabaseLayer);
 
 // Create a managed runtiem from AppLayer
 export const AppRuntime = ManagedRuntime.make(AppLayer);

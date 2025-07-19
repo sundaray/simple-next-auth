@@ -1,6 +1,5 @@
 import React from "react";
 import Link from "next/link";
-import { Effect, Option } from "effect";
 import { getUser } from "@/lib/auth/shared/get-user";
 import { UserAccountNavClient } from "@/components/user-account-nav-client";
 
