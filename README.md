@@ -68,6 +68,7 @@ REDIRECT_URI="http://localhost:3000/api/auth/callback/google"
 
 # Application
 BASE_URL="http://localhost:3000"
+ADMIN_EMAILS="admin@example.com,owner@example.com"
 JWT_ENCRYPTION_KEY="your_generated_secret_key"
 ```
 
@@ -76,6 +77,8 @@ JWT_ENCRYPTION_KEY="your_generated_secret_key"
 - **REDIRECT_URI**: This URI is the endpoint (a Route Handler) where the Google OAuth server will send responses to your authentication requests. For this project's local development setup, you must use the value `http://localhost:3000/api/auth/callback/google`. Make sure you add this exact URI to the **Authorized redirect URIs** list in your Google Cloud project's **Credentials** page.
 
 - **EMAIL_FROM**: This is the "From" address for all transactional emails (e.g., email verification, password reset). This email address must belong to a domain that you have verified with AWS SES. If your verified domain is `example.com`, you could use something like `auth@example.com` or `no-reply@example.com`.
+
+- **ADMIN_EMAILS**: A comma-separated list of email addresses that should have admin privileges in your application. Users who sign up with these email addresses will automatically be assigned the "admin" role.
 
 - **JWT_ENCRYPTION_KEY**: This is a secret key used to securely encrypt session data. You can generate one by running the command `openssl rand -base64 32` in your terminal and pasting the output into your `.env.local` file.
 
