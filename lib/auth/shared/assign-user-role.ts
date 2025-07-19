@@ -1,4 +1,4 @@
-import { Effect, Config, Console } from "effect";
+import { Effect, Config } from "effect";
 
 const adminEmailsConfig = Config.array(Config.string(), "ADMIN_EMAILS").pipe(
   Config.map((emails) => emails.map((email) => email.trim().toLowerCase()))
@@ -10,5 +10,5 @@ export function assignUserRole(email: string) {
     const normalizedEmail = email.trim().toLowerCase();
 
     return adminEmails.includes(normalizedEmail) ? "admin" : "regular";
-  }).pipe(Effect.tapErrorTag("ConfigError", (error) => Console.error(error)));
+  }).pipe(Effect.tapErrorTag("ConfigError", (error) => Effect.logError(error)));
 }
