@@ -96,6 +96,8 @@ export async function resetPassword(prevState: unknown, formData: FormData) {
 
     Effect.catchTags(handledErrors),
 
+    Effect.ensureErrorType<never>(),
+
     Effect.provide(Logger.pretty)
   );
 

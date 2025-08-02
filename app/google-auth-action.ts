@@ -7,7 +7,6 @@ import { generateState } from "@/lib/auth/google/generate-state";
 import { generateCodeVerifier } from "@/lib/auth/google/generate-code-verifier";
 import { createAuthorizationURLWithPKCE } from "@/lib/auth/google/create-authorization-url-with-pkce";
 import { storeOAuthState } from "@/lib/auth/session/store-oauth-state";
-import App from "next/app";
 
 /************************************************
  *
@@ -75,7 +74,8 @@ export async function authenticateWithGoogle(next: string) {
           status: "error" as const,
           message: "Invalid payload error. Please try again.",
         }),
-    })
+    }),
+    Effect.ensureErrorType<never>()
   );
 
   // Execute the Effect

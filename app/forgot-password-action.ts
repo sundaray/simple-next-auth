@@ -103,6 +103,8 @@ export async function forgotPassword(prevState: unknown, formData: FormData) {
 
     Effect.catchTags(handledErrors),
 
+    Effect.ensureErrorType<never>(),
+
     Effect.provide(Logger.pretty)
   );
 

@@ -73,7 +73,7 @@ export async function signUpWithEmailAndPassword(
           ],
         })
       ),
-    EmailSendError: () =>
+    EmailError: () =>
       Effect.succeed(
         submission.reply({
           formErrors: ["Failed to send verification email. Please try again."],
@@ -134,6 +134,8 @@ export async function signUpWithEmailAndPassword(
       )
     ),
     Effect.catchTags(handledErrors),
+
+    Effect.ensureErrorType<never>(),
 
     Effect.provide(Logger.pretty)
   );

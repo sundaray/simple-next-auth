@@ -123,6 +123,8 @@ export async function signInWithEmailAndPassword(
 
     Effect.catchTags(handledErrors),
 
+    Effect.ensureErrorType<never>(),
+
     Effect.provide(Logger.pretty)
   );
 
