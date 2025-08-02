@@ -10,7 +10,6 @@ import { createPasswordResetSession } from "@/lib/auth/session/create-password-r
 import { createPasswordResetToken } from "@/lib/auth/credentials/create-password-reset-token";
 import { createPasswordResetURL } from "@/lib/auth/credentials/create-password-reset-url";
 import { sendPasswordResetEmail } from "@/lib/auth/credentials/send-password-reset-email";
-import { EmailService } from "@/lib/services/email-service";
 
 /************************************************
  *
@@ -85,7 +84,7 @@ export async function forgotPassword(prevState: unknown, formData: FormData) {
           ],
         })
       ),
-    EmailSendError: () =>
+    EmailError: () =>
       Effect.succeed(
         submission.reply({
           formErrors: [
