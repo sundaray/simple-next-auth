@@ -1,4 +1,4 @@
-export function initGoogleAuth() {
+export function initGoogleAuth(config: GoogleAuthConfig) {
   return {
     signIn: async () => {
       console.log('Sign in with Google');
