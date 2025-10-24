@@ -13,7 +13,9 @@
     "test": "vitest run",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
-    "ci": "pnpm run build && pnpm run check-format && pnpm run test"
+    "ci": "pnpm run build && pnpm run check-format && pnpm run test",
+    "local-release": "changeset version && changeset publish",
+    "prepublishOnly": "pnpm run ci"
   },
   "keywords": [
     "nextjs",
