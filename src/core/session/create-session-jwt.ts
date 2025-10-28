@@ -1,5 +1,6 @@
 import { EncryptJWT } from 'jose';
 import { ResultAsync } from 'neverthrow';
+import type { SessionData } from './session-schema.js';
 
 // ============================================
 // ERROR TYPES
@@ -10,32 +11,6 @@ export type SessionJWTCreationError = {
   message: string;
   cause?: unknown;
 };
-
-// ============================================
-// SESSION DATA TYPES (DISCRIMINATED UNION)
-// ============================================
-
-interface BaseSessionData {
-  createdAt: number;
-  expiresAt: number;
-}
-
-export interface GoogleSessionData extends BaseSessionData {
-  provider: 'google';
-  email: string;
-  name: string;
-  picture: string;
-  sub: string;
-}
-
-export interface CredentialsSessionData extends BaseSessionData {
-  provider: 'credentials';
-  email: string;
-  emailVerified: boolean;
-  userId: string;
-}
-
-export type SessionData = GoogleSessionData | CredentialsSessionData;
 
 // ============================================
 // TYPES

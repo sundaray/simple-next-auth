@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "jose": "^6.1.0",
-    "neverthrow": "^8.2.0"
+    "neverthrow": "^8.2.0",
+    "zod": "^4.1.12"
   }
 }

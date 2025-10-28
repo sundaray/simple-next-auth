@@ -1,13 +1,13 @@
 import { jwtDecrypt } from 'jose';
 import { ResultAsync } from 'neverthrow';
-import type { SessionData } from './create-session-jwt.js';
+import { SessionDataSchema, type SessionData } from './session-schema.js';
 
 // ============================================
 // ERROR TYPES
 // ============================================
 
 export type SessionJWTDecryptionError = {
-  type: 'SESSION_JWT_DECRYPTION_ERROR';
+  type: 'SESSION_JWT_DECRYPTION_ERROR' | 'INVALID_SESSION_DATA';
   message: string;
   cause?: unknown;
 };
@@ -41,19 +41,38 @@ export function decryptSessionJWT(
       // Decrypt and verify JWT
       const { payload } = await jwtDecrypt(jwt, secretKey);
 
-      // Extract session data from payload
-      const sessionData = payload.session as SessionData;
+      // Validate session data structure with Zod
+      const parseResult = SessionDataSchema.safeParse(payload.session);
 
-      if (!sessionData) {
-        throw new Error('Session data not found in JWT payload');
+      if (!parseResult.success) {
+        // Create detailed error with Zod validation issues
+        const error = new Error(
+          `Invalid session data structure: ${parseResult.error.message}`,
+        );
+        error.name = 'INVALID_SESSION_DATA';
+        throw error;
       }
 
-      return sessionData;
+      return parseResult.data;
     })(),
-    (error): SessionJWTDecryptionError => ({
-      type: 'SESSION_JWT_DECRYPTION_ERROR',
-      message: 'Failed to decrypt session JWT',
-      cause: error,
-    }),
+    (error): SessionJWTDecryptionError => {
+      const err = error as Error;
+
+      // Handle Zod validation errors
+      if (err.name === 'INVALID_SESSION_DATA') {
+        return {
+          type: 'INVALID_SESSION_DATA',
+          message: err.message,
+          cause: error,
+        };
+      }
+
+      // Handle JWT decryption/expiration errors
+      return {
+        type: 'SESSION_JWT_DECRYPTION_ERROR',
+        message: 'Failed to decrypt session JWT',
+        cause: error,
+      };
+    },
   );
 }
