@@ -17,7 +17,10 @@ export type CodeVerifierGenerationError = {
 // ============================================
 
 /**
- * A code verifier is a cryptographic random string.
+ * Generates a cryptographically random code verifier for the OAuth 2.0 PKCE flow.
+ *
+ * Implements the RFC 7636 recommendation by generating 32 random bytes
+ * and base64url-encoding them to create a 43-character string.
  *
  * RFC 7636 spec:
  * - MUST be between 43 and 128 characters long
@@ -29,7 +32,6 @@ export function generateCodeVerifier(): Result<
 > {
   return Result.fromThrowable(
     () => {
-      // Generate 32 random bytes (results in 43 characters when base64url-encoded)
       const randomBytes = crypto.randomBytes(32);
       return base64url.encode(randomBytes);
     },
