@@ -14,13 +14,25 @@ const BaseSessionSchema = z.object({
 
 /**
  * Google OAuth session schema
+ *
+ * Note: email, name, and picture are optional because they depend on
+ * the scopes requested by the user:
+ * - 'email' scope → email, email_verified
+ * - 'profile' scope → name, picture, given_name, family_name
  */
 export const GoogleSessionSchema = BaseSessionSchema.extend({
   provider: z.literal('google'),
-  email: z.email(),
-  name: z.string().min(1),
-  picture: z.url(),
-  sub: z.string().min(1),
+  sub: z.string().min(1), // ✅ Always present (Google user ID)
+
+  // Optional - depends on 'email' scope
+  email: z.string().email().optional(),
+  emailVerified: z.boolean().optional(),
+
+  // Optional - depends on 'profile' scope
+  name: z.string().optional(),
+  picture: z.string().url().optional(),
+  givenName: z.string().optional(),
+  familyName: z.string().optional(),
 });
 
 /**
@@ -28,9 +40,9 @@ export const GoogleSessionSchema = BaseSessionSchema.extend({
  */
 export const CredentialsSessionSchema = BaseSessionSchema.extend({
   provider: z.literal('credentials'),
-  email: z.email(),
-  emailVerified: z.boolean(),
-  userId: z.string().min(1),
+  email: z.string().email(), // ✅ Always present for credentials
+  emailVerified: z.boolean(), // ✅ Always present for credentials
+  userId: z.string().min(1), // ✅ User's database ID
 });
 
 /**
@@ -45,17 +57,6 @@ export const SessionDataSchema = z.discriminatedUnion('provider', [
 // INFERRED TYPESCRIPT TYPES
 // ============================================
 
-/**
- * Inferred TypeScript type for Google session
- */
 export type GoogleSessionData = z.infer<typeof GoogleSessionSchema>;
-
-/**
- * Inferred TypeScript type for Credentials session
- */
 export type CredentialsSessionData = z.infer<typeof CredentialsSessionSchema>;
-
-/**
- * Inferred TypeScript type for all sessions (discriminated union)
- */
 export type SessionData = z.infer<typeof SessionDataSchema>;
