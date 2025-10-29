@@ -1,6 +1,9 @@
 import { validateAuthConfig } from './config/schema.js';
 import type { AuthConfig } from './config/schema.js';
 import type { SessionData } from './core/session/index.js';
+import { signInWithGoogle } from './handlers/sign-in.js';
+import { getSession } from './handlers/session.js';
+import { signOut as handleSignOut } from './handlers/sign-out.js';
 
 // ============================================
 // TYPES
@@ -138,21 +141,18 @@ export function initAuth(config: AuthConfig): Auth {
   return {
     signIn: {
       google: async () => {
-        // TODO: Implement in next file
-        throw new Error('Not implemented yet');
+        return signInWithGoogle(validatedConfig);
       },
     },
 
     session: {
       get: async () => {
-        // TODO: Implement in next file
-        throw new Error('Not implemented yet');
+        return getSession(validatedConfig);
       },
     },
 
     signOut: async () => {
-      // TODO: Implement in next file
-      throw new Error('Not implemented yet');
+      return handleSignOut(validatedConfig);
     },
 
     callback: {
