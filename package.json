@@ -2,7 +2,12 @@
   "name": "simple-next-auth",
   "version": "0.0.1",
   "description": "A simple authentication library for Next.js",
-  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -41,5 +46,9 @@
     "jose": "^6.1.0",
     "neverthrow": "^8.2.0",
     "zod": "^4.1.12"
+  },
+  "peerDependencies": {
+    "next": "^16.0.1",
+    "react": "^19.2.0"
   }
 }

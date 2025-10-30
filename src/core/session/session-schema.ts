@@ -25,12 +25,12 @@ export const GoogleSessionSchema = BaseSessionSchema.extend({
   sub: z.string().min(1), // ✅ Always present (Google user ID)
 
   // Optional - depends on 'email' scope
-  email: z.string().email().optional(),
+  email: z.email().optional(),
   emailVerified: z.boolean().optional(),
 
   // Optional - depends on 'profile' scope
   name: z.string().optional(),
-  picture: z.string().url().optional(),
+  picture: z.url().optional(),
   givenName: z.string().optional(),
   familyName: z.string().optional(),
 });
@@ -40,7 +40,7 @@ export const GoogleSessionSchema = BaseSessionSchema.extend({
  */
 export const CredentialsSessionSchema = BaseSessionSchema.extend({
   provider: z.literal('credentials'),
-  email: z.string().email(), // ✅ Always present for credentials
+  email: z.email(), // ✅ Always present for credentials
   emailVerified: z.boolean(), // ✅ Always present for credentials
   userId: z.string().min(1), // ✅ User's database ID
 });

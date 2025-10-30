@@ -4,6 +4,7 @@ import type { SessionData } from './core/session/index.js';
 import { signInWithGoogle } from './handlers/sign-in.js';
 import { getSession } from './handlers/session.js';
 import { signOut as handleSignOut } from './handlers/sign-out.js';
+import { handleGoogleCallback } from './handlers/callback.js';
 
 // ============================================
 // TYPES
@@ -157,8 +158,7 @@ export function initAuth(config: AuthConfig): Auth {
 
     callback: {
       google: async (request: Request) => {
-        // TODO: Implement in next file
-        throw new Error('Not implemented yet');
+        return handleGoogleCallback(validatedConfig, request);
       },
     },
   };
