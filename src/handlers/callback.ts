@@ -137,6 +137,6 @@ export async function handleGoogleCallback(
   }
 
   // Step 7: Redirect to success page
-  const redirectTo = oauthState.redirectTo || '/dashboard';
+  const redirectTo = oauthState.redirectTo || '/';
   redirect(redirectTo, RedirectType.replace); // Replace history - no back to callback
 }

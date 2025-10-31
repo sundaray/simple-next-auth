@@ -5,6 +5,7 @@ import { signInWithGoogle } from './handlers/sign-in.js';
 import { getSession } from './handlers/session.js';
 import { signOut as handleSignOut } from './handlers/sign-out.js';
 import { handleGoogleCallback } from './handlers/callback.js';
+import type { SignInWithGoogleOptions } from './handlers/sign-in.js';
 
 // ============================================
 // TYPES
@@ -12,7 +13,7 @@ import { handleGoogleCallback } from './handlers/callback.js';
 
 export interface Auth {
   signIn: {
-    google: () => Promise<never>;
+    google: (options?: SignInWithGoogleOptions) => Promise<never>;
   };
   session: {
     get: () => Promise<SessionData | null>;
@@ -35,8 +36,8 @@ export function initAuth(config: AuthConfig): Auth {
 
   return {
     signIn: {
-      google: async () => {
-        return signInWithGoogle(validatedConfig);
+      google: async (options?: SignInWithGoogleOptions) => {
+        return signInWithGoogle(validatedConfig, options);
       },
     },
 

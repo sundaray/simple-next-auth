@@ -6,11 +6,18 @@ import { createAuthorizationUrl } from '../core/oauth/index.js';
 import { redirect } from '../adapters/nextjs/index.js';
 import type { AuthConfig } from '../config/schema.js';
 
+export interface SignInWithGoogleOptions {
+  redirectTo?: `/${string}`;
+}
+
 // ============================================
 // SIGN IN WITH GOOGLE
 // ============================================
 
-export async function signInWithGoogle(config: AuthConfig): Promise<never> {
+export async function signInWithGoogle(
+  config: AuthConfig,
+  options?: SignInWithGoogleOptions,
+): Promise<never> {
   // Check if Google provider is configured
   if (!config.providers.google) {
     throw new Error('Google provider is not configured');
@@ -50,7 +57,7 @@ export async function signInWithGoogle(config: AuthConfig): Promise<never> {
     oauthState: {
       state,
       codeVerifier,
-      redirectTo: '/dashboard',
+      redirectTo: options?.redirectTo || '/',
     },
     secret: config.session.secret,
     maxAge: 60 * 10, // OAuth state valid for 10 minutes

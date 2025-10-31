@@ -23,22 +23,8 @@ import { redirect as nextRedirect, RedirectType } from 'next/navigation';
  *
  * INTERNAL USE ONLY - Not exposed to library users.
  *
- * Usage:
- * ```typescript
- * // In Server Action, Route Handler, or Server Component
- * redirect('/dashboard');                        // Temporary (307/303)
- * redirect('https://google.com');                // External redirect
- * redirect('/dashboard', RedirectType.replace);  // Replace history
- * redirect('/dashboard', RedirectType.push);     // Push to history
- * ```
- *
- * @param path - URL to redirect to (can be relative or absolute)
- * @param type - Optional redirect type ('replace' or 'push')
- * @throws {Error} If URL is invalid
- * @throws {NEXT_REDIRECT} The Next.js redirect error (expected)
  */
 export function redirect(path: string, type?: RedirectType): never {
-  // Validate URL format before redirecting
   if (!isValidRedirectUrl(path)) {
     throw new Error(`Invalid redirect URL: ${path}`);
   }

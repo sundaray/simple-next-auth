@@ -18,7 +18,7 @@ export type OAuthStateJWTCreationError = {
 export interface OAuthStateData {
   state: string;
   codeVerifier: string;
-  redirectTo?: string; // Where to redirect after successful sign-in
+  redirectTo?: `/${string}`; // Where to redirect after successful sign-in
 }
 
 export interface CreateOAuthStateJWTParams {
