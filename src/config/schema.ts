@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
 // ============================================
-// SESSION CONFIG SCHEMA
+//
+// SESSION CONFIG
+//
 // ============================================
 
 export const SessionConfigSchema = z.object({
@@ -14,7 +16,6 @@ export const SessionConfigSchema = z.object({
   /**
    * Session lifetime in seconds.
    * Default: 7 days (604800 seconds)
-   *
    */
   maxAge: z
     .number()
@@ -26,33 +27,18 @@ export const SessionConfigSchema = z.object({
 export type SessionConfig = z.infer<typeof SessionConfigSchema>;
 
 // ============================================
-// GOOGLE PROVIDER CONFIG SCHEMA
+//
+// PROVIDERS CONFIG
+//
 // ============================================
 
 export const GoogleProviderConfigSchema = z.object({
   clientId: z.string().min(1, 'Google Client ID is required'),
   clientSecret: z.string().min(1, 'Google Client Secret is required'),
   redirectUri: z.url('Redirect URI must be a valid URL'),
-
-  /**
-   * OAuth scopes to request.
-   * Default: ['openid', 'email', 'profile']
-   *
-   * Available scopes:
-   * - 'openid' - Required for OpenID Connect
-   * - 'email' - User's email address
-   * - 'profile' - User's basic profile info (name, picture)
-   *
-   * @see https://developers.google.com/identity/protocols/oauth2/scopes
-   */
-  scopes: z.array(z.string()).default(['openid', 'email', 'profile']),
 });
 
 export type GoogleProviderConfig = z.infer<typeof GoogleProviderConfigSchema>;
-
-// ============================================
-// PROVIDERS CONFIG SCHEMA
-// ============================================
 
 export const ProvidersConfigSchema = z.object({
   google: GoogleProviderConfigSchema.optional(),
@@ -61,21 +47,35 @@ export const ProvidersConfigSchema = z.object({
 export type ProvidersConfig = z.infer<typeof ProvidersConfigSchema>;
 
 // ============================================
-// MAIN AUTH CONFIG SCHEMA
+//
+// CALLBACKS CONFIG
+//
 // ============================================
 
-/**
- * Main authentication configuration schema.
- */
+export const CallbacksConfigSchema = z.object({
+  google: z.function().optional(),
+});
+
+export type CallbacksConfig = z.infer<typeof CallbacksConfigSchema>;
+
+// ============================================
+//
+// AUTH CONFIG
+//
+// ============================================
+
 export const AuthConfigSchema = z.object({
   session: SessionConfigSchema,
   providers: ProvidersConfigSchema,
+  callbacks: CallbacksConfigSchema,
 });
 
 export type AuthConfig = z.infer<typeof AuthConfigSchema>;
 
 // ============================================
-// CONFIG VALIDATION
+//
+// VALIDATE AUTH CONFIG
+//
 // ============================================
 
 export function validateAuthConfig(config: unknown): AuthConfig {

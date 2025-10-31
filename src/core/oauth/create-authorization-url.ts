@@ -9,7 +9,6 @@ export interface AuthorizationUrlParams {
   redirectUri: string;
   state: string;
   codeChallenge: string;
-  scopes: string[];
   prompt: 'select_account' | 'consent' | 'none';
 }
 
@@ -20,16 +19,16 @@ export interface AuthorizationUrlParams {
 const GOOGLE_AUTHORIZATION_ENDPOINT =
   'https://accounts.google.com/o/oauth2/v2/auth';
 
-/**
- * Creates a Google OAuth 2.0 authorization URL with PKCE.
- *
- * This URL is where users are redirected to sign in with their Google account.
- */
+// 'openid' - Required for OpenID Connect
+// 'email' - User's email address
+// 'profile' - User's basic profile info
+// @see https://developers.google.com/identity/protocols/oauth2/scopes
+const SCOPES = ['openid', 'email', 'profile'];
+
 export function createAuthorizationUrl(
   params: AuthorizationUrlParams,
 ): Result<string, never> {
-  const { clientId, redirectUri, state, codeChallenge, scopes, prompt } =
-    params;
+  const { clientId, redirectUri, state, codeChallenge, prompt } = params;
 
   const url = new URL(GOOGLE_AUTHORIZATION_ENDPOINT);
 
@@ -44,7 +43,7 @@ export function createAuthorizationUrl(
   url.searchParams.set('code_challenge_method', 'S256');
 
   // Scopes (user configurable)
-  url.searchParams.set('scope', scopes.join(' '));
+  url.searchParams.set('scope', SCOPES.join(' '));
 
   // Prompt (user configurable)
   url.searchParams.set('prompt', prompt);
