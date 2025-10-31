@@ -11,26 +11,11 @@ import {
 import type { AuthConfig } from '../config/schema.js';
 
 // ============================================
+//
 // GOOGLE OAUTH CALLBACK
+//
 // ============================================
 
-/**
- * Handles the OAuth callback from Google.
- *
- * This function:
- * 1. Parses callback URL for code and state
- * 2. Decrypts and validates OAuth state JWT
- * 3. Exchanges authorization code for tokens (using PKCE)
- * 4. Decodes ID token to get user info
- * 5. Creates session JWT
- * 6. Sets session cookie
- * 7. Redirects to success page
- *
- * @param config - Validated auth configuration
- * @param request - The callback request from Google
- * @returns Never returns (redirects to success page)
- * @throws {Error} If OAuth callback fails at any step
- */
 export async function handleGoogleCallback(
   config: AuthConfig,
   request: Request,
@@ -98,23 +83,26 @@ export async function handleGoogleCallback(
 
   const userInfo = idTokenResult.value;
 
+  // Step 5:
+  let customSessionData = {};
+  if (config.callbacks?.google) {
+    try {
+      customSessionData = await config.callbacks.google(userInfo);
+    } catch (error) {
+      throw new Error('Error in user-defined "google" callback:', {
+        cause: error,
+      });
+    }
+  }
+
   // Step 5: Create session JWT
-  const now = Date.now();
   const sessionResult = await createSessionJWT({
-    sessionData: {
-      provider: 'google',
-      sub: userInfo.sub,
-      email: userInfo.email,
-      emailVerified: userInfo.email_verified,
-      name: userInfo.name,
-      givenName: userInfo.given_name,
-      familyName: userInfo.family_name,
-      picture: userInfo.picture,
-      createdAt: now,
-      expiresAt: now + config.session.maxAge * 1000, // Convert seconds to ms
-    },
+    ...customSessionData,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + config.session.maxAge,
     secret: config.session.secret,
     maxAge: config.session.maxAge,
+    provider: 'google',
   });
 
   if (sessionResult.isErr()) {

@@ -2,10 +2,6 @@ import { EncryptJWT } from 'jose';
 import { ResultAsync } from 'neverthrow';
 import type { SessionData } from './session-schema.js';
 
-// ============================================
-// ERROR TYPES
-// ============================================
-
 export type SessionJWTCreationError = {
   type: 'SESSION_JWT_CREATION_ERROR';
   message: string;
@@ -13,28 +9,17 @@ export type SessionJWTCreationError = {
 };
 
 // ============================================
-// TYPES
-// ============================================
-
-export interface CreateSessionJWTParams {
-  sessionData: SessionData;
-  secret: string;
-  maxAge: number;
-}
-
-// ============================================
+//
 // CREATE SESSION JWT
+//
 // ============================================
 
-/**
- * Creates an encrypted JWT (JWE) containing session data.
- */
 export function createSessionJWT(
-  params: CreateSessionJWTParams,
+  sessionData: SessionData,
 ): ResultAsync<string, SessionJWTCreationError> {
   return ResultAsync.fromPromise(
     (async () => {
-      const { sessionData, secret, maxAge } = params;
+      const { secret, maxAge } = sessionData;
 
       // Convert secret string to Uint8Array (required by jose)
       const secretKey = new TextEncoder().encode(secret);

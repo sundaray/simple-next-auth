@@ -11,7 +11,9 @@ export interface SignInWithGoogleOptions {
 }
 
 // ============================================
+//
 // SIGN IN WITH GOOGLE
+//
 // ============================================
 
 export async function signInWithGoogle(
@@ -19,7 +21,7 @@ export async function signInWithGoogle(
   options?: SignInWithGoogleOptions,
 ): Promise<never> {
   // Check if Google provider is configured
-  if (!config.providers.google) {
+  if (!config.providers?.google) {
     throw new Error('Google provider is not configured');
   }
 
@@ -79,7 +81,6 @@ export async function signInWithGoogle(
     redirectUri: googleConfig.redirectUri,
     state: oauthStateJWTResult.value,
     codeChallenge,
-    scopes: googleConfig.scopes,
     prompt: 'consent',
   });
 

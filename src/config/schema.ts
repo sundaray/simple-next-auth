@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import type { GoogleIdTokenPayload } from '../core/oauth/index.js';
 
 // ============================================
 //
-// SESSION CONFIG
+// AUTH SESSION CONFIG
 //
 // ============================================
 
@@ -28,7 +29,7 @@ export type SessionConfig = z.infer<typeof SessionConfigSchema>;
 
 // ============================================
 //
-// PROVIDERS CONFIG
+// AUTH PROVIDERS CONFIG
 //
 // ============================================
 
@@ -48,15 +49,17 @@ export type ProvidersConfig = z.infer<typeof ProvidersConfigSchema>;
 
 // ============================================
 //
-// CALLBACKS CONFIG
+// AUTH CALLBACKS CONFIG
 //
 // ============================================
 
-export const CallbacksConfigSchema = z.object({
-  google: z.function().optional(),
-});
+export interface AuthCallbacks {
+  google?: (profile: GoogleIdTokenPayload) => Promise<Record<string, unknown>>;
+}
 
-export type CallbacksConfig = z.infer<typeof CallbacksConfigSchema>;
+// export const CallbacksConfigSchema = z.object({
+//   google: z.function().optional(),
+// });
 
 // ============================================
 //
@@ -66,12 +69,13 @@ export type CallbacksConfig = z.infer<typeof CallbacksConfigSchema>;
 
 export const AuthConfigSchema = z.object({
   session: SessionConfigSchema,
-  providers: ProvidersConfigSchema,
-  callbacks: CallbacksConfigSchema,
+  providers: ProvidersConfigSchema.optional(),
+  callbacks: z.custom<AuthCallbacks>().optional(),
 });
 
-export type AuthConfig = z.infer<typeof AuthConfigSchema>;
-
+export type AuthConfig = z.infer<typeof AuthConfigSchema> & {
+  callbacks?: AuthCallbacks;
+};
 // ============================================
 //
 // VALIDATE AUTH CONFIG
