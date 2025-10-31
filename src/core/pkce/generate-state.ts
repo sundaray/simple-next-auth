@@ -1,5 +1,5 @@
 import { base64url } from 'jose';
-import crypto from 'node:crypto';
+import { getRandomValues } from 'uncrypto';
 import { Result } from 'neverthrow';
 
 // ============================================
@@ -19,7 +19,8 @@ export type StateGenerationError = {
 export function generateState(): Result<string, StateGenerationError> {
   return Result.fromThrowable(
     () => {
-      const randomBytes = crypto.randomBytes(32);
+      const randomBytes = new Uint8Array(32);
+      getRandomValues(randomBytes);
       return base64url.encode(randomBytes);
     },
     (error): StateGenerationError => ({

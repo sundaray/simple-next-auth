@@ -1,5 +1,5 @@
 import { base64url } from 'jose';
-import crypto from 'node:crypto';
+import { subtle } from 'uncrypto';
 import { ResultAsync } from 'neverthrow';
 
 // ============================================
@@ -29,7 +29,7 @@ export function generateCodeChallenge(
   return ResultAsync.fromPromise(
     (async () => {
       const verifierBytes = new TextEncoder().encode(codeVerifier);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', verifierBytes);
+      const hashBuffer = await subtle.digest('SHA-256', verifierBytes);
       const hashBytes = new Uint8Array(hashBuffer);
       return base64url.encode(hashBytes);
     })(),
