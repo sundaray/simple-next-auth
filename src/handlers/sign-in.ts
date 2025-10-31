@@ -57,6 +57,10 @@ export async function signInWithGoogle(config: AuthConfig): Promise<never> {
   });
 
   if (oauthStateJWTResult.isErr()) {
+    console.error(
+      'Failed to create OAuth state JWT: ',
+      oauthStateJWTResult.error,
+    );
     throw new Error('Failed to create OAuth state JWT', {
       cause: oauthStateJWTResult.error,
     });
