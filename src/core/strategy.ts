@@ -11,7 +11,7 @@ export interface OAuthStrategy<
 > {
   config: AuthConfig;
   providerConfig: Config;
-  signin(options: Options): Promise<never>;
+  signIn(options: Options): Promise<never>;
   handleCallback(request: Request): Promise<Result>;
 }
 

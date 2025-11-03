@@ -1,27 +1,23 @@
 import { validateAuthConfig } from './config/schema.js';
 import type { AuthConfig } from './config/schema.js';
 import type { SessionData } from './core/session/index.js';
-import { signInWithGoogle } from './handlers/sign-in.js';
 import { getSession } from './handlers/session.js';
 import { signOut as handleSignOut } from './handlers/sign-out.js';
 import { handleGoogleCallback } from './handlers/callback.js';
-import type { SignInWithGoogleOptions } from './handlers/sign-in.js';
+import type { AnyAuthStrategy } from './core/strategy.js';
+import type { BaseSignInOptions } from './core/strategy.js';
 
-// ============================================
-// TYPES
-// ============================================
+import { GoogleProvider } from './providers/google.js';
 
 export interface Auth {
-  signIn: {
-    google: (options?: SignInWithGoogleOptions) => Promise<never>;
-  };
-  session: {
-    get: () => Promise<SessionData | null>;
-  };
+  signIn: (providerId: string, options?: BaseSignInOptions) => Promise<never>;
+
+  getUserSession: () => Promise<SessionData | null>;
+
   signOut: () => Promise<never>;
 
   callback: {
-    google: (request: Request) => Promise<never>;
+    handle: (request: Request) => Promise<never>;
   };
 }
 
@@ -34,17 +30,20 @@ export type { SessionData } from './core/session/index.js';
 export function initAuth(config: AuthConfig): Auth {
   const validatedConfig = validateAuthConfig(config);
 
+  const strategies = new Map<string, AnyAuthStrategy>();
+
+  if (validatedConfig.providers?.google) {
+    strategies.set('google', new GoogleProvider(validatedConfig));
+  }
+
   return {
-    signIn: {
-      google: async (options?: SignInWithGoogleOptions) => {
-        return signInWithGoogle(validatedConfig, options);
-      },
+    signIn: async (providerId, options) => {
+      const strategy = strategies.get(providerId);
+      return strategy?.signIn();
     },
 
-    session: {
-      get: async () => {
-        return getSession(validatedConfig);
-      },
+    getUserSession: async () => {
+      return getSession(validatedConfig);
     },
 
     signOut: async () => {
@@ -52,8 +51,10 @@ export function initAuth(config: AuthConfig): Auth {
     },
 
     callback: {
-      google: async (request: Request) => {
+      handle: async (request: Request) => {
         return handleGoogleCallback(validatedConfig, request);
+
+        // Create session
       },
     },
   };

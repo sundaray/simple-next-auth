@@ -1,9 +1,5 @@
 import { Result, ok } from 'neverthrow';
 
-// ============================================
-// TYPES
-// ============================================
-
 export interface AuthorizationUrlParams {
   clientId: string;
   redirectUri: string;
@@ -11,10 +7,6 @@ export interface AuthorizationUrlParams {
   codeChallenge: string;
   prompt: 'select_account' | 'consent' | 'none';
 }
-
-// ============================================
-// CREATE AUTHORIZATION URL
-// ============================================
 
 const GOOGLE_AUTHORIZATION_ENDPOINT =
   'https://accounts.google.com/o/oauth2/v2/auth';
@@ -42,7 +34,7 @@ export function createAuthorizationUrl(
   url.searchParams.set('code_challenge', codeChallenge);
   url.searchParams.set('code_challenge_method', 'S256');
 
-  // Scopes (user configurable)
+  // Scopes
   url.searchParams.set('scope', SCOPES.join(' '));
 
   // Prompt (user configurable)
