@@ -21,7 +21,7 @@ const GoogleIdTokenPayloadSchema = z.object({
   iat: z.number(), // Issued at time (Unix timestamp)
 
   // Present if 'email' scope requested
-  email: z.string().email().optional(),
+  email: z.email().optional(),
   email_verified: z.boolean().optional(),
 
   // Present if 'profile' scope requested

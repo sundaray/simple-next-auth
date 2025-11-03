@@ -21,7 +21,7 @@ export async function handleGoogleCallback(
   request: Request,
 ): Promise<never> {
   // Check if Google provider is configured
-  if (!config.providers.google) {
+  if (!config.providers?.google) {
     throw new Error('Google provider is not configured');
   }
 
@@ -83,7 +83,7 @@ export async function handleGoogleCallback(
 
   const userInfo = idTokenResult.value;
 
-  // Step 5:
+  // Step 5: Run users google callback
   let customSessionData = {};
   if (config.callbacks?.google) {
     try {
@@ -99,7 +99,7 @@ export async function handleGoogleCallback(
   const sessionResult = await createSessionJWT({
     ...customSessionData,
     createdAt: Date.now(),
-    expiresAt: Date.now() + config.session.maxAge,
+    expiresAt: Date.now() + config.session.maxAge * 1000,
     secret: config.session.secret,
     maxAge: config.session.maxAge,
     provider: 'google',

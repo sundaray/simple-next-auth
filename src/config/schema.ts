@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { GoogleIdTokenPayload } from '../core/oauth/index.js';
+import type { SessionData } from '../core/session/session-schema.js';
 
 // ============================================
 //
@@ -13,9 +14,8 @@ export const SessionConfigSchema = z.object({
    * Must be at least 32 characters for security.
    */
   secret: z.string().min(32, 'Session secret must be at least 32 characters'),
-
   /**
-   * Session lifetime in seconds.
+   * The duration in seconds the user's session will last.
    * Default: 7 days (604800 seconds)
    */
   maxAge: z
@@ -47,19 +47,11 @@ export const ProvidersConfigSchema = z.object({
 
 export type ProvidersConfig = z.infer<typeof ProvidersConfigSchema>;
 
-// ============================================
-//
-// AUTH CALLBACKS CONFIG
-//
-// ============================================
-
 export interface AuthCallbacks {
-  google?: (profile: GoogleIdTokenPayload) => Promise<Record<string, unknown>>;
+  google?: (
+    profile: GoogleIdTokenPayload,
+  ) => Promise<SessionData | Record<string, unknown>>;
 }
-
-// export const CallbacksConfigSchema = z.object({
-//   google: z.function().optional(),
-// });
 
 // ============================================
 //
@@ -70,7 +62,6 @@ export interface AuthCallbacks {
 export const AuthConfigSchema = z.object({
   session: SessionConfigSchema,
   providers: ProvidersConfigSchema.optional(),
-  callbacks: z.custom<AuthCallbacks>().optional(),
 });
 
 export type AuthConfig = z.infer<typeof AuthConfigSchema> & {
