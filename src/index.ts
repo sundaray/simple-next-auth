@@ -21,13 +21,20 @@ export interface Auth {
   };
 }
 
+let authInstance: Auth | undefined;
+
 export type { SessionData } from './core/session/index.js';
 
 // ============================================
+//
 // INIT AUTH
+//
 // ============================================
 
 export function initAuth(config: AuthConfig): Auth {
+  if (authInstance) {
+    return authInstance;
+  }
   const validatedConfig = validateAuthConfig(config);
 
   const strategies = new Map<string, AnyAuthStrategy>();
@@ -36,7 +43,7 @@ export function initAuth(config: AuthConfig): Auth {
     strategies.set('google', new GoogleProvider(validatedConfig));
   }
 
-  return {
+  const authObject: Auth = {
     signIn: async (providerId, options) => {
       const strategy = strategies.get(providerId);
       return strategy?.signIn();
@@ -54,10 +61,17 @@ export function initAuth(config: AuthConfig): Auth {
       handle: async (request: Request) => {
         return handleGoogleCallback(validatedConfig, request);
 
-        // Create session
+        // Create user session
+
+        // Set the user session cookie
+
+        // Redirect user to their intended destination
       },
     },
   };
+
+  authInstance = authObject;
+  return authInstance;
 }
 
 // ============================================
