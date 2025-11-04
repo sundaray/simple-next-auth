@@ -25,6 +25,28 @@ export class MissingStateError extends AuthError {
   }
 }
 
+export class MissingOAuthStateCookieError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'OAuth state cookie not found',
+      cause: options.cause,
+    });
+    this.name = 'MissingOAuthStateCookieError';
+  }
+}
+
+export class StateMismatchError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message:
+        options.message ||
+        'State parameter mismatch - possible CSRF attack detected',
+      cause: options.cause,
+    });
+    this.name = 'StateMismatchError';
+  }
+}
+
 export class SetCookieError extends AuthError {
   constructor(options: { message?: string; cause?: unknown }) {
     super({
@@ -114,5 +136,45 @@ export class InvalidTokenPayloadError extends AuthError {
       cause: options.cause,
     });
     this.name = 'InvalidTokenPayloadError';
+  }
+}
+
+export class GenerateStateError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to generate state parameter',
+      cause: options.cause,
+    });
+    this.name = 'GenerateStateError';
+  }
+}
+
+export class GenerateCodeVerifierError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to generate PKCE code verifier',
+      cause: options.cause,
+    });
+    this.name = 'GenerateCodeVerifierError';
+  }
+}
+
+export class GenerateCodeChallengeError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to generate PKCE code challenge',
+      cause: options.cause,
+    });
+    this.name = 'GenerateCodeChallengeError';
+  }
+}
+
+export class CreateOAuthStateJweError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to create OAuth state JWE',
+      cause: options.cause,
+    });
+    this.name = 'CreateOAuthStateJweError';
   }
 }

@@ -1,15 +1,6 @@
 import { EncryptJWT } from 'jose';
 import { ResultAsync } from 'neverthrow';
-
-// ============================================
-// ERROR TYPES
-// ============================================
-
-export type OAuthStateJWTCreationError = {
-  type: 'OAUTH_STATE_JWT_CREATION_ERROR';
-  message: string;
-  cause?: unknown;
-};
+import { CreateOAuthStateJweError } from '../errors';
 
 // ============================================
 // TYPES
@@ -21,28 +12,19 @@ export interface OAuthStateData {
   redirectTo?: `/${string}`; // Where to redirect after successful sign-in
 }
 
-export interface CreateOAuthStateJWTParams {
+export interface CreateOAuthStateJWEParams {
   oauthState: OAuthStateData;
   secret: string;
   maxAge: number; // in seconds (typically 10 minutes)
 }
 
 // ============================================
-// CREATE OAUTH STATE JWT
+// CREATE OAUTH STATE JWE
 // ============================================
 
-/**
- * Creates an encrypted JWT (JWE) containing OAuth state data.
- *
- * This JWT is stored in a short-lived cookie (10 minutes) and contains:
- * - state: Random CSRF token
- * - codeVerifier: PKCE code verifier
- * - redirectTo: Optional redirect destination after sign-in
- *
- */
-export function createOAuthStateJWT(
-  params: CreateOAuthStateJWTParams,
-): ResultAsync<string, OAuthStateJWTCreationError> {
+export function createOAuthStateJWE(
+  params: CreateOAuthStateJWEParams,
+): ResultAsync<string, CreateOAuthStateJweError> {
   return ResultAsync.fromPromise(
     (async () => {
       const { oauthState, secret, maxAge } = params;
@@ -59,10 +41,6 @@ export function createOAuthStateJWT(
 
       return jwt;
     })(),
-    (error): OAuthStateJWTCreationError => ({
-      type: 'OAUTH_STATE_JWT_CREATION_ERROR',
-      message: 'Failed to create OAuth state JWT',
-      cause: error,
-    }),
+    (error) => new CreateOAuthStateJweError({ cause: error }),
   );
 }

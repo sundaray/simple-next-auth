@@ -11,7 +11,7 @@ import {
 } from '../core/pkce';
 
 import {
-  createOAuthStateJWT,
+  createOAuthStateJWE,
   createAuthorizationUrl,
   decryptOAuthStateJWT,
   exchangeCodeForTokens,
@@ -22,7 +22,15 @@ import {
   MissingStateError,
 } from '../core/errors';
 
+import { decodeIdToken } from '../core/oauth';
+
 import type { AuthAdapter } from '../core/adapter';
+
+import {
+  GenerateStateError,
+  GenerateCodeVerifierError,
+  GenerateCodeChallengeError,
+} from '../core/errors';
 
 export interface SignInWithGoogleOptions extends BaseSignInOptions {}
 
@@ -70,7 +78,7 @@ export class GoogleProvider
     // Generate state
     const stateResult = generateState();
     if (stateResult.isErr()) {
-      throw new Error('Failed to generate state', { cause: stateResult.error });
+      throw new GenerateStateError({ cause: stateResult.error });
     }
 
     const state = stateResult.value;
@@ -78,9 +86,7 @@ export class GoogleProvider
     // Generate code verifier
     const codeVerifierResult = generateCodeVerifier();
     if (codeVerifierResult.isErr()) {
-      throw new Error('Failed to generate code verifier.', {
-        cause: codeVerifierResult.error,
-      });
+      throw new GenerateCodeVerifierError({ cause: codeVerifierResult.error });
     }
 
     const codeVerifier = codeVerifierResult.value;
@@ -88,7 +94,7 @@ export class GoogleProvider
     // Generate code challenge
     const codeChallengeResult = await generateCodeChallenge(codeVerifier);
     if (codeChallengeResult.isErr()) {
-      throw new Error('Failed to generate code challenge.', {
+      throw new GenerateCodeChallengeError({
         cause: codeChallengeResult.error,
       });
     }
@@ -96,7 +102,7 @@ export class GoogleProvider
     const codeChallenge = codeChallengeResult.value;
 
     // Create OAuth state JWT
-    const oauthStateJWTResult = await createOAuthStateJWT({
+    const oauthStateJWEResult = await createOAuthStateJWE({
       oauthState: {
         state,
         codeVerifier,
@@ -106,13 +112,13 @@ export class GoogleProvider
       maxAge: 60 * 10, // 10 minutes
     });
 
-    if (oauthStateJWTResult.isErr()) {
+    if (oauthStateJWEResult.isErr()) {
       throw new Error('Failed to create OAuth state JWT,', {
         cause: oauthStateJWTResult.error,
       });
     }
 
-    const oauthState = oauthStateJWTResult.value;
+    const oauthState = oauthStateJWEResult.value;
 
     // Set OAuth state cookie
 
@@ -153,14 +159,32 @@ export class GoogleProvider
       throw new MissingStateError();
     }
 
-    // Get the OAuth state cookie, decrypt the JWE
+    // Get the OAuth state cookie
 
     // Compare the cookie state with url state
 
-    // Exchange authorization coide for tokens
+    // Exchange authorization code for tokens
+    const tokensResult = await exchangeCodeForTokens({
+      code,
+      clientSecret: this.providerConfig.clientSecret,
+      redirectUri: this.providerConfig.redirectUri,
+      codeVerifier: oauthStateData.codeVerifier,
+    });
+
+    if (tokensResult.isErr()) {
+    }
+
+    const tokens = tokensResult.value;
+
+    const userClaimsResult = decodeIdToken(tokens.id_token);
+    if (userClaims.isErr()) {
+    }
+
+    const userClaims = userClaimsResult.value;
 
     // Decode the id_token for user claims
 
     // return values
+    return { userClaims, tokens, oauthState };
   }
 }
