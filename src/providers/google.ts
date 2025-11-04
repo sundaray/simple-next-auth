@@ -1,4 +1,4 @@
-import type { OAuthStrategy, BaseSignInOptions } from '../core/strategy';
+import type { OAuthProvider, BaseSignInOptions } from '../core/strategy';
 
 import type { AuthConfig, GoogleProviderConfig } from '../config/schema';
 
@@ -11,31 +11,28 @@ import {
 } from '../core/pkce';
 
 import {
+  decodeIdToken,
   createOAuthStateJWE,
   createAuthorizationUrl,
   decryptOAuthStateJWT,
-  exchangeCodeForTokens,
+  exchangeAuthorizationCodeForTokens,
 } from '../core/oauth';
 
 import {
+  MissingOAuthStateCookieError,
   MissingAuthorizationCodeError,
   MissingStateError,
+  StateMismatchError,
 } from '../core/errors';
 
-import { decodeIdToken } from '../core/oauth';
+import { COOKIE_NAMES, OAUTH_STATE_MAX_AGE } from '../core/constants';
 
 import type { AuthAdapter } from '../core/adapter';
-
-import {
-  GenerateStateError,
-  GenerateCodeVerifierError,
-  GenerateCodeChallengeError,
-} from '../core/errors';
 
 export interface SignInWithGoogleOptions extends BaseSignInOptions {}
 
 export interface GoogleAuthResult {
-  userInfo: GoogleIdTokenPayload;
+  userClaims: GoogleIdTokenPayload;
   tokens: GoogleTokenResponse;
   oauthState: {
     state: string;
@@ -51,7 +48,7 @@ export interface GoogleAuthResult {
 // ============================================
 export class GoogleProvider
   implements
-    OAuthStrategy<
+    OAuthProvider<
       GoogleProviderConfig,
       SignInWithGoogleOptions,
       GoogleAuthResult
@@ -78,7 +75,7 @@ export class GoogleProvider
     // Generate state
     const stateResult = generateState();
     if (stateResult.isErr()) {
-      throw new GenerateStateError({ cause: stateResult.error });
+      throw stateResult.error;
     }
 
     const state = stateResult.value;
@@ -86,7 +83,7 @@ export class GoogleProvider
     // Generate code verifier
     const codeVerifierResult = generateCodeVerifier();
     if (codeVerifierResult.isErr()) {
-      throw new GenerateCodeVerifierError({ cause: codeVerifierResult.error });
+      throw codeVerifierResult.error;
     }
 
     const codeVerifier = codeVerifierResult.value;
@@ -94,33 +91,33 @@ export class GoogleProvider
     // Generate code challenge
     const codeChallengeResult = await generateCodeChallenge(codeVerifier);
     if (codeChallengeResult.isErr()) {
-      throw new GenerateCodeChallengeError({
-        cause: codeChallengeResult.error,
-      });
+      throw codeChallengeResult.error;
     }
 
     const codeChallenge = codeChallengeResult.value;
 
-    // Create OAuth state JWT
+    // Create OAuth state JWE
     const oauthStateJWEResult = await createOAuthStateJWE({
       oauthState: {
         state,
         codeVerifier,
         redirectTo: options.redirectTo || '/',
+        provider: 'google',
       },
       secret: this.config.session.secret,
-      maxAge: 60 * 10, // 10 minutes
+      maxAge: OAUTH_STATE_MAX_AGE,
     });
 
     if (oauthStateJWEResult.isErr()) {
-      throw new Error('Failed to create OAuth state JWT,', {
-        cause: oauthStateJWTResult.error,
-      });
+      throw oauthStateJWEResult.error;
     }
 
-    const oauthState = oauthStateJWEResult.value;
+    const oauthStateJwe = oauthStateJWEResult.value;
 
     // Set OAuth state cookie
+    await this.adapter.setCookie(COOKIE_NAMES.OAUTH_STATE, oauthStateJwe, {
+      maxAge: OAUTH_STATE_MAX_AGE,
+    });
 
     // Create authorization URL
     const authorizationUrlResult = createAuthorizationUrl({
@@ -132,9 +129,7 @@ export class GoogleProvider
     });
 
     if (authorizationUrlResult.isErr()) {
-      throw new Error('Failed to create authorization URL.', {
-        cause: authorizationUrlResult.error,
-      });
+      throw authorizationUrlResult.error;
     }
 
     const authorizationUrl = authorizationUrlResult.value;
@@ -160,31 +155,65 @@ export class GoogleProvider
     }
 
     // Get the OAuth state cookie
+    const oauthStateJWE = await this.adapter.getCookie(
+      COOKIE_NAMES.OAUTH_STATE,
+    );
 
-    // Compare the cookie state with url state
+    if (!oauthStateJWE) {
+      throw new MissingOAuthStateCookieError();
+    }
+
+    // Decrypt the Oauth state JWE
+    const oauthStateResult = await decryptOAuthStateJWT({
+      jwt: oauthStateJWE,
+      secret: this.config.session.secret,
+    });
+
+    if (oauthStateResult.isErr()) {
+      throw oauthStateResult.error;
+    }
+
+    const oauthStatePayload = oauthStateResult.value;
+
+    // Compare the state stored in cookie with state stored in URL
+    if (oauthStatePayload.state !== state) {
+      throw new StateMismatchError();
+    }
 
     // Exchange authorization code for tokens
-    const tokensResult = await exchangeCodeForTokens({
+    const tokensResult = await exchangeAuthorizationCodeForTokens({
       code,
       clientSecret: this.providerConfig.clientSecret,
       redirectUri: this.providerConfig.redirectUri,
-      codeVerifier: oauthStateData.codeVerifier,
+      codeVerifier: oauthStatePayload.codeVerifier,
     });
 
     if (tokensResult.isErr()) {
+      throw tokensResult.error;
     }
 
     const tokens = tokensResult.value;
 
+    // Decode the id_token for user claims
     const userClaimsResult = decodeIdToken(tokens.id_token);
-    if (userClaims.isErr()) {
+
+    if (userClaimsResult.isErr()) {
+      throw userClaimsResult.error;
     }
 
     const userClaims = userClaimsResult.value;
 
-    // Decode the id_token for user claims
+    // Delete the OAuth state cookie
+    await this.adapter.deleteCookie(COOKIE_NAMES.OAUTH_STATE);
 
-    // return values
-    return { userClaims, tokens, oauthState };
+    return {
+      userClaims,
+      tokens,
+      oauthState: {
+        state: oauthStatePayload.state,
+        codeVerifier: oauthStatePayload.codeVerifier,
+        redirectTo: oauthStatePayload.redirectTo,
+      },
+    };
   }
 }

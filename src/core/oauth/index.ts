@@ -3,29 +3,27 @@
 // ============================================
 
 export { createAuthorizationUrl } from './create-authorization-url.js';
-export { createOAuthStateJWT } from './create-oauth-state-jwt.js';
-export { decryptOAuthStateJWT } from './decrypt-oauth-state-jwt.js';
-export { exchangeCodeForTokens } from './exchange-code-for-tokens.js';
+export { createOAuthStateJWE } from './create-oauth-state-jwe.js';
+export { decryptOAuthStateJWT } from './decrypt-oauth-state-jwe.js';
+export { exchangeAuthorizationCodeForTokens } from './exchange-authorization-code-for-tokens.js';
 export { decodeIdToken } from './decode-id-token.js';
 
 export type { AuthorizationUrlParams } from './create-authorization-url.js';
 
 export type {
-  OAuthStateData,
-  CreateOAuthStateJWTParams,
-  OAuthStateJWTCreationError,
-} from './create-oauth-state-jwt.js';
+  OAuthStatePayload,
+  CreateOAuthStateJWEParams,
+} from './create-oauth-state-jwe.js';
 
 export type {
   DecryptOAuthStateJWTParams,
   OAuthStateJWTDecryptionError,
-} from './decrypt-oauth-state-jwt.js';
+} from './decrypt-oauth-state-jwe.js';
 
 export type {
   GoogleTokenResponse,
   ExchangeCodeForTokensParams,
-  ExchangeCodeForTokensError,
-} from './exchange-code-for-tokens.js';
+} from './exchange-authorization-code-for-tokens.js';
 
 export type {
   GoogleIdTokenPayload,

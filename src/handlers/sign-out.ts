@@ -1,21 +1,11 @@
-import {
-  deleteCookie,
-  COOKIE_NAMES,
-  redirect,
-} from '../adapters/nextjs/index.js';
-import type { AuthConfig } from '../config/schema.js';
+import type { AuthConfig } from '../config/schema';
+import type { AuthAdapter } from '../core/adapter';
+import { COOKIE_NAMES } from '../core/constants';
 
-// ============================================
-// SIGN OUT
-// ============================================
-
-export async function signOut(_config: AuthConfig): Promise<void> {
-  const deleteResult = await deleteCookie(COOKIE_NAMES.SESSION);
-
-  if (deleteResult.isErr()) {
-    console.error('Failed to delete session cookie:', deleteResult.error);
-  }
-
-  // Step 2: Redirect to home page
-  redirect('/');
+export async function signOut(
+  config: AuthConfig,
+  adapter: AuthAdapter,
+): Promise<void> {
+  await adapter.deleteCookie(COOKIE_NAMES.USER_SESSION);
+  adapter.redirect('/');
 }

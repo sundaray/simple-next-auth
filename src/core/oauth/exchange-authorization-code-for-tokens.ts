@@ -47,7 +47,7 @@ const GOOGLE_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
 // EXCHANGE AUTHORIZATION CODE FOR TOKENS
 // ============================================
 
-export interface ExchangeCodeForTokensParams {
+export interface ExchangeAuthorizationCodeForTokensParams {
   code: string;
   clientId: string;
   clientSecret: string;
@@ -55,16 +55,16 @@ export interface ExchangeCodeForTokensParams {
   codeVerifier: string;
 }
 
-export type ExchangeCodeForTokensError =
+export type ExchangeAuthorizationCodeForTokensError =
   | EncodeClientCredentialsError
   | TokenFetchError
   | TokenResponseError
   | TokenParseError
   | InvalidTokenPayloadError;
 
-export function exchangeCodeForTokens(
-  params: ExchangeCodeForTokensParams,
-): ResultAsync<GoogleTokenResponse, ExchangeCodeForTokensError> {
+export function exchangeAuthorizationCodeForTokens(
+  params: ExchangeAuthorizationCodeForTokensParams,
+): ResultAsync<GoogleTokenResponse, ExchangeAuthorizationCodeForTokensError> {
   const { code, clientId, clientSecret, redirectUri, codeVerifier } = params;
 
   // Encode credentials for Basic auth

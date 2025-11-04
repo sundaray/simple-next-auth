@@ -1,31 +1,14 @@
 import { base64url } from 'jose';
 import crypto from 'node:crypto';
 import { Result } from 'neverthrow';
+import { GenerateStateError } from '../errors';
 
-// ============================================
-// ERROR TYPES
-// ============================================
-
-export type StateGenerationError = {
-  type: 'STATE_GENERATION_ERROR';
-  message: string;
-  cause?: unknown;
-};
-
-// ============================================
-// GENERATE STATE
-// ============================================
-
-export function generateState(): Result<string, StateGenerationError> {
+export function generateState(): Result<string, GenerateStateError> {
   return Result.fromThrowable(
     () => {
       const randomBytes = crypto.randomBytes(32);
       return base64url.encode(randomBytes);
     },
-    (error): StateGenerationError => ({
-      type: 'STATE_GENERATION_ERROR',
-      message: 'Failed to generate state.',
-      cause: error,
-    }),
+    (error) => new GenerateStateError({ cause: error }),
   )();
 }

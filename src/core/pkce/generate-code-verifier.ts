@@ -1,16 +1,7 @@
 import { base64url } from 'jose';
 import crypto from 'node:crypto';
 import { Result } from 'neverthrow';
-
-// ============================================
-// ERROR TYPES
-// ============================================
-
-export type CodeVerifierGenerationError = {
-  type: 'CODE_VERIFIER_GENERATION_ERROR';
-  message: string;
-  cause?: unknown;
-};
+import { GenerateCodeVerifierError } from '../errors';
 
 // ============================================
 // GENERATE CODE VERIFIER
@@ -28,17 +19,13 @@ export type CodeVerifierGenerationError = {
  */
 export function generateCodeVerifier(): Result<
   string,
-  CodeVerifierGenerationError
+  GenerateCodeVerifierError
 > {
   return Result.fromThrowable(
     () => {
       const randomBytes = crypto.randomBytes(32);
       return base64url.encode(randomBytes);
     },
-    (error): CodeVerifierGenerationError => ({
-      type: 'CODE_VERIFIER_GENERATION_ERROR',
-      message: 'Failed to generate code verifier.',
-      cause: error,
-    }),
+    (error) => new GenerateCodeVerifierError({ cause: error }),
   )();
 }

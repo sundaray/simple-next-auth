@@ -1,20 +1,7 @@
 import { base64url } from 'jose';
 import crypto from 'node:crypto';
 import { ResultAsync } from 'neverthrow';
-
-// ============================================
-// ERROR TYPES
-// ============================================
-
-export type CodeChallengeGenerationError = {
-  type: 'CODE_CHALLENGE_GENERATION_ERROR';
-  message: string;
-  cause?: unknown;
-};
-
-// ============================================
-// GENERATE CODE CHALLENGE (S256)
-// ============================================
+import { GenerateCodeChallengeError } from '../errors';
 
 /**
  * Generates a SHA-256 code challenge from a code verifier for OAuth 2.0 PKCE flow.
@@ -25,7 +12,7 @@ export type CodeChallengeGenerationError = {
  */
 export function generateCodeChallenge(
   codeVerifier: string,
-): ResultAsync<string, CodeChallengeGenerationError> {
+): ResultAsync<string, GenerateCodeChallengeError> {
   return ResultAsync.fromPromise(
     (async () => {
       const verifierBytes = new TextEncoder().encode(codeVerifier);
@@ -33,10 +20,6 @@ export function generateCodeChallenge(
       const hashBytes = new Uint8Array(hashBuffer);
       return base64url.encode(hashBytes);
     })(),
-    (error): CodeChallengeGenerationError => ({
-      type: 'CODE_CHALLENGE_GENERATION_ERROR',
-      message: 'Failed to generate code challenge.',
-      cause: error,
-    }),
+    (error) => new GenerateCodeChallengeError({ cause: error }),
   );
 }

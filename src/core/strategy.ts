@@ -4,15 +4,15 @@ export interface BaseSignInOptions {
   redirectTo?: `/${string}`;
 }
 
-export interface OAuthStrategy<
+export interface OAuthProvider<
   Config,
   Options extends BaseSignInOptions,
   Result,
 > {
   config: AuthConfig;
   providerConfig: Config;
-  signIn(options: Options): Promise<never>;
+  signIn(options: Options): Promise<void>;
   handleCallback(request: Request): Promise<Result>;
 }
 
-export type AnyAuthStrategy = OAuthStrategy<any, any, any>;
+export type AnyAuthProvider = OAuthProvider<any, any, any>;

@@ -178,3 +178,12 @@ export class CreateOAuthStateJweError extends AuthError {
     this.name = 'CreateOAuthStateJweError';
   }
 }
+export class CreateAuthorizationUrlError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to create authorization URL.',
+      cause: options.cause,
+    });
+    this.name = 'CreateAuthorizationUrlError';
+  }
+}

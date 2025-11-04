@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const SessionSchema = z.object({
+export const UserSessionSchema = z.object({
   createdAt: z.number(),
   expiresAt: z.number(),
   secret: z.string(),
@@ -15,4 +15,4 @@ export const SessionSchema = z.object({
   familyName: z.string().optional(),
 });
 
-export type SessionData = z.infer<typeof SessionSchema>;
+export type UserSession = z.infer<typeof UserSessionSchema>;

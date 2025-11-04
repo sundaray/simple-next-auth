@@ -2,20 +2,17 @@ import { EncryptJWT } from 'jose';
 import { ResultAsync } from 'neverthrow';
 import { CreateOAuthStateJweError } from '../errors';
 
-// ============================================
-// TYPES
-// ============================================
-
-export interface OAuthStateData {
+export interface OAuthStatePayload {
   state: string;
   codeVerifier: string;
-  redirectTo?: `/${string}`; // Where to redirect after successful sign-in
+  redirectTo?: `/${string}`;
+  provider: string;
 }
 
 export interface CreateOAuthStateJWEParams {
-  oauthState: OAuthStateData;
+  oauthState: OAuthStatePayload;
   secret: string;
-  maxAge: number; // in seconds (typically 10 minutes)
+  maxAge: number;
 }
 
 // ============================================
