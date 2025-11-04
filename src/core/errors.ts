@@ -187,3 +187,13 @@ export class CreateAuthorizationUrlError extends AuthError {
     this.name = 'CreateAuthorizationUrlError';
   }
 }
+
+export class DecryptOAuthStateJweError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to decrypt OAuth state JWE',
+      cause: options.cause,
+    });
+    this.name = 'DecryptOAuthStateJweError';
+  }
+}

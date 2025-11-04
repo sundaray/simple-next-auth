@@ -14,7 +14,7 @@ import {
   decodeIdToken,
   createOAuthStateJWE,
   createAuthorizationUrl,
-  decryptOAuthStateJWT,
+  decryptOAuthStateJWE,
   exchangeAuthorizationCodeForTokens,
 } from '../core/oauth';
 
@@ -164,7 +164,7 @@ export class GoogleProvider
     }
 
     // Decrypt the Oauth state JWE
-    const oauthStateResult = await decryptOAuthStateJWT({
+    const oauthStateResult = await decryptOAuthStateJWE({
       jwt: oauthStateJWE,
       secret: this.config.session.secret,
     });

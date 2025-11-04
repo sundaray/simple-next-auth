@@ -1,13 +1,7 @@
 import { EncryptJWT } from 'jose';
 import { ResultAsync } from 'neverthrow';
 import { CreateOAuthStateJweError } from '../errors';
-
-export interface OAuthStatePayload {
-  state: string;
-  codeVerifier: string;
-  redirectTo?: `/${string}`;
-  provider: string;
-}
+import type { OAuthStatePayload } from '../../types';
 
 export interface CreateOAuthStateJWEParams {
   oauthState: OAuthStatePayload;
