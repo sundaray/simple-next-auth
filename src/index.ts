@@ -9,6 +9,8 @@ import type { BaseSignInOptions } from './core/strategy.js';
 
 import { GoogleProvider } from './providers/google.js';
 
+import type { AuthAdapter } from './core/adapter.js';
+
 export interface Auth {
   signIn: (providerId: string, options?: BaseSignInOptions) => Promise<never>;
 
@@ -22,6 +24,7 @@ export interface Auth {
 }
 
 let authInstance: Auth | undefined;
+let adapterInstance: AuthAdapter | undefined;
 
 export type { SessionData } from './core/session/index.js';
 
@@ -55,6 +58,9 @@ export function initAuth(config: AuthConfig): Auth {
 
     signOut: async () => {
       return handleSignOut(validatedConfig);
+      try {
+        await adapter;
+      } catch (error) {}
     },
 
     callback: {
@@ -67,6 +73,10 @@ export function initAuth(config: AuthConfig): Auth {
 
         // Redirect user to their intended destination
       },
+    },
+
+    session: {
+      signOut: async () => {},
     },
   };
 
