@@ -22,7 +22,7 @@ import {
   MissingStateError,
 } from '../core/errors';
 
-import { redirect } from '../adapters/nextjs/redirect';
+import type { AuthAdapter } from '../core/adapter';
 
 export interface SignInWithGoogleOptions extends BaseSignInOptions {}
 
@@ -51,20 +51,22 @@ export class GoogleProvider
 {
   config: AuthConfig;
   providerConfig: GoogleProviderConfig;
+  adapter: AuthAdapter;
 
-  constructor(config: AuthConfig) {
+  constructor(config: AuthConfig, adapter: AuthAdapter) {
     if (!config.providers?.google) {
       throw new Error('Google provider is not configured.');
     }
     this.config = config;
     this.providerConfig = config.providers.google;
+    this.adapter = adapter;
   }
 
   // ============================================
   // Sign in
   // ============================================
 
-  async signIn(options: SignInWithGoogleOptions): Promise<never> {
+  async signIn(options: SignInWithGoogleOptions): Promise<void> {
     // Generate state
     const stateResult = generateState();
     if (stateResult.isErr()) {
@@ -112,6 +114,8 @@ export class GoogleProvider
 
     const oauthState = oauthStateJWTResult.value;
 
+    // Set OAuth state cookie
+
     // Create authorization URL
     const authorizationUrlResult = createAuthorizationUrl({
       clientId: this.providerConfig.clientId,
@@ -130,7 +134,7 @@ export class GoogleProvider
     const authorizationUrl = authorizationUrlResult.value;
 
     // Redirect user to authorization URL
-    redirect(authorizationUrl);
+    this.adapter.redirect(authorizationUrl);
   }
 
   // ============================================
@@ -142,10 +146,16 @@ export class GoogleProvider
     const state = url.searchParams.get('state');
 
     if (!code) {
+      throw new MissingAuthorizationCodeError();
     }
 
     if (!state) {
+      throw new MissingStateError();
     }
+
+    // Get the OAuth state cookie, decrypt the JWE
+
+    // Compare the cookie state with url state
 
     // Exchange authorization coide for tokens
 
