@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import type { GoogleIdTokenPayload } from '../core/oauth/index.js';
-import type { SessionData } from '../core/session/session-schema.js';
+import type { GoogleIdTokenPayload } from '../types';
 
 // ============================================
 //
@@ -42,7 +41,7 @@ export const GoogleProviderConfigSchema = z.object({
 export type GoogleProviderConfig = z.infer<typeof GoogleProviderConfigSchema>;
 
 export const ProvidersConfigSchema = z.object({
-  google: GoogleProviderConfigSchema.optional(),
+  google: GoogleProviderConfigSchema,
 });
 
 export type ProvidersConfig = z.infer<typeof ProvidersConfigSchema>;
@@ -61,7 +60,7 @@ export interface AuthCallbacks {
 
 export const AuthConfigSchema = z.object({
   session: SessionConfigSchema,
-  providers: ProvidersConfigSchema.optional(),
+  providers: ProvidersConfigSchema,
 });
 
 export type AuthConfig = z.infer<typeof AuthConfigSchema> & {

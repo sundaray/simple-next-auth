@@ -2,7 +2,9 @@ import type { OAuthProvider, BaseSignInOptions } from '../core/strategy';
 
 import type { AuthConfig, GoogleProviderConfig } from '../config/schema';
 
-import type { GoogleIdTokenPayload, GoogleTokenResponse } from '../core/oauth';
+import type { GoogleIdTokenPayload } from '../types';
+
+import type { GoogleTokenResponse } from '../types';
 
 import {
   generateCodeChallenge,
@@ -11,7 +13,7 @@ import {
 } from '../core/pkce';
 
 import {
-  decodeIdToken,
+  decodeGoogleIdToken,
   encryptOAuthStatePayload,
   createAuthorizationUrl,
   decryptOAuthStateJWE,
@@ -163,7 +165,7 @@ export class GoogleProvider
 
     // Decrypt the Oauth state JWE
     const oauthStateResult = await decryptOAuthStateJWE({
-      jwt: oauthStateJWE,
+      jwe: oauthStateJWE,
       secret: this.config.session.secret,
     });
 
@@ -194,7 +196,7 @@ export class GoogleProvider
     const tokens = tokensResult.value;
 
     // Decode the id_token for user claims
-    const userClaimsResult = decodeIdToken(tokens.id_token);
+    const userClaimsResult = decodeGoogleIdToken(tokens.id_token);
 
     if (userClaimsResult.isErr()) {
       throw userClaimsResult.error;

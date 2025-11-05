@@ -1,28 +1,13 @@
 import { ResultAsync, ok, err, Result, errAsync } from 'neverthrow';
 import { base64url } from 'jose';
-import { z } from 'zod';
+import type { GoogleTokenResponse } from '../../types';
 
 import {
   EncodeClientCredentialsError,
   TokenFetchError,
   TokenResponseError,
   TokenParseError,
-  InvalidTokenPayloadError,
 } from '../errors';
-
-// ============================================
-// ZOD SCHEMA
-// ============================================
-const GoogleTokenResponseSchema = z.object({
-  access_token: z.string(),
-  id_token: z.string(),
-  expires_in: z.number(),
-  token_type: z.string(),
-  scope: z.string(),
-  refresh_token: z.string().optional(),
-});
-
-export type GoogleTokenResponse = z.infer<typeof GoogleTokenResponseSchema>;
 
 // ============================================
 // ENCODE CLIENT CREDENTIALS
@@ -59,8 +44,7 @@ export type ExchangeAuthorizationCodeForTokensError =
   | EncodeClientCredentialsError
   | TokenFetchError
   | TokenResponseError
-  | TokenParseError
-  | InvalidTokenPayloadError;
+  | TokenParseError;
 
 export function exchangeAuthorizationCodeForTokens(
   params: ExchangeAuthorizationCodeForTokensParams,
@@ -121,20 +105,5 @@ export function exchangeAuthorizationCodeForTokens(
           (error): TokenParseError => new TokenParseError({ cause: error }),
         ),
       )
-      // Validate token response with Zod
-      .andThen((json) => {
-        const parseResult = GoogleTokenResponseSchema.safeParse(json);
-
-        if (parseResult.success) {
-          return ok(parseResult.data);
-        } else {
-          return err(
-            new InvalidTokenPayloadError({
-              message: `Invalid token response structure: ${parseResult.error.message}`,
-              cause: parseResult.error,
-            }),
-          );
-        }
-      })
   );
 }

@@ -216,3 +216,13 @@ export class DecryptUserSessionJweError extends AuthError {
     this.name = 'DecryptUserSessionJweError';
   }
 }
+
+export class DecodeGoogleIdTokenError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to decode Google ID token.',
+      cause: options.cause,
+    });
+    this.name = 'DecodeGoogleIdTokenError';
+  }
+}
