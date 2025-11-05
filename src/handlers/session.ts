@@ -3,21 +3,6 @@ import { decryptSessionJWT } from '../core/session/index.js';
 import type { SessionData } from '../core/session/index.js';
 import type { AuthConfig } from '../config/schema.js';
 
-// ============================================
-// GET SESSION
-// ============================================
-
-/**
- * Gets the current user's session from the session cookie.
- *
- * This function:
- * 1. Gets session cookie from Next.js cookies
- * 2. Decrypts and validates the session JWT
- * 3. Returns session data or null if not authenticated
- *
- * @param config - Validated auth configuration
- * @returns Session data if authenticated, null otherwise
- */
 export async function getSession(
   config: AuthConfig,
 ): Promise<SessionData | null> {

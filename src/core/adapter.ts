@@ -2,7 +2,7 @@ export interface CookieOptions {
   maxAge: number;
 }
 
-export interface AuthAdapter {
+export interface FrameworkAdapter {
   setCookie(name: string, value: string, options: CookieOptions): Promise<void>;
 
   getCookie(name: string): Promise<string | undefined>;

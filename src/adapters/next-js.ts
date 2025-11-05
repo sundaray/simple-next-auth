@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect as nextRedirect, RedirectType } from 'next/navigation';
 
-import type { AuthAdapter, CookieOptions } from '../core/adapter';
+import type { FrameworkAdapter, CookieOptions } from '../core/adapter';
 
 import {
   GetCookieError,
@@ -9,7 +9,7 @@ import {
   DeleteCookieError,
 } from '../core/errors';
 
-export class NextjsAdapter implements AuthAdapter {
+export class NextjsAdapter implements FrameworkAdapter {
   async setCookie(
     name: string,
     value: string,
