@@ -1,9 +1,6 @@
 import type { OAuthProvider, BaseSignInOptions } from '../core/strategy';
-
 import type { AuthConfig, GoogleProviderConfig } from '../config/schema';
-
 import type { GoogleIdTokenPayload } from '../types';
-
 import type { GoogleTokenResponse } from '../types';
 
 import {
