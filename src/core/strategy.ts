@@ -16,3 +16,4 @@ export interface OAuthProvider<
 }
 
 export type AnyAuthProvider = OAuthProvider<any, any, any>;
+
