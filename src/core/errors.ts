@@ -169,13 +169,13 @@ export class GenerateCodeChallengeError extends AuthError {
   }
 }
 
-export class CreateOAuthStateJweError extends AuthError {
+export class EncryptOAuthStatePayloadError extends AuthError {
   constructor(options: { message?: string; cause?: unknown } = {}) {
     super({
-      message: options.message || 'Failed to create OAuth state JWE',
+      message: options.message || 'Failed to encrypt OAuth state payload.',
       cause: options.cause,
     });
-    this.name = 'CreateOAuthStateJweError';
+    this.name = 'EncryptOAuthStatePayloadError';
   }
 }
 export class CreateAuthorizationUrlError extends AuthError {

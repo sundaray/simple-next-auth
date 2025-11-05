@@ -4,3 +4,11 @@ export interface OAuthStatePayload {
   redirectTo?: `/${string}`;
   provider: string;
 }
+
+export interface UserSessionPayload {
+  createdAt: number;
+  expiresAt: number;
+  maxAge: number;
+  provider: 'google';
+  [key: string]: unknown;
+}
