@@ -1,20 +1,6 @@
-// ============================================
-// SESSION UTILITIES - BARREL EXPORT
-// ============================================
+export { encryptUserSessionPayload } from './encrypt-user-session-payload.js';
+export { decryptUserSessionJWE } from './decrypt-user-session-jwe.js';
 
-export { createSessionJWT } from './create-session-jwt.js';
-export { decryptSessionJWT } from './decrypt-session-jwt.js';
+export type { EncryptUserSessionPayloadParams } from './encrypt-user-session-payload.js';
 
-// Export TypeScript types
-export type {
-  SessionData,
-} from './session-schema.js';
-
-export type {
-  SessionJWTCreationError,
-} from './create-session-jwt.js';
-
-export type {
-  DecryptSessionJWTParams,
-  SessionJWTDecryptionError,
-} from './decrypt-session-jwt.js';
+export type { DecryptUserSessionJWEParams } from './decrypt-user-session-jwe.js';

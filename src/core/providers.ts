@@ -1,9 +1,9 @@
 import type { AuthConfig } from '../config/schema';
-import type { AuthAdapter } from './adapter';
+import type { FrameworkAdapter } from './adapter';
 import type { AnyAuthProvider } from './strategy';
 import { GoogleProvider } from '../providers/google';
 
-export function createProviders(config: AuthConfig, adapter: AuthAdapter) {
+export function createProviders(config: AuthConfig, adapter: FrameworkAdapter) {
   const providers = new Map<string, AnyAuthProvider>();
 
   if (config.providers?.google) {

@@ -178,6 +178,16 @@ export class EncryptOAuthStatePayloadError extends AuthError {
     this.name = 'EncryptOAuthStatePayloadError';
   }
 }
+
+export class EncryptUserSessionPayloadError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to encrypt user session payload.',
+      cause: options.cause,
+    });
+    this.name = 'EncryptUserSessionPayloadError';
+  }
+}
 export class CreateAuthorizationUrlError extends AuthError {
   constructor(options: { message?: string; cause?: unknown } = {}) {
     super({
@@ -195,5 +205,14 @@ export class DecryptOAuthStateJweError extends AuthError {
       cause: options.cause,
     });
     this.name = 'DecryptOAuthStateJweError';
+  }
+}
+export class DecryptUserSessionJweError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to decrypt user session JWE.',
+      cause: options.cause,
+    });
+    this.name = 'DecryptUserSessionJweError';
   }
 }

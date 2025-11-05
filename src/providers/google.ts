@@ -12,7 +12,7 @@ import {
 
 import {
   decodeIdToken,
-  createOAuthStateJWE,
+  encryptOAuthStatePayload,
   createAuthorizationUrl,
   decryptOAuthStateJWE,
   exchangeAuthorizationCodeForTokens,
@@ -25,27 +25,25 @@ import {
   StateMismatchError,
 } from '../core/errors';
 
+import type { OAuthStatePayload } from '../types';
+
 import { COOKIE_NAMES, OAUTH_STATE_MAX_AGE } from '../core/constants';
 
-import type { AuthAdapter } from '../core/adapter';
+import type { FrameworkAdapter } from '../core/adapter';
 
 export interface SignInWithGoogleOptions extends BaseSignInOptions {}
 
 export interface GoogleAuthResult {
   userClaims: GoogleIdTokenPayload;
   tokens: GoogleTokenResponse;
-  oauthState: {
-    state: string;
-    codeVerifier: string;
-    redirectTo?: string | undefined;
-  };
+  oauthState: OAuthStatePayload;
 }
 
-// ============================================
+// --------------------------------------------
 //
 // Google provider
 //
-// ============================================
+// --------------------------------------------
 export class GoogleProvider
   implements
     OAuthProvider<
@@ -56,9 +54,9 @@ export class GoogleProvider
 {
   config: AuthConfig;
   providerConfig: GoogleProviderConfig;
-  adapter: AuthAdapter;
+  adapter: FrameworkAdapter;
 
-  constructor(config: AuthConfig, adapter: AuthAdapter) {
+  constructor(config: AuthConfig, adapter: FrameworkAdapter) {
     if (!config.providers?.google) {
       throw new Error('Google provider is not configured.');
     }
@@ -67,9 +65,9 @@ export class GoogleProvider
     this.adapter = adapter;
   }
 
-  // ============================================
+  // --------------------------------------------
   // Sign in
-  // ============================================
+  // --------------------------------------------
 
   async signIn(options: SignInWithGoogleOptions): Promise<void> {
     // Generate state
@@ -97,7 +95,7 @@ export class GoogleProvider
     const codeChallenge = codeChallengeResult.value;
 
     // Create OAuth state JWE
-    const oauthStateJWEResult = await createOAuthStateJWE({
+    const oauthStateJWEResult = await encryptOAuthStatePayload({
       oauthState: {
         state,
         codeVerifier,
@@ -138,9 +136,9 @@ export class GoogleProvider
     this.adapter.redirect(authorizationUrl);
   }
 
-  // ============================================
+  // --------------------------------------------
   // Handle callback
-  // ============================================
+  // --------------------------------------------
   async handleCallback(request: Request): Promise<GoogleAuthResult> {
     const url = new URL(request.url);
     const code = url.searchParams.get('code');
@@ -183,6 +181,7 @@ export class GoogleProvider
     // Exchange authorization code for tokens
     const tokensResult = await exchangeAuthorizationCodeForTokens({
       code,
+      clientId: this.providerConfig.clientId,
       clientSecret: this.providerConfig.clientSecret,
       redirectUri: this.providerConfig.redirectUri,
       codeVerifier: oauthStatePayload.codeVerifier,
@@ -209,11 +208,7 @@ export class GoogleProvider
     return {
       userClaims,
       tokens,
-      oauthState: {
-        state: oauthStatePayload.state,
-        codeVerifier: oauthStatePayload.codeVerifier,
-        redirectTo: oauthStatePayload.redirectTo,
-      },
+      oauthState: oauthStatePayload,
     };
   }
 }

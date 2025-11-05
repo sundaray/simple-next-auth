@@ -1,12 +1,12 @@
 import type { AuthConfig } from '../config/schema';
-import type { AuthAdapter } from '../core/adapter';
+import type { FrameworkAdapter } from '../core/adapter';
 import type { AnyAuthProvider } from '../core/strategy';
-import { createSessionJWT } from '../core/session';
+import { encryptUserSessionPayload } from '../core/session';
 import { COOKIE_NAMES } from '../core/constants';
 
 export async function handleCallback(
   config: AuthConfig,
-  adapter: AuthAdapter,
+  adapter: FrameworkAdapter,
   provider: AnyAuthProvider,
   request: Request,
 ): Promise<void> {
@@ -40,7 +40,11 @@ export async function handleCallback(
   };
 
   // Create user session JWE
-  const userSessionJWEResult = await createSessionJWT(userSessionPayload);
+  const userSessionJWEResult = await encryptUserSessionPayload({
+    payload: userSessionPayload,
+    secret: config.session.secret,
+    maxAge: config.session.maxAge,
+  });
 
   if (userSessionJWEResult.isErr()) {
     throw userSessionJWEResult.error;
