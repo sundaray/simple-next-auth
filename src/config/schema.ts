@@ -47,9 +47,7 @@ export const ProvidersConfigSchema = z.object({
 export type ProvidersConfig = z.infer<typeof ProvidersConfigSchema>;
 
 export interface AuthCallbacks {
-  onSignIn?: (
-    profile: GoogleIdTokenPayload,
-  ) => Promise<Record<string, unknown>>;
+  onSignIn?: (profile: Record<string, any>) => Promise<Record<string, unknown>>;
 }
 
 // ============================================

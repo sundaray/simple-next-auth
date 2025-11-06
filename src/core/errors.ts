@@ -247,3 +247,34 @@ export class MissingUserSessionProviderError extends AuthError {
     this.name = 'MissingUserSessionProviderError';
   }
 }
+
+export class RunOAuthProviderSignInCallbackError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message:
+        options.message || 'Failed to run OAuth provider sign-in callback.',
+      cause: options.cause,
+    });
+    this.name = 'RunOAuthProviderSignInCallbackError';
+  }
+}
+
+export class CreateUserSessionPayloadError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to create user session payload.',
+      cause: options.cause,
+    });
+    this.name = 'CreateUserSessionPayloadError';
+  }
+}
+
+export class OnSignInCallbackError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'User onSignIn callback failed to execute.',
+      cause: options.cause,
+    });
+    this.name = 'OnSignInCallbackError';
+  }
+}

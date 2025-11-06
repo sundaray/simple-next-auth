@@ -5,11 +5,15 @@ export interface OAuthStatePayload {
   provider: string;
 }
 
+export interface AuthProvider {
+  provider: 'google' | 'github' | 'credentials';
+}
+
 export interface UserSessionPayload {
   createdAt: number;
   expiresAt: number;
   maxAge: number;
-  provider: 'google';
+  provider: AuthProvider;
   [key: string]: unknown;
 }
 
