@@ -67,13 +67,13 @@ export class GetCookieError extends AuthError {
   }
 }
 
-export class DeleteCookieError extends AuthError {
+export class DeleteOauthStateCookieError extends AuthError {
   constructor(options: { message?: string; cause?: unknown }) {
     super({
-      message: options.message || 'Failed to delete cookie.',
+      message: options.message || 'Failed to delete the OAuth state cookie.',
       cause: options.cause,
     });
-    this.name = 'DeleteCookieError';
+    this.name = 'DeleteOauthStateCookieError';
   }
 }
 
@@ -276,5 +276,15 @@ export class OnSignInCallbackError extends AuthError {
       cause: options.cause,
     });
     this.name = 'OnSignInCallbackError';
+  }
+}
+
+export class SetUserSessionCookieError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to set the user session cookie.',
+      cause: options.cause,
+    });
+    this.name = 'SetUserSessionCookieError';
   }
 }

@@ -2,14 +2,15 @@ import { validateAuthConfig } from '../config/schema.js';
 import type { AuthConfig } from '../config/schema.js';
 import type { BaseSignInOptions } from './strategy.js';
 import { signOut as handleSignOut } from '../handlers/sign-out.js';
-import { handleCallback } from '../handlers/callback.js';
+import { processOAuthSignin } from './oauth/process-oauth-signin.js';
 import { createProviders } from './providers.js';
-import type { FrameworkAdapter } from './adapter.js';
+import type { FrameworkAdapter } from '../types';
 import { COOKIE_NAMES } from './constants.js';
 import { MissingOAuthStateCookieError } from './errors.js';
 import { decryptOAuthStateJWE } from './oauth/index.js';
 import type { UserSessionPayload } from '../types/index.js';
 import { decryptUserSessionJWE } from './session/index.js';
+import type { AuthProvider } from '../types';
 
 export function createAuthHelpers(
   config: AuthConfig,
@@ -22,7 +23,10 @@ export function createAuthHelpers(
     // --------------------------------------------
     // Sign in
     // --------------------------------------------
-    signIn: async (providerId: string, options?: BaseSignInOptions) => {
+    signIn: async (
+      providerId: AuthProvider[keyof AuthProvider],
+      options?: BaseSignInOptions,
+    ) => {
       const provider = providers.get(providerId);
       if (!provider) {
         throw new Error(`Provider ${providerId} not found`);
@@ -84,7 +88,7 @@ export function createAuthHelpers(
         throw new Error(`Provider ${providerId} not found`);
       }
 
-      return handleCallback(validatedConfig, adapter, provider, request);
+      return processOAuthSignin(validatedConfig, adapter, provider, request);
     },
   };
 }

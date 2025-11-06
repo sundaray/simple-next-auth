@@ -7,7 +7,7 @@ import type { AuthProvider } from '../../types';
 
 interface CreateUserSessionPayloadParams {
   authConfig: AuthConfig;
-  providerName: AuthProvider;
+  providerName: AuthProvider[keyof AuthProvider];
   providerUserClaims: Record<string, any>;
 }
 

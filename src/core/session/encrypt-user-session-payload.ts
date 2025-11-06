@@ -4,7 +4,7 @@ import type { UserSessionPayload } from '../../types';
 import { EncryptUserSessionPayloadError } from '../errors';
 
 export interface EncryptUserSessionPayloadParams {
-  payload: UserSessionPayload;
+  userSessionPayload: UserSessionPayload;
   secret: string;
   maxAge: number;
 }
@@ -14,11 +14,11 @@ export function encryptUserSessionPayload(
 ): ResultAsync<string, EncryptUserSessionPayloadError> {
   return ResultAsync.fromPromise(
     (async () => {
-      const { payload, secret, maxAge } = params;
+      const { userSessionPayload, secret, maxAge } = params;
 
       const secretKey = new TextEncoder().encode(secret);
 
-      const jwe = await new EncryptJWT({ session: payload })
+      const jwe = await new EncryptJWT({ session: userSessionPayload })
         .setProtectedHeader({ alg: 'dir', enc: 'A256CBC-HS256' })
         .setIssuedAt()
         .setExpirationTime(`${maxAge}s`)

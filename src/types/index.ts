@@ -2,7 +2,7 @@ export interface OAuthStatePayload {
   state: string;
   codeVerifier: string;
   redirectTo?: `/${string}`;
-  provider: string;
+  provider: AuthProvider[keyof AuthProvider];
 }
 
 export interface AuthProvider {
@@ -13,7 +13,7 @@ export interface UserSessionPayload {
   createdAt: number;
   expiresAt: number;
   maxAge: number;
-  provider: AuthProvider;
+  provider: AuthProvider[keyof AuthProvider];
   [key: string]: unknown;
 }
 
@@ -46,4 +46,24 @@ export interface GoogleTokenResponse {
   scope: string;
   token_type: string;
   refresh_token?: string;
+}
+
+export interface CookieOptions {
+  maxAge: number;
+}
+
+export interface FrameworkAdapter {
+  setCookie(name: string, value: string, options: CookieOptions): Promise<void>;
+
+  getCookie(name: string): Promise<string | undefined>;
+
+  deleteCookie(name: string): Promise<void>;
+
+  redirect(url: string, type?: string): void;
+}
+
+export interface OAuthSignInResult {
+  userClaims: Record<string, any>;
+  oauthState: OAuthStatePayload;
+  tokens: Record<string, any>;
 }
