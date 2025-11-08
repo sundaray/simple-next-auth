@@ -9,7 +9,7 @@ import type { UserSessionPayload } from './index';
 interface CreateUserSessionPayloadParams {
   authConfig: AuthConfig;
   providerName: AuthProviderId;
-  providerUserClaims: UserSessionPayload;
+  providerUserClaims: Record<string, any>;
 }
 
 export function createUserSessionPayload(

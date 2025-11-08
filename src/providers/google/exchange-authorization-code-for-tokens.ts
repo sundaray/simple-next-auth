@@ -9,9 +9,11 @@ import {
   TokenParseError,
 } from '../../core/errors';
 
-// ============================================
+// --------------------------------------------
+//
 // ENCODE CLIENT CREDENTIALS
-// ============================================
+//
+// --------------------------------------------
 
 function encodeClientCredentials(
   clientId: string,
@@ -28,9 +30,11 @@ function encodeClientCredentials(
 
 const GOOGLE_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
 
-// ============================================
+// --------------------------------------------
+//
 // EXCHANGE AUTHORIZATION CODE FOR TOKENS
-// ============================================
+//
+// --------------------------------------------
 
 export interface ExchangeAuthorizationCodeForTokensParams {
   code: string;

@@ -194,7 +194,7 @@ export function createAuthHelpers(
       await deleteOAuthStateCookie({ frameworkAdapter: adapter });
 
       // 12. Redirect users to their intended destination
-      const redirectTo = oauthState.redirectTo;
+      const redirectTo = oauthState.redirectTo || '/';
       adapter.redirect(redirectTo, 'replace');
     },
   };

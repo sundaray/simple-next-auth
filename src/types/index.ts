@@ -29,7 +29,7 @@ export interface AuthConfig {
   providers: AnyAuthProvider[];
   callbacks: {
     onSignIn: (
-      userInfo: UserSessionPayload,
+      userInfo: Record<string, any>,
     ) => Promise<Record<string, unknown>>;
   };
 }
