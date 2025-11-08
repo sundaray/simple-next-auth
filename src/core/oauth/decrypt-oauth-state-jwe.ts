@@ -1,7 +1,7 @@
 import { jwtDecrypt } from 'jose';
 import { ResultAsync } from 'neverthrow';
 import { DecryptOAuthStateJweError } from '../errors';
-import type { OAuthStatePayload } from '../../types';
+import type { OAuthStatePayload } from './index';
 
 export interface DecryptOAuthStateJWEParams {
   jwe: string;

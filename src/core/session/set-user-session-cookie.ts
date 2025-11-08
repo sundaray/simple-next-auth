@@ -1,7 +1,7 @@
-import type { FrameworkAdapter } from '../../types';
-import type { AuthConfig } from '../../config/schema';
-import { COOKIE_NAMES } from '../constants';
 import { ResultAsync } from 'neverthrow';
+import type { FrameworkAdapter } from '../../types';
+import type { AuthConfig } from '../../types';
+import { COOKIE_NAMES } from '../constants';
 import { SetUserSessionCookieError } from '../errors';
 
 export interface SetUserSessionCookieParams {

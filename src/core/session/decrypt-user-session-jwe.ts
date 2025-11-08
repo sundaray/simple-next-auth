@@ -1,7 +1,7 @@
 import { jwtDecrypt } from 'jose';
 import { ResultAsync } from 'neverthrow';
 import { DecryptUserSessionJweError } from '../errors';
-import type { UserSessionPayload } from '../../types';
+import type { UserSessionPayload } from './index';
 
 export interface DecryptUserSessionJWEParams {
   jwe: string;

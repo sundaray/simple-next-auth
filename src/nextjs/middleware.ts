@@ -4,7 +4,7 @@ import {
   decryptUserSessionJWE,
   encryptUserSessionPayload,
 } from '../core/session';
-import type { AuthConfig } from '../config/schema';
+import type { AuthConfig } from '../types';
 import { COOKIE_NAMES } from '../core/constants';
 
 export async function extendUserSessionExpiry(

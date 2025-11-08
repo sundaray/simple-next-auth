@@ -1,14 +1,15 @@
-import type { AuthConfig } from '../../config/schema';
 import { ResultAsync } from 'neverthrow';
-import { CreateUserSessionPayloadError } from '../errors';
-import type { UserSessionPayload } from './types';
-import { OnSignInCallbackError } from '../errors';
-import type { AuthProviderId } from '../../types';
+import {
+  OnSignInCallbackError,
+  CreateUserSessionPayloadError,
+} from '../errors';
+import type { AuthProviderId, AuthConfig } from '../../types';
+import type { UserSessionPayload } from './index';
 
 interface CreateUserSessionPayloadParams {
   authConfig: AuthConfig;
-  providerName: AuthProviderId[keyof AuthProviderId];
-  providerUserClaims: Record<string, any>;
+  providerName: AuthProviderId;
+  providerUserClaims: UserSessionPayload;
 }
 
 export function createUserSessionPayload(

@@ -1,6 +1,6 @@
+import { ResultAsync } from 'neverthrow';
 import type { FrameworkAdapter } from '../../types';
 import { COOKIE_NAMES } from '../constants';
-import { ResultAsync } from 'neverthrow';
 import { DeleteOauthStateCookieError } from '../errors';
 
 interface DeleteOauthStateCookieParams {

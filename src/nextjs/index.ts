@@ -1,11 +1,12 @@
-import type { AuthConfig } from '../config/schema';
 import { createAuthHelpers } from '../core/auth';
 import { NextjsAdapter } from './adapter';
 import { createExtendUserSessionMiddleware } from './middleware';
-import type { AnyAuthProvider } from '../core/strategy';
+import type { AuthConfig } from '../types';
 
-export function initAuth(config: AuthConfig, providers: AnyAuthProvider[]) {
+export function initAuth(config: AuthConfig) {
   const adapter = new NextjsAdapter();
+
+  const { providers } = config;
 
   const authHelpers = createAuthHelpers(config, adapter, providers);
 

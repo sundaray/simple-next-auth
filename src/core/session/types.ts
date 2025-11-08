@@ -4,6 +4,6 @@ export interface UserSessionPayload {
   createdAt: number;
   expiresAt: number;
   maxAge: number;
-  provider: AuthProviderId[keyof AuthProviderId];
+  provider: AuthProviderId;
   [key: string]: unknown;
 }

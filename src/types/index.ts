@@ -1,3 +1,6 @@
+import type { AnyAuthProvider } from '../core/strategy';
+import type { UserSessionPayload } from '../core/session';
+
 export type AuthProviderId = 'google' | 'credentials';
 
 export interface CookieOptions {
@@ -16,4 +19,17 @@ export interface FrameworkAdapter {
 
 export interface SignInOptions {
   redirectTo?: `/${string}`;
+}
+
+export interface AuthConfig {
+  session: {
+    secret: string;
+    maxAge: number;
+  };
+  providers: AnyAuthProvider[];
+  callbacks: {
+    onSignIn: (
+      userInfo: UserSessionPayload,
+    ) => Promise<Record<string, unknown>>;
+  };
 }

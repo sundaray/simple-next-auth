@@ -1,4 +1,4 @@
-import type { AuthConfig } from '../config/schema.js';
+import type { AuthConfig } from '../types';
 import { COOKIE_NAMES, OAUTH_STATE_MAX_AGE } from './constants.js';
 import { MissingOAuthStateCookieError } from './errors.js';
 
@@ -171,7 +171,7 @@ export function createAuthHelpers(
       const sessionPayloadResult = await createUserSessionPayload({
         authConfig: config,
         providerName: provider.id,
-        providerUserClaims: customSessionData, // Pass user's custom data
+        providerUserClaims: customSessionData,
       });
       if (sessionPayloadResult.isErr()) throw sessionPayloadResult.error;
 
