@@ -1,6 +1,4 @@
-export interface AuthProvider {
-  provider: 'google' | 'github' | 'credentials';
-}
+import type { AuthProviderId } from '../../types';
 
 export type ProviderUser = Record<string, any>;
 
@@ -8,7 +6,7 @@ export interface OAuthStatePayload {
   state: string;
   codeVerifier: string;
   redirectTo?: `/${string}`;
-  provider: AuthProvider[keyof AuthProvider];
+  provider: AuthProviderId[keyof AuthProviderId];
 }
 
 export interface OAuthSignInResult {

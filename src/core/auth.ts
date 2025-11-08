@@ -3,7 +3,7 @@ import { COOKIE_NAMES, OAUTH_STATE_MAX_AGE } from './constants.js';
 import { MissingOAuthStateCookieError } from './errors.js';
 
 import type { UserSessionPayload } from '../core/session/types.js';
-import type { AuthProvider, FrameworkAdapter, SignInOptions } from '../types';
+import type { AuthProviderId, FrameworkAdapter, SignInOptions } from '../types';
 import type { AnyAuthProvider } from './strategy.js';
 
 import {
@@ -30,7 +30,7 @@ export function createAuthHelpers(
   adapter: FrameworkAdapter,
   providers: AnyAuthProvider[],
 ) {
-  const providersMap = new Map<AuthProvider, AnyAuthProvider>();
+  const providersMap = new Map<AuthProviderId, AnyAuthProvider>();
   for (const provider of providers) {
     providersMap.set(provider.id, provider);
   }
@@ -40,7 +40,7 @@ export function createAuthHelpers(
     // Sign in
     // --------------------------------------------
     signIn: async (
-      providerId: AuthProvider[keyof AuthProvider],
+      providerId: AuthProviderId[keyof AuthProviderId],
       options?: SignInOptions,
     ) => {
       const provider = providersMap.get(providerId);

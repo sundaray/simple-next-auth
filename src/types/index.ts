@@ -1,4 +1,4 @@
-export interface AuthProvider {
+export interface AuthProviderId {
   provider: 'google' | 'github' | 'credentials';
 }
 

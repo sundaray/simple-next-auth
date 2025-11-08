@@ -2,6 +2,7 @@ import type { Result } from 'neverthrow';
 import type { AuthError } from './errors';
 import type { OAuthStatePayload } from '../core/oauth/types';
 import type { ProviderUser } from '../core/oauth/types';
+import type { AuthProviderId } from '../types';
 
 /**
  * This is the raw user profile returned by a provider.
@@ -9,7 +10,7 @@ import type { ProviderUser } from '../core/oauth/types';
  */
 
 export interface OAuthProvider {
-  id: string;
+  id: AuthProviderId;
   type: 'oauth';
   getAuthorizationUrl(params: {
     state: string;

@@ -1,9 +1,9 @@
-import type { AuthProvider } from '../../types';
+import type { AuthProviderId } from '../../types';
 
 export interface UserSessionPayload {
   createdAt: number;
   expiresAt: number;
   maxAge: number;
-  provider: AuthProvider[keyof AuthProvider];
+  provider: AuthProviderId[keyof AuthProviderId];
   [key: string]: unknown;
 }

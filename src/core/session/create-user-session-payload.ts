@@ -3,11 +3,11 @@ import { ResultAsync } from 'neverthrow';
 import { CreateUserSessionPayloadError } from '../errors';
 import type { UserSessionPayload } from './types';
 import { OnSignInCallbackError } from '../errors';
-import type { AuthProvider } from '../../types';
+import type { AuthProviderId } from '../../types';
 
 interface CreateUserSessionPayloadParams {
   authConfig: AuthConfig;
-  providerName: AuthProvider[keyof AuthProvider];
+  providerName: AuthProviderId[keyof AuthProviderId];
   providerUserClaims: Record<string, any>;
 }
 
