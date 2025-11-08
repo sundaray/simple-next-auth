@@ -288,3 +288,4 @@ export class SetUserSessionCookieError extends AuthError {
     this.name = 'SetUserSessionCookieError';
   }
 }
+

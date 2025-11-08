@@ -1,13 +1,13 @@
 import { ResultAsync, ok, err, Result, errAsync } from 'neverthrow';
 import { base64url } from 'jose';
-import type { GoogleTokenResponse } from '../../types';
+import type { GoogleTokenResponse } from './types';
 
 import {
   EncodeClientCredentialsError,
   TokenFetchError,
   TokenResponseError,
   TokenParseError,
-} from '../errors';
+} from '../../core/errors';
 
 // ============================================
 // ENCODE CLIENT CREDENTIALS

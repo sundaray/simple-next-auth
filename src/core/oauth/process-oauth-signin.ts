@@ -29,7 +29,7 @@ export async function processOAuthSignin(
   // Create the user session payload
   const userSessionPayloadResult = await createUserSessionPayload({
     authConfig,
-    providerName: signInResult.oauthState.provider,
+        providerName: signInResult.oauthState.provider,
     providerUserClaims: signInResult.userClaims,
   });
 
