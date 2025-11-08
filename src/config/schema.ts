@@ -63,23 +63,3 @@ export const AuthConfigSchema = z.object({
 export type AuthConfig = z.infer<typeof AuthConfigSchema> & {
   callbacks?: AuthCallbacks;
 };
-// ============================================
-//
-// VALIDATE AUTH CONFIG
-//
-// ============================================
-
-export function validateAuthConfig(config: unknown): AuthConfig {
-  try {
-    return AuthConfigSchema.parse(config);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const issues = error.issues
-        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-        .join('\n');
-
-      throw new Error(`Invalid authentication configuration:\n${issues}`);
-    }
-    throw error;
-  }
-}

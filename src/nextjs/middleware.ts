@@ -51,7 +51,6 @@ export function createExtendUserSessionMiddleware(config: AuthConfig) {
       return response;
     }
 
-    // It now uses the 'config' from the factory function's scope
     const newUserSessionJWE = await extendUserSessionExpiry(
       userSessionJWE.value,
       config,
