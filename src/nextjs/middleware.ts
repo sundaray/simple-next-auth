@@ -1,5 +1,8 @@
-import { decryptUserSessionJWE, encryptUserSessionPayload } from './session';
-import type { AuthConfig } from '../config/schema';
+import {
+  decryptUserSessionJWE,
+  encryptUserSessionPayload,
+} from '../../core/session';
+import type { AuthConfig } from '../../config/schema';
 
 export async function extendUserSessionExpiry(
   userSessionJWE: string,

@@ -2,8 +2,8 @@ import type { AuthConfig } from '../config/schema.js';
 import { COOKIE_NAMES, OAUTH_STATE_MAX_AGE } from './constants.js';
 import { MissingOAuthStateCookieError } from './errors.js';
 
-import type { UserSessionPayload } from '../types/index.js';
-import type { AuthProvider, FrameworkAdapter } from '../types';
+import type { UserSessionPayload } from '../core/session/types.js';
+import type { AuthProvider, FrameworkAdapter, SignInOptions } from '../types';
 import type { AnyAuthProvider } from './strategy.js';
 
 import {
@@ -41,7 +41,7 @@ export function createAuthHelpers(
     // --------------------------------------------
     signIn: async (
       providerId: AuthProvider[keyof AuthProvider],
-      options?: BaseSignInOptions,
+      options?: SignInOptions,
     ) => {
       const provider = providersMap.get(providerId);
       if (!provider) {

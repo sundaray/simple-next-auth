@@ -1,7 +1,7 @@
 import type { AuthConfig } from '../../config/schema';
 import { ResultAsync } from 'neverthrow';
 import { CreateUserSessionPayloadError } from '../errors';
-import type { UserSessionPayload } from '../../types';
+import type { UserSessionPayload } from './types';
 import { OnSignInCallbackError } from '../errors';
 import type { AuthProvider } from '../../types';
 

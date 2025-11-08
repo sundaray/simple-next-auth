@@ -9,5 +9,4 @@ export type {
   AuthCallbacks,
 } from './config/schema.js';
 
-export type { UserSessionPayload } from './types/index.js';
 export type { AuthHelpers } from './core/auth.js';

@@ -4,7 +4,7 @@ import type { AuthConfig } from '../config/schema';
 import { createAuthHelpers } from '../core/auth';
 import { NextjsAdapter } from './adapter';
 import { COOKIE_NAMES } from '../core/constants';
-import { extendUserSessionExpiry } from '../core/extend-user-session-expiry';
+import { extendUserSessionExpiry } from './middleware';
 import type { AnyAuthProvider } from '../core/strategy';
 
 export function initAuth(config: AuthConfig, providers: AnyAuthProvider[]) {

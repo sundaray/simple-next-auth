@@ -1,6 +1,6 @@
 import { Result, ok, err } from 'neverthrow';
 import type { OAuthProvider } from '../../core/strategy';
-import type { GoogleProviderConfig } from '../../config/schema';
+import type { GoogleProviderConfig } from './types';
 import type { OAuthStatePayload, ProviderUser } from '../../core/oauth/types';
 
 import { decodeGoogleIdToken } from './decode-google-id-token';
@@ -50,73 +50,6 @@ export class GoogleProvider implements OAuthProvider {
 
     return ok(url.toString());
   }
-
-  //   async signIn(options: SignInWithGoogleOptions): Promise<void> {
-  //     // Generate state
-  //     const stateResult = generateState();
-  //     if (stateResult.isErr()) {
-  //       throw stateResult.error;
-  //     }
-
-  //     const state = stateResult.value;
-
-  //     // Generate code verifier
-  //     const codeVerifierResult = generateCodeVerifier();
-  //     if (codeVerifierResult.isErr()) {
-  //       throw codeVerifierResult.error;
-  //     }
-
-  //     const codeVerifier = codeVerifierResult.value;
-
-  //     // Generate code challenge
-  //     const codeChallengeResult = await generateCodeChallenge(codeVerifier);
-  //     if (codeChallengeResult.isErr()) {
-  //       throw codeChallengeResult.error;
-  //     }
-
-  //     const codeChallenge = codeChallengeResult.value;
-
-  //     // Create OAuth state JWE
-  //     const oauthStateJWEResult = await encryptOAuthStatePayload({
-  //       oauthState: {
-  //         state,
-  //         codeVerifier,
-  //         redirectTo: options.redirectTo || '/',
-  //         provider: 'google',
-  //       },
-  //       secret: this.config.session.secret,
-  //       maxAge: OAUTH_STATE_MAX_AGE,
-  //     });
-
-  //     if (oauthStateJWEResult.isErr()) {
-  //       throw oauthStateJWEResult.error;
-  //     }
-
-  //     const oauthStateJwe = oauthStateJWEResult.value;
-
-  //     // Set OAuth state cookie
-  //     await this.adapter.setCookie(COOKIE_NAMES.OAUTH_STATE, oauthStateJwe, {
-  //       maxAge: OAUTH_STATE_MAX_AGE,
-  //     });
-
-  //     // Create authorization URL
-  //     const authorizationUrlResult = createAuthorizationUrl({
-  //       clientId: this.providerConfig.clientId,
-  //       redirectUri: this.providerConfig.redirectUri,
-  //       state,
-  //       codeChallenge,
-  //       prompt: 'select_account',
-  //     });
-
-  //     if (authorizationUrlResult.isErr()) {
-  //       throw authorizationUrlResult.error;
-  //     }
-
-  //     const authorizationUrl = authorizationUrlResult.value;
-
-  //     // Redirect user to authorization URL
-  //     this.adapter.redirect(authorizationUrl);
-  //   }
 
   // --------------------------------------------
   // Handle Callback
