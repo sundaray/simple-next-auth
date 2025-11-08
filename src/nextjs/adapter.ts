@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect as nextRedirect, RedirectType } from 'next/navigation';
 
-import type { FrameworkAdapter, CookieOptions } from '../core/adapter';
+import type { FrameworkAdapter, CookieOptions } from '../types';
 
 import {
   GetCookieError,

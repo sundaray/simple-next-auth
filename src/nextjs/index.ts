@@ -5,11 +5,12 @@ import { createAuthHelpers } from '../core/auth';
 import { NextjsAdapter } from './adapter';
 import { COOKIE_NAMES } from '../core/constants';
 import { extendUserSessionExpiry } from '../core/extend-user-session-expiry';
+import type { AnyAuthProvider } from '../core/strategy';
 
-export function initAuth(config: AuthConfig) {
+export function initAuth(config: AuthConfig, providers: AnyAuthProvider[]) {
   const adapter = new NextjsAdapter();
 
-  const authHelpers = createAuthHelpers(config, adapter);
+  const authHelpers = createAuthHelpers(config, adapter, providers);
 
   async function extendUserSessionMiddleware(request: NextRequest) {
     const response = NextResponse.next();

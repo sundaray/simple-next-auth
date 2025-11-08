@@ -67,6 +67,16 @@ export class GetCookieError extends AuthError {
   }
 }
 
+export class DeleteCookieError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown }) {
+    super({
+      message: options.message || 'Failed to delete cookie.',
+      cause: options.cause,
+    });
+    this.name = 'DeleteCookieError';
+  }
+}
+
 export class DeleteOauthStateCookieError extends AuthError {
   constructor(options: { message?: string; cause?: unknown }) {
     super({
@@ -288,4 +298,3 @@ export class SetUserSessionCookieError extends AuthError {
     this.name = 'SetUserSessionCookieError';
   }
 }
-

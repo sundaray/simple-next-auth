@@ -24,3 +24,9 @@ export interface GoogleTokenResponse {
   token_type: string;
   refresh_token?: string;
 }
+
+export interface GoogleProviderConfig {
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+}

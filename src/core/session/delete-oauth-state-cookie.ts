@@ -7,7 +7,7 @@ interface DeleteOauthStateCookieParams {
   frameworkAdapter: FrameworkAdapter;
 }
 
-export function deleteOauthStateCookie(
+export function deleteOAuthStateCookie(
   params: DeleteOauthStateCookieParams,
 ): ResultAsync<void, DeleteOauthStateCookieError> {
   const { frameworkAdapter } = params;
