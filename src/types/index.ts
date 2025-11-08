@@ -1,6 +1,4 @@
-export interface AuthProviderId {
-  provider: 'google' | 'github' | 'credentials';
-}
+export type AuthProviderId = 'google' | 'credentials';
 
 export interface CookieOptions {
   maxAge: number;

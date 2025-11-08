@@ -39,10 +39,7 @@ export function createAuthHelpers(
     // --------------------------------------------
     // Sign in
     // --------------------------------------------
-    signIn: async (
-      providerId: AuthProviderId[keyof AuthProviderId],
-      options?: SignInOptions,
-    ) => {
+    signIn: async (providerId: AuthProviderId, options?: SignInOptions) => {
       const provider = providersMap.get(providerId);
       if (!provider) {
         throw new Error(`Provider ${providerId} not found`);

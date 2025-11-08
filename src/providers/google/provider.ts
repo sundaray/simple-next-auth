@@ -19,7 +19,7 @@ import {
 //
 // --------------------------------------------
 export class GoogleProvider implements OAuthProvider {
-  id = 'google';
+  id = 'google' as const;
   type = 'oauth' as const;
   providerConfig: GoogleProviderConfig;
 

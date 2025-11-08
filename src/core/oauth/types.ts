@@ -6,7 +6,7 @@ export interface OAuthStatePayload {
   state: string;
   codeVerifier: string;
   redirectTo?: `/${string}`;
-  provider: AuthProviderId[keyof AuthProviderId];
+  provider: AuthProviderId;
 }
 
 export interface OAuthSignInResult {
