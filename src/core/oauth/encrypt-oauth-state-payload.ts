@@ -1,7 +1,7 @@
 import { EncryptJWT } from 'jose';
 import { ResultAsync } from 'neverthrow';
 import { EncryptOAuthStatePayloadError } from '../errors';
-import type { OAuthStatePayload } from '../../types';
+import type { OAuthStatePayload } from './types';
 
 export interface EncryptOAuthStatePayloadParams {
   oauthState: OAuthStatePayload;

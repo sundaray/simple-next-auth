@@ -1,180 +1,145 @@
-import type { OAuthProvider, BaseSignInOptions } from '../../core/strategy';
-import type { AuthConfig, GoogleProviderConfig } from '../../config/schema';
-import type { GoogleIdTokenPayload } from './types';
-import type { GoogleTokenResponse } from './types';
+import { Result, ok, err } from 'neverthrow';
+import type { OAuthProvider } from '../../core/strategy';
+import type { GoogleProviderConfig } from '../../config/schema';
+import type { OAuthStatePayload, ProviderUser } from '../../core/oauth/types';
+
+import { decodeGoogleIdToken } from './decode-google-id-token';
+import { exchangeAuthorizationCodeForTokens } from './exchange-authorization-code-for-tokens';
 
 import {
-  generateCodeChallenge,
-  generateCodeVerifier,
-  generateState,
-} from '../../core/pkce';
-
-import {
-  decodeGoogleIdToken,
-  encryptOAuthStatePayload,
-  createAuthorizationUrl,
-  decryptOAuthStateJWE,
-  exchangeAuthorizationCodeForTokens,
-} from '../../core/oauth';
-
-import {
-  MissingOAuthStateCookieError,
   MissingAuthorizationCodeError,
   MissingStateError,
   StateMismatchError,
+  AuthError,
 } from '../../core/errors';
-
-import type { OAuthStatePayload } from '../../types';
-
-import { COOKIE_NAMES, OAUTH_STATE_MAX_AGE } from '../../core/constants';
-
-import type { FrameworkAdapter } from '../../types';
-
-export interface SignInWithGoogleOptions extends BaseSignInOptions {}
-
-export interface GoogleAuthResult {
-  userClaims: GoogleIdTokenPayload;
-  tokens: GoogleTokenResponse;
-  oauthState: OAuthStatePayload;
-}
 
 // --------------------------------------------
 //
 // Google provider
 //
 // --------------------------------------------
-export class GoogleProvider
-  implements
-    OAuthProvider<
-      GoogleProviderConfig,
-      SignInWithGoogleOptions,
-      GoogleAuthResult
-    >
-{
-  config: AuthConfig;
+export class GoogleProvider implements OAuthProvider {
+  id = 'google';
+  type = 'oauth' as const;
   providerConfig: GoogleProviderConfig;
-  adapter: FrameworkAdapter;
 
-  constructor(config: AuthConfig, adapter: FrameworkAdapter) {
-    if (!config.providers?.google) {
-      throw new Error('Google provider is not configured.');
-    }
-    this.config = config;
-    this.providerConfig = config.providers.google;
-    this.adapter = adapter;
+  constructor(config: GoogleProviderConfig) {
+    this.providerConfig = config;
   }
 
   // --------------------------------------------
-  // Sign in
+  // Get Authorization URL
   // --------------------------------------------
 
-  async signIn(options: SignInWithGoogleOptions): Promise<void> {
-    // Generate state
-    const stateResult = generateState();
-    if (stateResult.isErr()) {
-      throw stateResult.error;
-    }
+  getAuthorizationUrl(params: {
+    state: string;
+    codeChallenge: string;
+    prompt?: string;
+  }): Result<string, AuthError> {
+    const { state, codeChallenge, prompt } = params;
+    const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
 
-    const state = stateResult.value;
+    url.searchParams.set('response_type', 'code');
+    url.searchParams.set('client_id', this.providerConfig.clientId);
+    url.searchParams.set('redirect_uri', this.providerConfig.redirectUri);
+    url.searchParams.set('state', state);
+    url.searchParams.set('code_challenge', codeChallenge);
+    url.searchParams.set('code_challenge_method', 'S256');
+    url.searchParams.set('scope', 'openid email profile');
+    url.searchParams.set('prompt', prompt || 'select_account');
 
-    // Generate code verifier
-    const codeVerifierResult = generateCodeVerifier();
-    if (codeVerifierResult.isErr()) {
-      throw codeVerifierResult.error;
-    }
-
-    const codeVerifier = codeVerifierResult.value;
-
-    // Generate code challenge
-    const codeChallengeResult = await generateCodeChallenge(codeVerifier);
-    if (codeChallengeResult.isErr()) {
-      throw codeChallengeResult.error;
-    }
-
-    const codeChallenge = codeChallengeResult.value;
-
-    // Create OAuth state JWE
-    const oauthStateJWEResult = await encryptOAuthStatePayload({
-      oauthState: {
-        state,
-        codeVerifier,
-        redirectTo: options.redirectTo || '/',
-        provider: 'google',
-      },
-      secret: this.config.session.secret,
-      maxAge: OAUTH_STATE_MAX_AGE,
-    });
-
-    if (oauthStateJWEResult.isErr()) {
-      throw oauthStateJWEResult.error;
-    }
-
-    const oauthStateJwe = oauthStateJWEResult.value;
-
-    // Set OAuth state cookie
-    await this.adapter.setCookie(COOKIE_NAMES.OAUTH_STATE, oauthStateJwe, {
-      maxAge: OAUTH_STATE_MAX_AGE,
-    });
-
-    // Create authorization URL
-    const authorizationUrlResult = createAuthorizationUrl({
-      clientId: this.providerConfig.clientId,
-      redirectUri: this.providerConfig.redirectUri,
-      state,
-      codeChallenge,
-      prompt: 'select_account',
-    });
-
-    if (authorizationUrlResult.isErr()) {
-      throw authorizationUrlResult.error;
-    }
-
-    const authorizationUrl = authorizationUrlResult.value;
-
-    // Redirect user to authorization URL
-    this.adapter.redirect(authorizationUrl);
+    return ok(url.toString());
   }
 
+  //   async signIn(options: SignInWithGoogleOptions): Promise<void> {
+  //     // Generate state
+  //     const stateResult = generateState();
+  //     if (stateResult.isErr()) {
+  //       throw stateResult.error;
+  //     }
+
+  //     const state = stateResult.value;
+
+  //     // Generate code verifier
+  //     const codeVerifierResult = generateCodeVerifier();
+  //     if (codeVerifierResult.isErr()) {
+  //       throw codeVerifierResult.error;
+  //     }
+
+  //     const codeVerifier = codeVerifierResult.value;
+
+  //     // Generate code challenge
+  //     const codeChallengeResult = await generateCodeChallenge(codeVerifier);
+  //     if (codeChallengeResult.isErr()) {
+  //       throw codeChallengeResult.error;
+  //     }
+
+  //     const codeChallenge = codeChallengeResult.value;
+
+  //     // Create OAuth state JWE
+  //     const oauthStateJWEResult = await encryptOAuthStatePayload({
+  //       oauthState: {
+  //         state,
+  //         codeVerifier,
+  //         redirectTo: options.redirectTo || '/',
+  //         provider: 'google',
+  //       },
+  //       secret: this.config.session.secret,
+  //       maxAge: OAUTH_STATE_MAX_AGE,
+  //     });
+
+  //     if (oauthStateJWEResult.isErr()) {
+  //       throw oauthStateJWEResult.error;
+  //     }
+
+  //     const oauthStateJwe = oauthStateJWEResult.value;
+
+  //     // Set OAuth state cookie
+  //     await this.adapter.setCookie(COOKIE_NAMES.OAUTH_STATE, oauthStateJwe, {
+  //       maxAge: OAUTH_STATE_MAX_AGE,
+  //     });
+
+  //     // Create authorization URL
+  //     const authorizationUrlResult = createAuthorizationUrl({
+  //       clientId: this.providerConfig.clientId,
+  //       redirectUri: this.providerConfig.redirectUri,
+  //       state,
+  //       codeChallenge,
+  //       prompt: 'select_account',
+  //     });
+
+  //     if (authorizationUrlResult.isErr()) {
+  //       throw authorizationUrlResult.error;
+  //     }
+
+  //     const authorizationUrl = authorizationUrlResult.value;
+
+  //     // Redirect user to authorization URL
+  //     this.adapter.redirect(authorizationUrl);
+  //   }
+
   // --------------------------------------------
-  // Handle callback
+  // Handle Callback
   // --------------------------------------------
-  async handleCallback(request: Request): Promise<GoogleAuthResult> {
+  async handleCallback(
+    request: Request,
+    oauthStatePayload: OAuthStatePayload,
+  ): Promise<Result<ProviderUser, AuthError>> {
     const url = new URL(request.url);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
 
     if (!code) {
-      throw new MissingAuthorizationCodeError();
+      return err(new MissingAuthorizationCodeError());
     }
 
     if (!state) {
-      throw new MissingStateError();
+      return err(new MissingStateError());
     }
-
-    // Get the OAuth state cookie
-    const oauthStateJWE = await this.adapter.getCookie(
-      COOKIE_NAMES.OAUTH_STATE,
-    );
-
-    if (!oauthStateJWE) {
-      throw new MissingOAuthStateCookieError();
-    }
-
-    // Decrypt the Oauth state JWE
-    const oauthStateResult = await decryptOAuthStateJWE({
-      jwe: oauthStateJWE,
-      secret: this.config.session.secret,
-    });
-
-    if (oauthStateResult.isErr()) {
-      throw oauthStateResult.error;
-    }
-
-    const oauthStatePayload = oauthStateResult.value;
 
     // Compare the state stored in cookie with state stored in URL
     if (oauthStatePayload.state !== state) {
-      throw new StateMismatchError();
+      return err(new StateMismatchError());
     }
 
     // Exchange authorization code for tokens
@@ -187,7 +152,7 @@ export class GoogleProvider
     });
 
     if (tokensResult.isErr()) {
-      throw tokensResult.error;
+      return err(tokensResult.error);
     }
 
     const tokens = tokensResult.value;
@@ -196,18 +161,11 @@ export class GoogleProvider
     const userClaimsResult = decodeGoogleIdToken(tokens.id_token);
 
     if (userClaimsResult.isErr()) {
-      throw userClaimsResult.error;
+      return err(userClaimsResult.error);
     }
 
     const userClaims = userClaimsResult.value;
 
-    // Delete the OAuth state cookie
-    await this.adapter.deleteCookie(COOKIE_NAMES.OAUTH_STATE);
-
-    return {
-      userClaims,
-      tokens,
-      oauthState: oauthStatePayload,
-    };
+    return ok(userClaims);
   }
 }

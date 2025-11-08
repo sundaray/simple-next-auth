@@ -1,19 +1,25 @@
-import type { AuthConfig } from '../config/schema';
+import type { Result } from 'neverthrow';
+import type { AuthError } from './errors';
+import type { OAuthStatePayload } from '../core/oauth/types';
+import type { ProviderUser } from '../core/oauth/types';
 
-export interface BaseSignInOptions {
-  redirectTo?: `/${string}`;
+/**
+ * This is the raw user profile returned by a provider.
+ * The onSignIn callback will receive this.
+ */
+
+export interface OAuthProvider {
+  id: string;
+  type: 'oauth';
+  getAuthorizationUrl(params: {
+    state: string;
+    codeChallenge: string;
+    prompt?: string;
+  }): Result<string, AuthError>;
+  handleCallback(
+    request: Request,
+    oauthStatePayload: OAuthStatePayload,
+  ): Promise<Result<ProviderUser, AuthError>>;
 }
 
-export interface OAuthProvider<
-  Config,
-  Options extends BaseSignInOptions,
-  Result,
-> {
-  config: AuthConfig;
-  providerConfig: Config;
-  signIn(options: Options): Promise<void>;
-  handleCallback(request: Request): Promise<Result>;
-}
-
-export type AnyAuthProvider = OAuthProvider<any, any, any>;
-
+export type AnyAuthProvider = OAuthProvider;
