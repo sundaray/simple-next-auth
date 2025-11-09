@@ -11,36 +11,25 @@ interface AuthInstance {
   >;
 }
 
-let initAuthInstance: (() => AuthInstance) | null = null;
+let instance: (() => AuthInstance) | null = null;
 
 export function initAuth(config: AuthConfig) {
-  if (initAuthInstance) {
-    const instance = initAuthInstance;
-    return {
-      authHelpers: () => instance().authHelpers,
-      extendUserSessionMiddleware: () => instance().extendUserSessionMiddleware,
+  if (!instance) {
+    const init = () => {
+      const adapter = new NextjsAdapter();
+
+      const { providers } = config;
+
+      const authHelpers = createAuthHelpers(config, adapter, providers);
+
+      const extendUserSessionMiddleware =
+        createExtendUserSessionMiddleware(config);
+
+      return { authHelpers, extendUserSessionMiddleware };
     };
+
+    instance = lazyInit(init);
   }
 
-  const init = () => {
-    const adapter = new NextjsAdapter();
-
-    const { providers } = config;
-
-    const authHelpers = createAuthHelpers(config, adapter, providers);
-
-    const extendUserSessionMiddleware =
-      createExtendUserSessionMiddleware(config);
-
-    return { authHelpers, extendUserSessionMiddleware };
-  };
-
-  const getSingleton = lazyInit(init);
-  initAuthInstance = getSingleton;
-
-  return {
-    authHelpers: () => getSingleton().authHelpers,
-    extendUserSessionMiddleware: () =>
-      getSingleton().extendUserSessionMiddleware,
-  };
+  return instance();
 }
