@@ -1,5 +1,4 @@
 import type { AnyAuthProvider } from '../core/strategy';
-import type { UserSessionPayload } from '../core/session';
 
 export type AuthProviderId = 'google' | 'credentials';
 

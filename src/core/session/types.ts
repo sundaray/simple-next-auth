@@ -7,3 +7,16 @@ export interface UserSessionPayload {
   provider: AuthProviderId;
   [key: string]: unknown;
 }
+
+export type ResponseHeaders = Record<string, string | string[]>;
+
+export interface SessionStorage<TRequest, TResponse> {
+  getuserSession(request: TRequest): Promise<string | null>;
+  saveUserSession(
+    response: TResponse,
+    sessionData: string,
+  ): Promise<{ response?: TResponse; headers?: ResponseHeaders }>;
+  deleteUserSession(
+    response: TResponse,
+  ): Promise<{ response?: TResponse; headers?: ResponseHeaders }>;
+}
