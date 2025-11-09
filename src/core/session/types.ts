@@ -11,7 +11,7 @@ export interface UserSessionPayload {
 export type ResponseHeaders = Record<string, string | string[]>;
 
 export interface SessionStorage<TRequest, TResponse> {
-  getuserSession(request: TRequest): Promise<string | null>;
+  getUserSession(request: TRequest): Promise<string | null>;
   saveUserSession(
     response: TResponse,
     sessionData: string,
