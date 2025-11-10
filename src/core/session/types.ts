@@ -11,12 +11,20 @@ export interface UserSessionPayload {
 export type ResponseHeaders = Record<string, string | string[]>;
 
 export interface SessionStorage<TRequest, TResponse> {
-  getUserSession(request: TRequest): Promise<string | null>;
-  saveUserSession(
-    response: TResponse,
+  getSession(request: TRequest): Promise<string | null>;
+  saveSession(
+    response: TResponse | undefined,
     sessionData: string,
   ): Promise<{ response?: TResponse; headers?: ResponseHeaders }>;
-  deleteUserSession(
-    response: TResponse,
+  deleteSession(
+    response: TResponse | undefined,
   ): Promise<{ response?: TResponse; headers?: ResponseHeaders }>;
+}
+
+export interface CookieOptions {
+  maxAge?: number;
+  path?: string;
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: 'lax' | 'strict' | 'none';
 }

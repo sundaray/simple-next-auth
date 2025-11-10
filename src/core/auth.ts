@@ -2,15 +2,16 @@ import type { AuthConfig } from '../types';
 import { COOKIE_NAMES, OAUTH_STATE_MAX_AGE } from './constants.js';
 import { MissingOAuthStateCookieError } from './errors.js';
 
-import type { UserSessionPayload } from '../core/session/types.js';
-import type { AuthProviderId, FrameworkAdapter, SignInOptions } from '../types';
+import type {
+  UserSessionPayload,
+  SessionStorage,
+} from '../core/session/types.js';
+import type { AuthProviderId, SignInOptions } from '../types';
 import type { AnyAuthProvider } from './strategy.js';
 
 import {
   encryptUserSessionPayload,
   createUserSessionPayload,
-  setUserSessionCookie,
-  deleteOAuthStateCookie,
   decryptUserSessionJWE,
 } from './session/index.js';
 
@@ -25,9 +26,10 @@ import {
   generateState,
 } from './pkce';
 
-export function createAuthHelpers(
+export function createAuthHelpers<TRequest, TResponse>(
   config: AuthConfig,
-  adapter: FrameworkAdapter,
+  userSessionStorage: SessionStorage<TRequest, TResponse>,
+  oauthStateStorage: SessionStorage<TRequest, TResponse>,
   providers: AnyAuthProvider[],
 ) {
   const providersMap = new Map<AuthProviderId, AnyAuthProvider>();
@@ -39,7 +41,11 @@ export function createAuthHelpers(
     // --------------------------------------------
     // Sign in
     // --------------------------------------------
-    signIn: async (providerId: AuthProviderId, options?: SignInOptions) => {
+    signIn: async (
+      response: TResponse,
+      providerId: AuthProviderId,
+      options: SignInOptions,
+    ): Promise<{ authorizationUrl: string }> => {
       const provider = providersMap.get(providerId);
       if (!provider) {
         throw new Error(`Provider ${providerId} not found`);
@@ -78,34 +84,33 @@ export function createAuthHelpers(
         });
         if (authorizationUrlResult.isErr()) throw authorizationUrlResult.error;
 
-        // Use the adapter to set the cookie
-        await adapter.setCookie(
-          COOKIE_NAMES.OAUTH_STATE,
+        // Use the oauthstateStorage instance to save the cookie
+        await oauthStateStorage.saveSession(
+          response,
           oauthStateJWEResult.value,
-          {
-            maxAge: OAUTH_STATE_MAX_AGE,
-          },
         );
 
         // Use the adapter to redirect
-        adapter.redirect(authorizationUrlResult.value);
+        return { authorizationUrl: authorizationUrlResult.value };
       }
+
+      return { authorizationUrl: '' };
     },
     // --------------------------------------------
     // Sign out
     // --------------------------------------------
-    signOut: async () => {
-      await adapter.deleteCookie(COOKIE_NAMES.USER_SESSION);
-      adapter.redirect('/');
+    signOut: async (response: TResponse): Promise<{ redirectTo: string }> => {
+      await userSessionStorage.deleteSession(response);
+      return { redirectTo: '/' };
     },
     // --------------------------------------------
     // Get user session
     // --------------------------------------------
-    getUserSession: async (): Promise<UserSessionPayload | null> => {
-      const jwe = await adapter.getCookie(COOKIE_NAMES.USER_SESSION);
-      if (!jwe) {
-        return null;
-      }
+    getUserSession: async (
+      request: TRequest,
+    ): Promise<UserSessionPayload | null> => {
+      const jwe = await userSessionStorage.getSession(request);
+      if (!jwe) return null;
 
       const sessionResult = await decryptUserSessionJWE({
         jwe,
@@ -121,8 +126,11 @@ export function createAuthHelpers(
     // --------------------------------------------
     // Handle Callback
     // --------------------------------------------
-    handleCallback: async (request: Request) => {
-      const ouathStateJWE = await adapter.getCookie(COOKIE_NAMES.OAUTH_STATE);
+    handleCallback: async (
+      request: TRequest & Request,
+      response: TResponse,
+    ): Promise<{ redirectTo: `/${string}` }> => {
+      const ouathStateJWE = await oauthStateStorage.getSession(request);
       if (!ouathStateJWE) {
         throw new MissingOAuthStateCookieError();
       }
@@ -153,9 +161,7 @@ export function createAuthHelpers(
 
       // 5. Handle the Result (error or success)
       if (providerResult.isErr()) {
-        console.error('[AUTH_ERROR]', providerResult.error);
-        adapter.redirect(`/auth/error?error=${providerResult.error.name}`);
-        return;
+        throw providerResult.error;
       }
 
       // 6. Get the user claims
@@ -184,20 +190,18 @@ export function createAuthHelpers(
       if (sessionJWEResult.isErr()) throw sessionJWEResult.error;
 
       // 10. Set the user session
-      await setUserSessionCookie({
-        frameworkAdapter: adapter,
-        authConfig: config,
-        jwe: sessionJWEResult.value,
-      });
+      await userSessionStorage.saveSession(response, sessionJWEResult.value);
 
       // 11. Delete the OAuth state cookie
-      await deleteOAuthStateCookie({ frameworkAdapter: adapter });
+      await oauthStateStorage.deleteSession(response);
 
       // 12. Redirect users to their intended destination
       const redirectTo = oauthState.redirectTo || '/';
-      adapter.redirect(redirectTo, 'replace');
+      return { redirectTo };
     },
   };
 }
 
-export type AuthHelpers = ReturnType<typeof createAuthHelpers>;
+export type AuthHelpers<TRequest, TResponse> = ReturnType<
+  typeof createAuthHelpers<TRequest, TResponse>
+>;

@@ -1,5 +1,4 @@
 import { createAuthHelpers } from '../core/auth';
-import { NextjsAdapter } from './adapter';
 import { createExtendUserSessionMiddleware } from './middleware';
 import type { AuthConfig } from '../types';
 import { lazyInit } from '../core/utils/lazy-init';
