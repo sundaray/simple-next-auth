@@ -1,7 +1,7 @@
 import { base64url } from 'jose';
 import crypto from 'node:crypto';
 import { Result } from 'neverthrow';
-import { GenerateCodeVerifierError } from '../errors';
+import { GenerateCodeVerifierError } from './errors';
 
 // ============================================
 // GENERATE CODE VERIFIER

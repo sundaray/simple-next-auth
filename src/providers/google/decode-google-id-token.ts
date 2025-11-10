@@ -1,7 +1,7 @@
 import { decodeJwt } from 'jose';
 import { Result } from 'neverthrow';
 import type { GoogleIdTokenPayload } from './types';
-import { DecodeGoogleIdTokenError } from '../../core/errors';
+import { DecodeGoogleIdTokenError } from './errors';
 
 export function decodeGoogleIdToken(
   idToken: string,

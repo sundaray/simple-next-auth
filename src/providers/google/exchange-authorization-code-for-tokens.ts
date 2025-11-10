@@ -7,7 +7,7 @@ import {
   TokenFetchError,
   TokenResponseError,
   TokenParseError,
-} from '../../core/errors';
+} from './errors';
 
 // --------------------------------------------
 //

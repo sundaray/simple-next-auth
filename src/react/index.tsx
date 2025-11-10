@@ -1,12 +1,12 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { UserSessionPayload } from '../types';
+import type { UserSessionPayload } from '../core/session/types';
 
 import {
   FetchUserSessionError,
   MissingUserSessionProviderError,
-} from '../core/errors';
+} from './errors';
 
 type SessionContextState =
   | { status: 'pending'; data: null; error: null }

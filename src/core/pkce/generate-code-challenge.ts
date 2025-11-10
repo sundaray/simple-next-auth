@@ -1,7 +1,7 @@
 import { base64url } from 'jose';
 import crypto from 'node:crypto';
 import { ResultAsync } from 'neverthrow';
-import { GenerateCodeChallengeError } from '../errors';
+import { GenerateCodeChallengeError } from './errors';
 
 /**
  * Generates a SHA-256 code challenge from a code verifier for OAuth 2.0 PKCE flow.

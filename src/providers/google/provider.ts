@@ -10,8 +10,9 @@ import {
   MissingAuthorizationCodeError,
   MissingStateError,
   StateMismatchError,
-  AuthError,
-} from '../../core/errors';
+} from '../../core/oauth/errors';
+
+import { AuthError } from '../../core/errors';
 
 // --------------------------------------------
 //
