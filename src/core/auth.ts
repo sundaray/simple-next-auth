@@ -42,9 +42,8 @@ export function createAuthHelpers<TRequest, TResponse>(
     // Sign in
     // --------------------------------------------
     signIn: async (
-      response: TResponse,
       providerId: AuthProviderId,
-      options: SignInOptions,
+      options?: SignInOptions,
     ): Promise<{ authorizationUrl: string }> => {
       const provider = providersMap.get(providerId);
       if (!provider) {
@@ -86,7 +85,7 @@ export function createAuthHelpers<TRequest, TResponse>(
 
         // Use the oauthstateStorage instance to save the cookie
         await oauthStateStorage.saveSession(
-          response,
+          undefined,
           oauthStateJWEResult.value,
         );
 
@@ -99,8 +98,8 @@ export function createAuthHelpers<TRequest, TResponse>(
     // --------------------------------------------
     // Sign out
     // --------------------------------------------
-    signOut: async (response: TResponse): Promise<{ redirectTo: string }> => {
-      await userSessionStorage.deleteSession(response);
+    signOut: async (): Promise<{ redirectTo: string }> => {
+      await userSessionStorage.deleteSession(undefined);
       return { redirectTo: '/' };
     },
     // --------------------------------------------
@@ -128,7 +127,6 @@ export function createAuthHelpers<TRequest, TResponse>(
     // --------------------------------------------
     handleCallback: async (
       request: TRequest & Request,
-      response: TResponse,
     ): Promise<{ redirectTo: `/${string}` }> => {
       const ouathStateJWE = await oauthStateStorage.getSession(request);
       if (!ouathStateJWE) {
@@ -190,10 +188,10 @@ export function createAuthHelpers<TRequest, TResponse>(
       if (sessionJWEResult.isErr()) throw sessionJWEResult.error;
 
       // 10. Set the user session
-      await userSessionStorage.saveSession(response, sessionJWEResult.value);
+      await userSessionStorage.saveSession(undefined, sessionJWEResult.value);
 
       // 11. Delete the OAuth state cookie
-      await oauthStateStorage.deleteSession(response);
+      await oauthStateStorage.deleteSession(undefined);
 
       // 12. Redirect users to their intended destination
       const redirectTo = oauthState.redirectTo || '/';

@@ -17,6 +17,9 @@ interface AuthInstance {
     request: Request,
   ) => ReturnType<AuthHelpers<Request, unknown>['getUserSession']>;
   handleCallback: (request: Request) => Promise<void>;
+  extendUserSessionMiddleware: ReturnType<
+    typeof createExtendUserSessionMiddleware
+  >;
 }
 
 let instance: (() => AuthInstance) | null = null;
@@ -24,6 +27,7 @@ let instance: (() => AuthInstance) | null = null;
 export function initAuth(config: AuthConfig) {
   if (!instance) {
     const init = () => {
+      // Create user session storage
       const userSessionStorage = new NextJsSessionStorage(
         config,
         COOKIE_NAMES.USER_SESSION,
@@ -36,6 +40,7 @@ export function initAuth(config: AuthConfig) {
         },
       );
 
+      // Create OAuth state storage
       const oauthStateStorage = new NextJsSessionStorage(
         config,
         COOKIE_NAMES.OAUTH_STATE,
@@ -50,6 +55,7 @@ export function initAuth(config: AuthConfig) {
 
       const { providers } = config;
 
+      // Create auth helpers
       const authHelpers = createAuthHelpers<Request, unknown>(
         config,
         userSessionStorage,
@@ -60,23 +66,32 @@ export function initAuth(config: AuthConfig) {
       const extendUserSessionMiddleware =
         createExtendUserSessionMiddleware(config);
 
-      return { authHelpers, extendUserSessionMiddleware };
-    };
+      // Wrap auth helpers for Next.js
+      const authInstance: AuthInstance = {
+        signIn: async (providerId, options) => {
+          const result = await authHelpers.signIn(providerId, options);
+          nextRedirect(result.authorizationUrl);
+        },
 
-    const authHelpers: AuthInstance = {
-      signIn: async () => {},
-      signOut: async () => {
-        const { redirectTo } = await authHelpers.signOut();
-        nextRedirect(redirectTo);
-      },
-      getUserSession: async (request: Request) => {
-        return authHelpers.getUserSession(request)
-      },
-      extendUserSessionMiddleware,
-    handleCallback: async (request: Request) => 
+        signOut: async () => {
+          const { redirectTo } = await authHelpers.signOut();
+          nextRedirect(redirectTo);
+        },
+
+        getUserSession: async (request: Request) => {
+          return authHelpers.getUserSession(request);
+        },
+
+        handleCallback: async (request: Request) => {
+          const result = await authHelpers.handleCallback(request);
+          nextRedirect(result.redirectTo);
+        },
+
+        extendUserSessionMiddleware,
+      };
+
+      return authInstance;
     };
-return authHelpers
-  }
 
     instance = lazyInit(init);
   }
