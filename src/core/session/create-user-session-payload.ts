@@ -1,8 +1,5 @@
 import { ResultAsync } from 'neverthrow';
-import {
-  OnSignInCallbackError,
-  CreateUserSessionPayloadError,
-} from '../errors';
+import { CreateUserSessionPayloadError, OnSignInCallbackError } from './errors';
 import type { AuthProviderId, AuthConfig } from '../../types';
 import type { UserSessionPayload } from './index';
 

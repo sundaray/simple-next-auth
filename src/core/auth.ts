@@ -1,6 +1,6 @@
 import type { AuthConfig } from '../types';
 import { COOKIE_NAMES, OAUTH_STATE_MAX_AGE } from './constants.js';
-import { MissingOAuthStateCookieError } from './errors.js';
+import { MissingOAuthStateCookieError } from './oauth/errors';
 
 import type {
   UserSessionPayload,
