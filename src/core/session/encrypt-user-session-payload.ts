@@ -1,7 +1,7 @@
 import { EncryptJWT } from 'jose';
 import { ResultAsync } from 'neverthrow';
 import type { UserSessionPayload } from './index';
-import { EncryptUserSessionPayloadError } from '../errors';
+import { EncryptUserSessionPayloadError } from './errors';
 
 export interface EncryptUserSessionPayloadParams {
   userSessionPayload: UserSessionPayload;
