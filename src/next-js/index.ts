@@ -78,8 +78,8 @@ export function initAuth(config: AuthConfig) {
           nextRedirect(redirectTo);
         },
 
-        getUserSession: async (request: Request) => {
-          return authHelpers.getUserSession(request);
+        getUserSession: async () => {
+          return authHelpers.getUserSession(undefined as any);
         },
 
         handleCallback: async (request: Request) => {

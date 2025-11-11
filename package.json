@@ -11,6 +11,10 @@
       "types": "./dist/next-js/index.d.ts",
       "import": "./dist/next-js/index.js"
     },
+    "./providers/google": {
+      "types": "./dist/providers/google/index.d.ts",
+      "import": "./dist/providers/google/index.js"
+    },
     "./react": {
       "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.js"
