@@ -17,8 +17,6 @@ export function createUserSessionPayload(
   return ResultAsync.fromPromise(
     (async () => {
       const coreUserSessionPayload = {
-        createdAt: Date.now(),
-        expiresAt: Date.now() + authConfig.session.maxAge * 1000,
         maxAge: authConfig.session.maxAge,
         provider: providerName,
       };
