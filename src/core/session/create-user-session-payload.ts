@@ -23,19 +23,9 @@ export function createUserSessionPayload(
         provider: providerName,
       };
 
-      let customUserSessionPayload: Record<string, any> = {};
-      if (authConfig.callbacks?.onSignIn) {
-        try {
-          customUserSessionPayload =
-            await authConfig.callbacks.onSignIn(providerUserClaims);
-        } catch (error) {
-          throw new OnSignInCallbackError({ cause: error });
-        }
-      }
-
       return {
         ...coreUserSessionPayload,
-        ...customUserSessionPayload,
+        ...providerUserClaims,
       };
     })(),
     (error) => {

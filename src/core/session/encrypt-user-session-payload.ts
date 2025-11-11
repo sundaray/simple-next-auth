@@ -17,11 +17,13 @@ export function encryptUserSessionPayload(
     (async () => {
       const { userSessionPayload, secret, maxAge } = params;
 
+      console.log('User session payload: ', userSessionPayload);
+
       // Decode the base64 secret to get the raw bytes
       const secretKey = Buffer.from(secret, 'base64');
 
-      const jwe = await new EncryptJWT({ session: userSessionPayload })
-        .setProtectedHeader({ alg: 'dir', enc: 'A256CBC-HS256' })
+      const jwe = await new EncryptJWT(userSessionPayload)
+        .setProtectedHeader({ alg: 'dir', enc: 'A128CBC-HS256' })
         .setIssuedAt()
         .setExpirationTime(`${maxAge}s`)
         .encrypt(secretKey);
