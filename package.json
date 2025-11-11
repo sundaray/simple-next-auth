@@ -1,5 +1,5 @@
 {
-  "name": "simple-next-auth",
+  "name": "super-auth",
   "version": "0.0.1",
   "description": "A simple authentication library for Next.js",
   "exports": {
