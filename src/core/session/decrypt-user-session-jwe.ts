@@ -2,6 +2,7 @@ import { jwtDecrypt } from 'jose';
 import { ResultAsync } from 'neverthrow';
 import { DecryptUserSessionJweError } from './errors';
 import type { UserSessionPayload } from './index';
+import { Buffer } from 'node:buffer';
 
 export interface DecryptUserSessionJWEParams {
   jwe: string;
@@ -13,7 +14,8 @@ export function decryptUserSessionJWE(
 ): ResultAsync<UserSessionPayload, DecryptUserSessionJweError> {
   const { jwe, secret } = params;
 
-  const secretKey = new TextEncoder().encode(secret);
+  // Decode the base64 secret to get the raw bytes
+  const secretKey = Buffer.from(secret, 'base64');
 
   return ResultAsync.fromPromise(
     (async () => {

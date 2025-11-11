@@ -2,6 +2,7 @@ import { jwtDecrypt } from 'jose';
 import { ResultAsync } from 'neverthrow';
 import { DecryptOAuthStateJweError } from './errors';
 import type { OAuthStatePayload } from './index';
+import { Buffer } from 'node:buffer';
 
 export interface DecryptOAuthStateJWEParams {
   jwe: string;
@@ -12,7 +13,9 @@ export function decryptOAuthStateJWE(
   params: DecryptOAuthStateJWEParams,
 ): ResultAsync<OAuthStatePayload, DecryptOAuthStateJweError> {
   const { jwe, secret } = params;
-  const secretKey = new TextEncoder().encode(secret);
+
+  // Decode the base64 secret to get the raw bytes
+  const secretKey = Buffer.from(secret, 'base64');
 
   return ResultAsync.fromPromise(
     (async () => {

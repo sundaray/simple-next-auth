@@ -2,6 +2,7 @@ import { EncryptJWT } from 'jose';
 import { ResultAsync } from 'neverthrow';
 import { EncryptOAuthStatePayloadError } from './errors';
 import type { OAuthStatePayload } from './types';
+import { Buffer } from 'node:buffer';
 
 export interface EncryptOAuthStatePayloadParams {
   oauthState: OAuthStatePayload;
@@ -16,10 +17,11 @@ export function encryptOAuthStatePayload(
     (async () => {
       const { oauthState, secret, maxAge } = params;
 
-      const secretKey = new TextEncoder().encode(secret);
+      // Decode the base64 secret to get the raw bytes
+      const secretKey = Buffer.from(secret, 'base64');
 
       const jwe = await new EncryptJWT({ oauthState })
-        .setProtectedHeader({ alg: 'dir', enc: 'A256CBC-HS256' })
+        .setProtectedHeader({ alg: 'dir', enc: 'A128CBC-HS256' })
         .setIssuedAt()
         .setExpirationTime(`${maxAge}s`)
         .encrypt(secretKey);

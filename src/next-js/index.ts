@@ -13,9 +13,9 @@ interface AuthInstance {
     options?: { redirectTo: `/${string}` },
   ) => Promise<void>;
   signOut: () => Promise<void>;
-  getUserSession: (
-    request: Request,
-  ) => ReturnType<AuthHelpers<Request, unknown>['getUserSession']>;
+  getUserSession: () => ReturnType<
+    AuthHelpers<Request, unknown>['getUserSession']
+  >;
   handleCallback: (request: Request) => Promise<void>;
   extendUserSessionMiddleware: ReturnType<
     typeof createExtendUserSessionMiddleware
