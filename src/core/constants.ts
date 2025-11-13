@@ -1,6 +1,6 @@
-// ============================================
+// -------------------------------------------
 // COOKIE CONFIGURATION
-// ============================================
+// -------------------------------------------
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -12,3 +12,9 @@ export const COOKIE_NAMES = {
 } as const;
 
 export const OAUTH_STATE_MAX_AGE = 60 * 10; // 10 minutes
+
+// -------------------------------------------
+// EMAIL VERIFICATION
+// -------------------------------------------
+
+export const EMAIL_VERIFICATION_TOKEN_EXPIRES_IN = 60 * 30; // 30 minutes
