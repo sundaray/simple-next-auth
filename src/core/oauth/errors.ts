@@ -79,3 +79,13 @@ export class DecryptOAuthStateJweError extends AuthError {
     this.name = 'DecryptOAuthStateJweError';
   }
 }
+
+export class ProviderNotFoundError extends AuthError {
+  constructor(options: { providerId: string; cause?: unknown }) {
+    super({
+      message: `'${options.providerId}' provider was not found.`,
+      cause: options.cause,
+    });
+    this.name = 'ProviderNotFoundError';
+  }
+}

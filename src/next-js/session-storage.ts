@@ -16,7 +16,7 @@ export class NextJsSessionStorage extends CookieSessionStorage<
     super(config, cookieName, cookieOptions);
   }
 
-  async getSession(request?: Request): Promise<string | null> {
+  async getSession(): Promise<string | null> {
     const cookieStore = await cookies();
     const cookie = cookieStore.get(this.cookieName);
     return cookie?.value ?? null;

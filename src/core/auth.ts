@@ -1,6 +1,9 @@
 import type { AuthConfig } from '../types';
-import { COOKIE_NAMES, OAUTH_STATE_MAX_AGE } from './constants.js';
-import { MissingOAuthStateCookieError } from './oauth/errors';
+import { OAUTH_STATE_MAX_AGE } from './constants.js';
+import {
+  MissingOAuthStateCookieError,
+  ProviderNotFoundError,
+} from './oauth/errors';
 
 import type {
   UserSessionPayload,
@@ -89,7 +92,7 @@ export function createAuthHelpers<TRequest, TResponse>(
           oauthStateJWEResult.value,
         );
 
-        // Use the adapter to redirect
+        // Use the framework to redirect
         return { authorizationUrl: authorizationUrlResult.value };
       }
 
@@ -147,11 +150,8 @@ export function createAuthHelpers<TRequest, TResponse>(
       const providerId = oauthState.provider;
       const provider = providersMap.get(providerId);
 
-      // Fix this
-      if (!provider || provider.type !== 'oauth') {
-        throw new Error(
-          `Provider ${oauthState.provider} not found or is not an OAuth provider`,
-        );
+      if (!provider) {
+        throw new ProviderNotFoundError({ providerId });
       }
 
       // Handle the callback
