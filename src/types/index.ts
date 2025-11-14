@@ -1,4 +1,4 @@
-import type { AnyAuthProvider } from '../core/strategy';
+import type { AnyAuthProvider } from '../providers/types';
 
 export type AuthProviderId = 'google' | 'credentials';
 
@@ -7,6 +7,7 @@ export interface SignInOptions {
 }
 
 export interface AuthConfig {
+  baseUrl: string;
   session: {
     secret: string;
     maxAge: number;

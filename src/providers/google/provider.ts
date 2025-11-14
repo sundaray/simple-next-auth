@@ -1,5 +1,5 @@
 import { Result, ok, err } from 'neverthrow';
-import type { OAuthProvider } from '../../core/strategy';
+import type { OAuthProvider } from '../../providers/types';
 import type { GoogleProviderConfig } from './types';
 import type { OAuthStatePayload, ProviderUser } from '../../core/oauth/types';
 

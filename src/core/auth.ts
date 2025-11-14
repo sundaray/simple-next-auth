@@ -10,7 +10,7 @@ import type {
   SessionStorage,
 } from '../core/session/types.js';
 import type { AuthProviderId, SignInOptions } from '../types';
-import type { AnyAuthProvider } from './strategy.js';
+import type { AnyAuthProvider } from '../providers/types';
 
 import {
   encryptUserSessionPayload,
@@ -36,9 +36,14 @@ export function createAuthHelpers<TRequest, TResponse>(
   providers: AnyAuthProvider[],
 ) {
   const providersMap = new Map<AuthProviderId, AnyAuthProvider>();
+
   for (const provider of providers) {
     providersMap.set(provider.id, provider);
   }
+
+  const credentialProvider = providers.find(
+    (provider) => provider.type === 'credential',
+  );
 
   return {
     // --------------------------------------------
@@ -98,6 +103,27 @@ export function createAuthHelpers<TRequest, TResponse>(
 
       return { authorizationUrl: '' };
     },
+    // --------------------------------------------
+    // Sign up
+    // --------------------------------------------
+
+    signUp: async(providerId: AuthProviderId, data:{email:string, password:string, [key:string]: unknown}):Promise<{success:boolean}> => {
+      
+if(!providerId) {
+  return {success:false}
+}
+
+      if(!credentialProvider) {
+        return {success:false}
+      }
+      const result = await credentialProvider.signUp(data)
+      
+      if(result.isErr()) {
+        return {success:false}
+      }
+
+      return {success:true}
+    }
     // --------------------------------------------
     // Sign out
     // --------------------------------------------
@@ -197,6 +223,37 @@ export function createAuthHelpers<TRequest, TResponse>(
       const redirectTo = oauthState.redirectTo || '/';
       return { redirectTo };
     },
+
+        // --------------------------------------------
+    // Handle email verification
+    // --------------------------------------------
+
+    handleVerifyEmail: async () => {
+      // Extract token from the URL query parameter
+      const url = new URL(request.url)
+      const token = url.searchParams.get('token')
+
+
+      // Handle missing token
+
+      if(!token) {
+
+      }
+      // Verify token
+      const result = await credentialProvider?.verifyEmail(token)
+
+      // Handle verification result - error case
+      if(result?.isErr()) {
+        const errorUrl = credentialProvider?.config.emailVerification.onError
+        return {redirectTo: errorUrl}
+      }
+
+      // Handle verification result - success case
+    const successUrl = credentialProvider?.config.emailVerification.onSuccess
+    return {
+      redirectTo: successUrl
+    }
+    }
   };
 }
 
