@@ -1,6 +1,6 @@
 import type { AnyAuthProvider } from '../providers/types';
 
-export type AuthProviderId = 'google' | 'credentials';
+export type AuthProviderId = 'google' | 'credential';
 
 export interface SignInOptions {
   redirectTo?: `/${string}`;
@@ -13,9 +13,4 @@ export interface AuthConfig {
     maxAge: number;
   };
   providers: AnyAuthProvider[];
-  callbacks: {
-    onSignIn: (
-      userInfo: Record<string, any>,
-    ) => Promise<Record<string, unknown>>;
-  };
 }

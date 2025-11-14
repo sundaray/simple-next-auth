@@ -29,4 +29,7 @@ export interface GoogleProviderConfig {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
+  onAuthenticated(
+    userClaims: GoogleIdTokenPayload,
+  ): Promise<Record<string, unknown>>;
 }

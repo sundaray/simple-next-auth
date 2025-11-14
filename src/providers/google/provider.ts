@@ -1,7 +1,7 @@
 import { Result, ok, err } from 'neverthrow';
 import type { OAuthProvider } from '../../providers/types';
 import type { GoogleProviderConfig } from './types';
-import type { OAuthStatePayload, ProviderUser } from '../../core/oauth/types';
+import type { OAuthStatePayload, UserClaims } from '../../core/oauth/types';
 
 import { decodeGoogleIdToken } from './decode-google-id-token';
 import { exchangeAuthorizationCodeForTokens } from './exchange-authorization-code-for-tokens';
@@ -22,10 +22,10 @@ import { AuthError } from '../../core/errors';
 export class GoogleProvider implements OAuthProvider {
   id = 'google' as const;
   type = 'oauth' as const;
-  providerConfig: GoogleProviderConfig;
+  config: GoogleProviderConfig;
 
   constructor(config: GoogleProviderConfig) {
-    this.providerConfig = config;
+    this.config = config;
   }
 
   // --------------------------------------------
@@ -41,8 +41,8 @@ export class GoogleProvider implements OAuthProvider {
     const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
 
     url.searchParams.set('response_type', 'code');
-    url.searchParams.set('client_id', this.providerConfig.clientId);
-    url.searchParams.set('redirect_uri', this.providerConfig.redirectUri);
+    url.searchParams.set('client_id', this.config.clientId);
+    url.searchParams.set('redirect_uri', this.config.redirectUri);
     url.searchParams.set('state', state);
     url.searchParams.set('code_challenge', codeChallenge);
     url.searchParams.set('code_challenge_method', 'S256');
@@ -58,7 +58,7 @@ export class GoogleProvider implements OAuthProvider {
   async handleCallback(
     request: Request,
     oauthStatePayload: OAuthStatePayload,
-  ): Promise<Result<ProviderUser, AuthError>> {
+  ): Promise<Result<UserClaims, AuthError>> {
     const url = new URL(request.url);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
@@ -79,9 +79,9 @@ export class GoogleProvider implements OAuthProvider {
     // Exchange authorization code for tokens
     const tokensResult = await exchangeAuthorizationCodeForTokens({
       code,
-      clientId: this.providerConfig.clientId,
-      clientSecret: this.providerConfig.clientSecret,
-      redirectUri: this.providerConfig.redirectUri,
+      clientId: this.config.clientId,
+      clientSecret: this.config.clientSecret,
+      redirectUri: this.config.redirectUri,
       codeVerifier: oauthStatePayload.codeVerifier,
     });
 

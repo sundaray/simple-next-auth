@@ -8,11 +8,14 @@ import type {
   VerifyEmailError,
 } from './credential/errors';
 import { ResultAsync } from 'neverthrow';
-import type { OAuthStatePayload } from '../core/oauth/types';
-import type { ProviderUser } from '../core/oauth/types';
+import type { OAuthStatePayload, UserClaims } from '../core/oauth/types';
 import type { AuthProviderId } from '../types';
-import type { User } from './credential/types';
+import type { User, CredentialProviderConfig } from './credential/types';
 
+/**
+ * Contract for OAuth providers (Google, GitHub, etc.)
+ * Not user-facing - implemented by provider classes
+ */
 export interface OAuthProvider {
   id: AuthProviderId;
   type: 'oauth';
@@ -21,16 +24,20 @@ export interface OAuthProvider {
     codeChallenge: string;
     prompt?: string;
   }): Result<string, AuthError>;
-  handleCallback(
+  completeAuthentication(
     request: Request,
     oauthStatePayload: OAuthStatePayload,
-  ): Promise<Result<ProviderUser, AuthError>>;
+  ): Promise<Result<UserClaims, AuthError>>;
 }
 
+/**
+ * Contract for credential (email/password) provider
+ * Not user-facing - implemented by CredentialProvider class
+ */
 export interface CredentialProvider {
   id: 'credential';
   type: 'credential';
-  config: CredentialConfig;
+  config: CredentialProviderConfig;
   signUp(data: {
     email: string;
     password: string;

@@ -1,6 +1,6 @@
 import type { AuthProviderId } from '../../types';
 
-export type ProviderUser = Record<string, any>;
+export type UserClaims = Record<string, any>;
 
 export interface OAuthStatePayload {
   state: string;
