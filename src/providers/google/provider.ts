@@ -1,7 +1,7 @@
 import { Result, ok, err } from 'neverthrow';
 import type { OAuthProvider } from '../../providers/types';
-import type { GoogleProviderConfig } from './types';
-import type { OAuthStatePayload, UserClaims } from '../../core/oauth/types';
+import type { GoogleIdTokenPayload, GoogleProviderConfig } from './types';
+import type { OAuthStatePayload } from '../../core/oauth/types';
 
 import { decodeGoogleIdToken } from './decode-google-id-token';
 import { exchangeAuthorizationCodeForTokens } from './exchange-authorization-code-for-tokens';
@@ -53,12 +53,12 @@ export class GoogleProvider implements OAuthProvider {
   }
 
   // --------------------------------------------
-  // Handle Callback
+  // Complete sign-in
   // --------------------------------------------
-  async completeAuthentication(
+  async completeSignin(
     request: Request,
     oauthStatePayload: OAuthStatePayload,
-  ): Promise<Result<UserClaims, AuthError>> {
+  ): Promise<Result<GoogleIdTokenPayload, AuthError>> {
     const url = new URL(request.url);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
@@ -101,5 +101,14 @@ export class GoogleProvider implements OAuthProvider {
     const userClaims = userClaimsResult.value;
 
     return ok(userClaims);
+  }
+
+  // --------------------------------------------
+  // Execute user's onAuthenticated callback
+  // --------------------------------------------
+  async onAuthenticated(
+    userClaims: GoogleIdTokenPayload,
+  ): Promise<Record<string, unknown>> {
+    return await this.config.onAuthenticated(userClaims);
   }
 }

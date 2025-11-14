@@ -6,13 +6,13 @@ import type { UserSessionPayload } from './index';
 interface CreateUserSessionPayloadParams {
   authConfig: AuthConfig;
   providerName: AuthProviderId;
-  providerUserClaims: Record<string, any>;
+  userClaims: Record<string, any>;
 }
 
 export function createUserSessionPayload(
   params: CreateUserSessionPayloadParams,
 ): ResultAsync<UserSessionPayload, CreateUserSessionPayloadError> {
-  const { authConfig, providerName, providerUserClaims } = params;
+  const { authConfig, providerName, userClaims } = params;
 
   return ResultAsync.fromPromise(
     (async () => {
@@ -23,7 +23,7 @@ export function createUserSessionPayload(
 
       return {
         ...coreUserSessionPayload,
-        ...providerUserClaims,
+        ...userClaims,
       };
     })(),
     (error) => {

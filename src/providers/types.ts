@@ -8,7 +8,7 @@ import type {
   VerifyEmailError,
 } from './credential/errors';
 import { ResultAsync } from 'neverthrow';
-import type { OAuthStatePayload, UserClaims } from '../core/oauth/types';
+import type { OAuthStatePayload } from '../core/oauth/types';
 import type { AuthProviderId } from '../types';
 import type { User, CredentialProviderConfig } from './credential/types';
 
@@ -27,9 +27,11 @@ export interface OAuthProvider {
   completeSignin(
     request: Request,
     oauthStatePayload: OAuthStatePayload,
-  ): Promise<Result<UserClaims, AuthError>>;
+  ): Promise<Result<Record<string, any>, AuthError>>;
 
-  onAuthenticated(userClaims: UserClaims): Promise<Record<string, unknown>>;
+  onAuthenticated(
+    userClaims: Record<string, any>,
+  ): Promise<Record<string, unknown>>;
 }
 
 /**
