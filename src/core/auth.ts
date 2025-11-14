@@ -29,6 +29,16 @@ import {
   generateState,
 } from './pkce';
 
+/**
+ * Core Authentication Helpers - Framework Agnostic
+ *
+ * @param config - Global auth configuration (baseUrl, secret, session config)
+ * @param userSessionStorage - Session storage adapter (framework-specific)
+ * @param oauthStateStorage - OAuth state storage adapter (framework-specific)
+ * @param providers - Array of auth providers (Google, Credential, etc.)
+ *
+ * @returns Auth helper functions that framework adapters use
+ */
 export function createAuthHelpers<TRequest, TResponse>(
   config: AuthConfig,
   userSessionStorage: SessionStorage<TRequest, TResponse>,
@@ -58,21 +68,21 @@ export function createAuthHelpers<TRequest, TResponse>(
         throw new Error(`Provider ${providerId} not found`);
       }
       if (provider.type === 'oauth') {
-        // 1. Generate state
+        // Generate state
         const stateResult = generateState();
         if (stateResult.isErr()) throw stateResult.error;
 
-        // 2. Generate code verifier
+        // Generate code verifier
         const codeVerifierResult = generateCodeVerifier();
         if (codeVerifierResult.isErr()) throw codeVerifierResult.error;
 
-        // 3. Generate code challenge
+        // Generate code challenge
         const codeChallengeResult = await generateCodeChallenge(
           codeVerifierResult.value,
         );
         if (codeChallengeResult.isErr()) throw codeChallengeResult.error;
 
-        // 4. Create OAuth state JWE
+        // Create OAuth state JWE
         const oauthStateJWEResult = await encryptOAuthStatePayload({
           oauthState: {
             state: stateResult.value,
@@ -85,6 +95,7 @@ export function createAuthHelpers<TRequest, TResponse>(
         });
         if (oauthStateJWEResult.isErr()) throw oauthStateJWEResult.error;
 
+        // Get authorization URL
         const authorizationUrlResult = provider.getAuthorizationUrl({
           state: stateResult.value,
           codeChallenge: codeChallengeResult.value,
@@ -107,23 +118,25 @@ export function createAuthHelpers<TRequest, TResponse>(
     // Sign up
     // --------------------------------------------
 
-    signUp: async(providerId: AuthProviderId, data:{email:string, password:string, [key:string]: unknown}):Promise<{success:boolean}> => {
-      
-if(!providerId) {
-  return {success:false}
-}
-
-      if(!credentialProvider) {
-        return {success:false}
-      }
-      const result = await credentialProvider.signUp(data)
-      
-      if(result.isErr()) {
-        return {success:false}
+    signUp: async (
+      providerId: AuthProviderId,
+      data: { email: string; password: string; [key: string]: unknown },
+    ): Promise<{ success: boolean }> => {
+      if (!providerId) {
+        return { success: false };
       }
 
-      return {success:true}
-    }
+      if (!credentialProvider) {
+        return { success: false };
+      }
+      const result = await credentialProvider.signUp(data);
+
+      if (result.isErr()) {
+        return { success: false };
+      }
+
+      return { success: true };
+    },
     // --------------------------------------------
     // Sign out
     // --------------------------------------------
@@ -181,7 +194,10 @@ if(!providerId) {
       }
 
       // Handle the callback
-      const providerResult = await provider.handleCallback(request, oauthState);
+      const providerResult = await provider.completeAuthentication(
+        request,
+        oauthState,
+      );
 
       // 5. Handle the Result (error or success)
       if (providerResult.isErr()) {
@@ -193,8 +209,8 @@ if(!providerId) {
 
       // Call the user's onSignIn callback
       let customSessionData = {};
-      if (config.callbacks?.onSignIn) {
-        customSessionData = await config.callbacks.onSignIn(providerUser);
+      if (config.onAuthenticated) {
+        customSessionData = await config.onAuthenticated(providerUser);
       }
 
       // Create the final session payload
@@ -224,36 +240,34 @@ if(!providerId) {
       return { redirectTo };
     },
 
-        // --------------------------------------------
+    // --------------------------------------------
     // Handle email verification
     // --------------------------------------------
 
     handleVerifyEmail: async () => {
       // Extract token from the URL query parameter
-      const url = new URL(request.url)
-      const token = url.searchParams.get('token')
-
+      const url = new URL(request.url);
+      const token = url.searchParams.get('token');
 
       // Handle missing token
 
-      if(!token) {
-
+      if (!token) {
       }
       // Verify token
-      const result = await credentialProvider?.verifyEmail(token)
+      const result = await credentialProvider?.verifyEmail(token);
 
       // Handle verification result - error case
-      if(result?.isErr()) {
-        const errorUrl = credentialProvider?.config.emailVerification.onError
-        return {redirectTo: errorUrl}
+      if (result?.isErr()) {
+        const errorUrl = credentialProvider?.config.emailVerification.onError;
+        return { redirectTo: errorUrl };
       }
 
       // Handle verification result - success case
-    const successUrl = credentialProvider?.config.emailVerification.onSuccess
-    return {
-      redirectTo: successUrl
-    }
-    }
+      const successUrl = credentialProvider?.config.emailVerification.onSuccess;
+      return {
+        redirectTo: successUrl,
+      };
+    },
   };
 }
 

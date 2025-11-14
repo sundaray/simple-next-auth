@@ -24,10 +24,12 @@ export interface OAuthProvider {
     codeChallenge: string;
     prompt?: string;
   }): Result<string, AuthError>;
-  completeAuthentication(
+  completeSignin(
     request: Request,
     oauthStatePayload: OAuthStatePayload,
   ): Promise<Result<UserClaims, AuthError>>;
+
+  onAuthenticated(userClaims: UserClaims): Promise<Record<string, unknown>>;
 }
 
 /**

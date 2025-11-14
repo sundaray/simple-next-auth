@@ -55,7 +55,7 @@ export class GoogleProvider implements OAuthProvider {
   // --------------------------------------------
   // Handle Callback
   // --------------------------------------------
-  async handleCallback(
+  async completeAuthentication(
     request: Request,
     oauthStatePayload: OAuthStatePayload,
   ): Promise<Result<UserClaims, AuthError>> {
