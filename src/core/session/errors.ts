@@ -110,3 +110,13 @@ export class DeleteSessionError extends AuthError {
     this.name = 'DeleteSessionError';
   }
 }
+
+export class GetUserSessionError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to get user session.',
+      cause: options.cause,
+    });
+    this.name = 'GetUserSessionError';
+  }
+}

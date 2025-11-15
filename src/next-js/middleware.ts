@@ -1,9 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import {
-  decryptUserSessionJWE,
-  encryptUserSessionPayload,
-} from '../core/session';
+import { decryptUserSession, encryptUserSessionPayload } from '../core/session';
 import type { AuthConfig } from '../types';
 import { COOKIE_NAMES } from '../core/constants';
 
@@ -11,8 +8,8 @@ export async function extendUserSessionExpiry(
   userSessionJWE: string,
   config: AuthConfig,
 ) {
-  const userSessionPayloadResult = await decryptUserSessionJWE({
-    jwe: userSessionJWE,
+  const userSessionPayloadResult = await decryptUserSession({
+    session: userSessionJWE,
     secret: config.session.secret,
   });
 
