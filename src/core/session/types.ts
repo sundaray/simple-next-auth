@@ -1,4 +1,4 @@
-import type { AuthProviderId } from '../../types';
+import type { AuthProviderId } from '../../providers/types';
 
 export interface UserSessionPayload {
   maxAge: number;

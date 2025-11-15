@@ -1,276 +1,209 @@
 import type { AuthConfig } from '../types';
-import { OAUTH_STATE_MAX_AGE } from './constants.js';
-import {
-  MissingOAuthStateCookieError,
-  ProviderNotFoundError,
-} from './oauth/errors';
-
+import type { SessionStorage } from './session/types';
 import type {
-  UserSessionPayload,
-  SessionStorage,
-} from '../core/session/types.js';
-import type { AuthProviderId, SignInOptions } from '../types';
-import type { AnyAuthProvider } from '../providers/types';
+  AnyAuthProvider,
+  AuthProviderId,
+  OAuthProvider,
+} from '../providers/types';
+import type { SignInOptions } from '../types';
+import {ok, err, Result} from "neverthrow"
 
-import {
-  encryptUserSessionPayload,
-  createUserSessionPayload,
-  decryptUserSessionJWE,
-} from './session/index.js';
+import { OAuthService } from './services/oauth-service';
+import { CredentialService } from './services/credential-service';
+import { SessionService } from './services/session-service';
+import { ProviderRegistry } from './services/provider-registry';
 
-import {
-  decryptOAuthStateJWE,
-  encryptOAuthStatePayload,
-} from './oauth/index.js';
+import { ProviderNotFoundError } from './oauth/errors';
+import type { SigningOptions } from 'crypto';
 
-import {
-  generateCodeChallenge,
-  generateCodeVerifier,
-  generateState,
-} from './pkce';
-
-/**
- * Core Authentication Helpers - Framework Agnostic
- *
- * @param config - Global auth configuration (baseUrl, secret, session config)
- * @param userSessionStorage - Session storage adapter (framework-specific)
- * @param oauthStateStorage - OAuth state storage adapter (framework-specific)
- * @param providers - Array of auth providers (Google, Credential, etc.)
- *
- * @returns Auth helper functions that framework adapters use
- */
-export function createAuthHelpers<TRequest, TResponse>(
+export function createAuthHelpers(
   config: AuthConfig,
-  userSessionStorage: SessionStorage<TRequest, TResponse>,
-  oauthStateStorage: SessionStorage<TRequest, TResponse>,
+  userSessionStorage: SessionStorage<any, any>,
+  oauthSessionStorage: SessionStorage<any, any>,
   providers: AnyAuthProvider[],
 ) {
-  const providersMap = new Map<AuthProviderId, AnyAuthProvider>();
-
-  for (const provider of providers) {
-    providersMap.set(provider.id, provider);
-  }
-
-  const credentialProvider = providers.find(
-    (provider) => provider.type === 'credential',
-  );
+  const providerRegistry = new ProviderRegistry(providers);
+  const oauthService = new OAuthService(config, oauthSessionStorage);
+  const credentialService = new CredentialService(config);
+  const sessionService = new SessionService(config, userSessionStorage);
 
   return {
     // --------------------------------------------
     // Sign in
     // --------------------------------------------
-    signIn: async (
-      providerId: AuthProviderId,
-      options?: SignInOptions,
-    ): Promise<{ authorizationUrl: string }> => {
-      const provider = providersMap.get(providerId);
-      if (!provider) {
-        throw new Error(`Provider ${providerId} not found`);
-      }
-      if (provider.type === 'oauth') {
-        // Generate state
-        const stateResult = generateState();
-        if (stateResult.isErr()) throw stateResult.error;
+    signIn: async(providerId: AuthProviderId, options: {redirectTo: `/${string}`} | {email:string, password: string, redirectTo: `/${string}`}) => {
+    
+    
+      const provider = providerRegistry.get(providerId)
 
-        // Generate code verifier
-        const codeVerifierResult = generateCodeVerifier();
-        if (codeVerifierResult.isErr()) throw codeVerifierResult.error;
+      // OAuth Sign In
+      if(provider.type === 'oauth') {
+        const result = await oauthService.initiateSignIn(provider, options as {redirectTo: `/${string}`})
 
-        // Generate code challenge
-        const codeChallengeResult = await generateCodeChallenge(
-          codeVerifierResult.value,
-        );
-        if (codeChallengeResult.isErr()) throw codeChallengeResult.error;
+        if(result.isErr()) {
+          return err(result.error)
+        }
 
-        // Create OAuth state JWE
-        const oauthStateJWEResult = await encryptOAuthStatePayload({
-          oauthState: {
-            state: stateResult.value,
-            codeVerifier: codeVerifierResult.value,
-            redirectTo: options?.redirectTo || '/',
-            provider: provider.id,
-          },
-          secret: config.session.secret,
-          maxAge: OAUTH_STATE_MAX_AGE,
-        });
-        if (oauthStateJWEResult.isErr()) throw oauthStateJWEResult.error;
+        const {authorizationUrl, oauthStateJWE} = result.value
+        await oauthSessionStorage.saveSession(undefined, oauthStateJWE)
 
-        // Get authorization URL
-        const authorizationUrlResult = provider.getAuthorizationUrl({
-          state: stateResult.value,
-          codeChallenge: codeChallengeResult.value,
-        });
-        if (authorizationUrlResult.isErr()) throw authorizationUrlResult.error;
-
-        // Use the oauthstateStorage instance to save the cookie
-        await oauthStateStorage.saveSession(
-          undefined,
-          oauthStateJWEResult.value,
-        );
-
-        // Use the framework to redirect
-        return { authorizationUrl: authorizationUrlResult.value };
+        return ok({authorizationUrl})
       }
 
-      return { authorizationUrl: '' };
+      // Credential Sign In
+      if(provider.type === 'credential') {
+        const credentialProvider = providerRegistry.getCredentialProvider()
+
+        if(!credentialProvider) {
+          return err(new ProviderNotFoundError({providerId: 'credential'}))
+        }
+
+      const data = options as {
+        email: string;
+            password: string;
+            redirectTo: `/${string}`;
+      }
+
+      const signInResult = await credentialService.signIn(
+            credentialProvider,
+            { email: data.email, password: data.password },
+            data.redirectTo, // ✅ Always provided now
+          );
+
+    if (signInResult.isErr()) {
+      return err(signInResult.error);
+    }
+
+    const { sessionData, redirectTo } = signInResult.value;
+
+    const sessionResult = await sessionService.createSession(
+      sessionData,
+      'credential',
+    );
+
+    if (sessionResult.isErr()) {
+      return err(sessionResult.error);
+    }
+
+    const sessionJWE = sessionResult.value;
+    await userSessionStorage.saveSession(undefined, sessionJWE);
+
+    return ok({ redirectTo });
+      }
     },
+  
     // --------------------------------------------
-    // Sign up
+    // Sign Up (Credential)
     // --------------------------------------------
+    signUp: async (data: {
+      email: string;
+      password: string;
+      [key: string]: unknown;
+    }) => {
+      const provider = providerRegistry.getCredentialProvider();
 
-    signUp: async (
-      providerId: AuthProviderId,
-      data: { email: string; password: string; [key: string]: unknown },
-    ): Promise<{ success: boolean }> => {
-      if (!providerId) {
-        return { success: false };
+      if (!provider) {
+        throw new ProviderNotFoundError({ providerId: 'credential' });
       }
 
-      if (!credentialProvider) {
-        return { success: false };
-      }
-      const result = await credentialProvider.signUp(data);
+      const result = await credentialService.signUp(provider, data);
 
       if (result.isErr()) {
-        return { success: false };
+        throw result.error;
       }
 
-      return { success: true };
+      return result.value;
     },
     // --------------------------------------------
     // Sign out
     // --------------------------------------------
     signOut: async (): Promise<{ redirectTo: string }> => {
-      await userSessionStorage.deleteSession(undefined);
+      const result = await sessionService.deleteSession();
+
+      if (result.isErr()) {
+        throw result.error;
+      }
+
       return { redirectTo: '/' };
     },
     // --------------------------------------------
     // Get user session
     // --------------------------------------------
-    getUserSession: async (
-      request: TRequest,
-    ): Promise<UserSessionPayload | null> => {
-      const jwe = await userSessionStorage.getSession(request);
-      if (!jwe) return null;
+    getUserSession: async (request: Request) => {
+      const result = await sessionService.getSession(request);
 
-      const sessionResult = await decryptUserSessionJWE({
-        jwe,
-        secret: config.session.secret,
-      });
-
-      if (sessionResult.isErr()) {
+      if (result.isErr()) {
         return null;
       }
-      return sessionResult.value;
+
+      return result.value;
     },
-
     // --------------------------------------------
-    // Handle Callback
+    // Handle OAuth Callback
     // --------------------------------------------
-    handleCallback: async (
-      request: TRequest & Request,
+    handleOAuthCallback: async (
+      request: Request,
+      providerId: AuthProviderId,
     ): Promise<{ redirectTo: `/${string}` }> => {
-      const ouathStateJWE = await oauthStateStorage.getSession(request);
-      if (!ouathStateJWE) {
-        throw new MissingOAuthStateCookieError();
-      }
-
-      // Decrypt OAuth state cookie
-      const oauthStateResult = await decryptOAuthStateJWE({
-        jwe: ouathStateJWE,
-        secret: config.session.secret,
-      });
-
-      if (oauthStateResult.isErr()) {
-        throw oauthStateResult.error;
-      }
-
-      const oauthState = oauthStateResult.value;
-      const providerId = oauthState.provider;
-      const provider = providersMap.get(providerId);
+      const provider = providerRegistry.get(providerId) as OAuthProvider;
 
       if (!provider) {
-        throw new ProviderNotFoundError({ providerId });
+        throw new ProviderNotFoundError({ providerId: 'oauth' });
       }
 
-      // Handle the callback
-      const providerResult = await provider.completeAuthentication(
-        request,
-        oauthState,
+      // Complete OAuth sign-in
+      const signInResult = await oauthService.completeSignIn(request, provider);
+
+      if (signInResult.isErr()) {
+        throw signInResult.error;
+      }
+
+      const { sessionData, redirectTo } = signInResult.value;
+
+      // Create session
+      const sessionResult = await sessionService.createSession(
+        sessionData,
+        provider.id,
       );
 
-      // 5. Handle the Result (error or success)
-      if (providerResult.isErr()) {
-        throw providerResult.error;
+      if (sessionResult.isErr()) {
+        throw sessionResult.error;
       }
 
-      // 6. Get the user claims
-      const providerUser = providerResult.value;
+      const sessionJWE = sessionResult.value;
 
-      // Call the user's onSignIn callback
-      let customSessionData = {};
-      if (config.onAuthenticated) {
-        customSessionData = await config.onAuthenticated(providerUser);
-      }
+      // Save session cookie
+      await userSessionStorage.saveSession(undefined, sessionJWE);
 
-      // Create the final session payload
-      const sessionPayloadResult = await createUserSessionPayload({
-        authConfig: config,
-        providerName: provider.id,
-        providerUserClaims: customSessionData,
-      });
-      if (sessionPayloadResult.isErr()) throw sessionPayloadResult.error;
+      // Delete OAuth state cookie
+      await oauthSessionStorage.deleteSession(undefined);
 
-      // 9. Encrypt the user session payload
-      const sessionJWEResult = await encryptUserSessionPayload({
-        userSessionPayload: sessionPayloadResult.value,
-        secret: config.session.secret,
-        maxAge: config.session.maxAge,
-      });
-      if (sessionJWEResult.isErr()) throw sessionJWEResult.error;
-
-      // 10. Set the user session
-      await userSessionStorage.saveSession(undefined, sessionJWEResult.value);
-
-      // 11. Delete the OAuth state cookie
-      await oauthStateStorage.deleteSession(undefined);
-
-      // 12. Redirect users to their intended destination
-      const redirectTo = oauthState.redirectTo || '/';
       return { redirectTo };
     },
-
     // --------------------------------------------
     // Handle email verification
     // --------------------------------------------
+    handleVerifyEmail: async (
+      request: Request,
+    ): Promise<{ redirectTo: `/${string}` }> => {
+      const provider = providerRegistry.getCredentialProvider();
 
-    handleVerifyEmail: async () => {
-      // Extract token from the URL query parameter
-      const url = new URL(request.url);
-      const token = url.searchParams.get('token');
-
-      // Handle missing token
-
-      if (!token) {
-      }
-      // Verify token
-      const result = await credentialProvider?.verifyEmail(token);
-
-      // Handle verification result - error case
-      if (result?.isErr()) {
-        const errorUrl = credentialProvider?.config.emailVerification.onError;
-        return { redirectTo: errorUrl };
+      if (!provider) {
+        throw new ProviderNotFoundError({ providerId: 'oauth' });
       }
 
-      // Handle verification result - success case
-      const successUrl = credentialProvider?.config.emailVerification.onSuccess;
-      return {
-        redirectTo: successUrl,
-      };
+      // Verify email
+      const result = await credentialService.verifyEmail(request, provider)
+
+      if(result.isErr()) {
+        return {redirectTo: }
+      }
+
+      const {redirectTo} = result.value
+
+      return {redirectTo}
     },
   };
 }
 
-export type AuthHelpers<TRequest, TResponse> = ReturnType<
-  typeof createAuthHelpers<TRequest, TResponse>
->;
+export type AuthHelpers = ReturnType<typeof createAuthHelpers>;
