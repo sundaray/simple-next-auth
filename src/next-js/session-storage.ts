@@ -1,51 +1,56 @@
 import { cookies } from 'next/headers';
-import { CookieSessionStorage } from '../core/session/cookie-storage';
-import type { AuthConfig } from '../types';
 import type { CookieOptions } from '../core/session/types';
-import type { ResponseHeaders } from '../core/session/types';
+import type { SessionStorage } from '../core/session/types';
+import { ResultAsync } from 'neverthrow';
+import {
+  DeleteSessionError,
+  GetSessionError,
+  SaveSessionError,
+} from '../core/session/errors';
 
-export class NextJsSessionStorage extends CookieSessionStorage<
-  Request,
-  unknown
-> {
-  constructor(
-    config: AuthConfig,
-    cookieName: string,
-    cookieOptions: CookieOptions,
-  ) {
-    super(config, cookieName, cookieOptions);
+export class NextJsSessionStorage implements SessionStorage<undefined> {
+  private cookieName: string;
+  private cookieOptions: CookieOptions;
+
+  constructor(cookieName: string, cookieOptions: CookieOptions) {
+    this.cookieName = cookieName;
+    this.cookieOptions = cookieOptions;
   }
 
-  async getSession(): Promise<string | null> {
-    const cookieStore = await cookies();
-    const cookie = cookieStore.get(this.cookieName);
-    return cookie?.value ?? null;
+  getSession(context: undefined): ResultAsync<string | null, GetSessionError> {
+    return ResultAsync.fromPromise(
+      (async () => {
+        const cookieStore = await cookies();
+        const cookie = cookieStore.get(this.cookieName);
+        return cookie?.value ?? null;
+      })(),
+      (error) => new GetSessionError({ cause: error }),
+    );
   }
 
-  override async saveSession(
-    response: unknown,
-    sessionData: string,
-  ): Promise<{ response?: unknown; headers?: ResponseHeaders }> {
-    const cookieStore = await cookies();
+  saveSession(
+    context: undefined,
+    session: string,
+  ): ResultAsync<void, SaveSessionError> {
+    return ResultAsync.fromPromise(
+      (async () => {
+        const cookieStore = await cookies();
 
-    cookieStore.set(this.cookieName, sessionData, {
-      maxAge: this.cookieOptions.maxAge,
-      path: this.cookieOptions.path,
-      httpOnly: this.cookieOptions.httpOnly,
-      secure: this.cookieOptions.secure,
-      sameSite: this.cookieOptions.sameSite,
-    });
-
-    return {};
+        cookieStore.set(this.cookieName, session, {
+          ...this.cookieOptions,
+        });
+      })(),
+      (error) => new SaveSessionError({ cause: error }),
+    );
   }
 
-  override async deleteSession(
-    response: unknown,
-  ): Promise<{ response?: unknown; headers?: ResponseHeaders }> {
-    const cookieStore = await cookies();
-
-    cookieStore.delete(this.cookieName);
-
-    return {};
+  deleteSession(context: undefined): ResultAsync<void, DeleteSessionError> {
+    return ResultAsync.fromPromise(
+      (async () => {
+        const cookieStore = await cookies();
+        cookieStore.delete(this.cookieName);
+      })(),
+      (error) => new DeleteSessionError({ cause: error }),
+    );
   }
 }

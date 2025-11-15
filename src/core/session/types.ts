@@ -1,4 +1,11 @@
 import type { AuthProviderId } from '../../providers/types';
+import {
+  GetSessionError,
+  SaveSessionError,
+  DeleteSessionError,
+} from './errors';
+
+import { ResultAsync } from 'neverthrow';
 
 export interface UserSessionPayload {
   maxAge: number;
@@ -6,17 +13,13 @@ export interface UserSessionPayload {
   [key: string]: unknown;
 }
 
-export type ResponseHeaders = Record<string, string | string[]>;
-
-export interface SessionStorage<TRequest, TResponse> {
-  getSession(request: TRequest): Promise<string | null>;
+export interface SessionStorage<TContext> {
+  getSession(context: TContext): ResultAsync<string | null, GetSessionError>;
   saveSession(
-    response: TResponse | undefined,
-    sessionData: string,
-  ): Promise<{ response?: TResponse; headers?: ResponseHeaders }>;
-  deleteSession(
-    response: TResponse | undefined,
-  ): Promise<{ response?: TResponse; headers?: ResponseHeaders }>;
+    context: TContext,
+    session: string,
+  ): ResultAsync<void, SaveSessionError>;
+  deleteSession(context: TContext): ResultAsync<void, DeleteSessionError>;
 }
 
 export interface CookieOptions {

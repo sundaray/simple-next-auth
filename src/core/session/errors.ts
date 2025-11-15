@@ -70,3 +70,43 @@ export class SetUserSessionCookieError extends AuthError {
     this.name = 'SetUserSessionCookieError';
   }
 }
+
+export class CreateSessionError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to create session.',
+      cause: options.cause,
+    });
+    this.name = 'CreateSessionError';
+  }
+}
+
+export class GetSessionError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to get session.',
+      cause: options.cause,
+    });
+    this.name = 'GetSessionError';
+  }
+}
+
+export class SaveSessionError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to save session.',
+      cause: options.cause,
+    });
+    this.name = 'SaveSessionError';
+  }
+}
+
+export class DeleteSessionError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to delete session.',
+      cause: options.cause,
+    });
+    this.name = 'DeleteSessionError';
+  }
+}

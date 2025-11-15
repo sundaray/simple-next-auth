@@ -11,7 +11,7 @@ import {
   CreateSessionError,
   GetSessionError,
   DeleteSessionError,
-} from './errors';
+} from '../session/errors';
 
 export class SessionService {
   constructor(
