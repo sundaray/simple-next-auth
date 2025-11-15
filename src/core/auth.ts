@@ -5,8 +5,8 @@ import type {
   AuthProviderId,
   OAuthProvider,
 } from '../providers/types';
-import type { SignInOptions } from '../types';
-import {ok, err, Result} from "neverthrow"
+import {ok, err, Result, ResultAsync, errAsync, safeTry} from "neverthrow"
+import type { AuthError } from './errors';
 
 import { OAuthService } from './services/oauth-service';
 import { CredentialService } from './services/credential-service';
@@ -14,18 +14,17 @@ import { SessionService } from './services/session-service';
 import { ProviderRegistry } from './services/provider-registry';
 
 import { ProviderNotFoundError } from './oauth/errors';
-import type { SigningOptions } from 'crypto';
 
-export function createAuthHelpers(
+export function createAuthHelpers<TContext>(
   config: AuthConfig,
-  userSessionStorage: SessionStorage<any, any>,
-  oauthSessionStorage: SessionStorage<any, any>,
+  userSessionStorage: SessionStorage<TContext>,
+  oauthSessionStorage: SessionStorage<TContext>,
   providers: AnyAuthProvider[],
 ) {
   const providerRegistry = new ProviderRegistry(providers);
-  const oauthService = new OAuthService(config, oauthSessionStorage);
+  const oauthService = new OAuthService<TContext>(config, oauthSessionStorage);
   const credentialService = new CredentialService(config);
-  const sessionService = new SessionService(config, userSessionStorage);
+  const sessionService = new SessionService<TContext>(config, userSessionStorage);
 
   return {
     // --------------------------------------------
@@ -67,7 +66,7 @@ export function createAuthHelpers(
       const signInResult = await credentialService.signIn(
             credentialProvider,
             { email: data.email, password: data.password },
-            data.redirectTo, // ✅ Always provided now
+            data.redirectTo,
           );
 
     if (signInResult.isErr()) {
@@ -95,7 +94,7 @@ export function createAuthHelpers(
     // --------------------------------------------
     // Sign Up (Credential)
     // --------------------------------------------
-    signUp: async (data: {
+    signUp: (data: {
       email: string;
       password: string;
       [key: string]: unknown;

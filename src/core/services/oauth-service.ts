@@ -12,10 +12,10 @@ import type { SignInOptions } from '../../types';
 import { ResultAsync, safeTry, ok, err } from 'neverthrow';
 import { InitiateSignInError, CompleteSignInError } from './errors';
 
-export class OAuthService {
+export class OAuthService<TContext> {
   constructor(
     private config: AuthConfig,
-    private oauthStateStorage: SessionStorage<any, any>,
+    private oauthStateStorage: SessionStorage<TContext>,
   ) {}
 
   // --------------------------------------------
@@ -70,6 +70,7 @@ export class OAuthService {
   // --------------------------------------------
   completeSignIn(
     request: Request,
+    context: TContext,
     provider: OAuthProvider,
   ): ResultAsync<
     {
@@ -83,15 +84,12 @@ export class OAuthService {
 
     return safeTry(async function* () {
       // Get OAuth state from cookie
-      const oauthStateJWE = yield* ResultAsync.fromPromise(
-        oauthStateStorage.getSession(request),
-        (error) => new CompleteSignInError({ cause: error }),
-      );
+      const oauthStateJWE = yield* oauthStateStorage.getSession(context);
 
       if (!oauthStateJWE) {
         return err(
           new CompleteSignInError({
-            message: 'OAuth state cookie not found',
+            message: 'OAuth state cookie not found.',
           }),
         );
       }

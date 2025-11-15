@@ -13,10 +13,10 @@ import {
   DeleteSessionError,
 } from '../session/errors';
 
-export class SessionService {
+export class SessionService<TContext> {
   constructor(
     private config: AuthConfig,
-    private userSessionStorage: SessionStorage<any, any>,
+    private userSessionStorage: SessionStorage<TContext>,
   ) {}
 
   // --------------------------------------------
@@ -49,12 +49,10 @@ export class SessionService {
   // Get session
   // --------------------------------------------
   getSession(
-    request: Request,
+    context: TContext,
   ): ResultAsync<UserSessionPayload | null, GetSessionError> {
-    return ResultAsync.fromPromise(
-      this.userSessionStorage.getSession(request),
-      (error) => new GetSessionError({ cause: error }),
-    )
+    return this.userSessionStorage
+      .getSession(context)
       .andThen((session) => {
         if (!session) {
           return okAsync(null);
@@ -78,14 +76,11 @@ export class SessionService {
   // --------------------------------------------
   // Delete session
   // --------------------------------------------
-  deleteSession(): ResultAsync<void, DeleteSessionError> {
-    return ResultAsync.fromPromise(
-      this.userSessionStorage.deleteSession(undefined),
-      (error) => {
-        return new DeleteSessionError({
-          cause: error,
-        });
-      },
-    );
+  deleteSession(context: TContext): ResultAsync<void, DeleteSessionError> {
+    return this.userSessionStorage.deleteSession(context).mapErr((error) => {
+      return new DeleteSessionError({
+        cause: error,
+      });
+    });
   }
 }
