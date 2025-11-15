@@ -9,8 +9,9 @@ import type {
 } from './credential/errors';
 import { ResultAsync } from 'neverthrow';
 import type { OAuthStatePayload } from '../core/oauth/types';
-import type { AuthProviderId } from '../types';
 import type { User, CredentialProviderConfig } from './credential/types';
+
+export type AuthProviderId = 'google' | 'credential';
 
 /**
  * Contract for OAuth providers (Google, GitHub, etc.)

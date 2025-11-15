@@ -5,7 +5,7 @@ import {
   decryptUserSessionJWE,
   createUserSessionPayload,
 } from '../session';
-import type { AuthProviderId } from '../../types';
+import type { AuthProviderId } from '../../providers/types';
 import { ResultAsync } from 'neverthrow';
 import {
   CreateSessionError,
@@ -13,14 +13,10 @@ import {
   DeleteSessionError,
 } from './errors';
 
-/**
- * Session Management Service
- * Pure business logic - framework-agnostic, easily testable
- */
 export class SessionService {
   constructor(
     private config: AuthConfig,
-    private userSessionStorage: SessionStorage<any, any>, // Framework handles its own types
+    private userSessionStorage: SessionStorage<any, any>,
   ) {}
 
   // --------------------------------------------
