@@ -1,4 +1,4 @@
-import { Result, ok, err } from 'neverthrow';
+import { Result, ok, err, ResultAsync, safeTry } from 'neverthrow';
 import type { OAuthProvider } from '../../providers/types';
 import type { GoogleIdTokenPayload, GoogleProviderConfig } from './types';
 import type { OAuthStatePayload } from '../../core/oauth/types';
@@ -11,6 +11,8 @@ import {
   MissingStateError,
   StateMismatchError,
 } from '../../core/oauth/errors';
+
+import { GoogleCompleteSignInError } from './errors';
 
 import { AuthError } from '../../core/errors';
 
@@ -55,60 +57,64 @@ export class GoogleProvider implements OAuthProvider {
   // --------------------------------------------
   // Complete sign-in
   // --------------------------------------------
-  async completeSignin(
+  completeSignin(
     request: Request,
     oauthStatePayload: OAuthStatePayload,
-  ): Promise<Result<GoogleIdTokenPayload, AuthError>> {
-    const url = new URL(request.url);
-    const code = url.searchParams.get('code');
-    const state = url.searchParams.get('state');
+  ): ResultAsync<GoogleIdTokenPayload, AuthError> {
+    const config = this.config;
 
-    if (!code) {
-      return err(new MissingAuthorizationCodeError());
-    }
+    return safeTry(async function* () {
+      const url = new URL(request.url);
+      const code = url.searchParams.get('code');
+      const state = url.searchParams.get('state');
 
-    if (!state) {
-      return err(new MissingStateError());
-    }
+      if (!code) {
+        return err(new MissingAuthorizationCodeError());
+      }
 
-    // Compare the state stored in cookie with state stored in URL
-    if (oauthStatePayload.state !== state) {
-      return err(new StateMismatchError());
-    }
+      if (!state) {
+        return err(new MissingStateError());
+      }
 
-    // Exchange authorization code for tokens
-    const tokensResult = await exchangeAuthorizationCodeForTokens({
-      code,
-      clientId: this.config.clientId,
-      clientSecret: this.config.clientSecret,
-      redirectUri: this.config.redirectUri,
-      codeVerifier: oauthStatePayload.codeVerifier,
+      // Compare the state stored in cookie with state stored in URL
+      if (oauthStatePayload.state !== state) {
+        return err(new StateMismatchError());
+      }
+
+      // Exchange authorization code for tokens
+      const tokens = yield* exchangeAuthorizationCodeForTokens({
+        code,
+        clientId: config.clientId,
+        clientSecret: config.clientSecret,
+        redirectUri: config.redirectUri,
+        codeVerifier: oauthStatePayload.codeVerifier,
+      });
+
+      // Decode the id_token for user claims
+      const userClaims = yield* decodeGoogleIdToken(tokens.id_token);
+
+      return ok(userClaims);
+    }).mapErr((error) => {
+      return new GoogleCompleteSignInError({
+        message: 'Failed to complete Google sign-in.',
+        cause: error,
+      });
     });
-
-    if (tokensResult.isErr()) {
-      return err(tokensResult.error);
-    }
-
-    const tokens = tokensResult.value;
-
-    // Decode the id_token for user claims
-    const userClaimsResult = decodeGoogleIdToken(tokens.id_token);
-
-    if (userClaimsResult.isErr()) {
-      return err(userClaimsResult.error);
-    }
-
-    const userClaims = userClaimsResult.value;
-
-    return ok(userClaims);
   }
 
   // --------------------------------------------
   // Execute user's onAuthenticated callback
   // --------------------------------------------
-  async onAuthenticated(
+  onAuthenticated(
     userClaims: GoogleIdTokenPayload,
-  ): Promise<Record<string, unknown>> {
-    return await this.config.onAuthenticated(userClaims);
+  ): ResultAsync<Record<string, unknown>, AuthError> {
+    return ResultAsync.fromPromise(
+      this.config.onAuthenticated(userClaims),
+      (error) =>
+        new GoogleCompleteSignInError({
+          message: 'Failed to execute onAuthenticated callback.',
+          cause: error,
+        }),
+    );
   }
 }

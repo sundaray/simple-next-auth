@@ -2,11 +2,11 @@ import type { AuthConfig } from '../../types';
 import type { SessionStorage, UserSessionPayload } from '../session/types';
 import {
   encryptUserSessionPayload,
-  decryptUserSessionJWE,
+  decryptUserSession,
   createUserSessionPayload,
 } from '../session';
 import type { AuthProviderId } from '../../providers/types';
-import { ResultAsync } from 'neverthrow';
+import { ResultAsync, okAsync } from 'neverthrow';
 import {
   CreateSessionError,
   GetSessionError,
@@ -26,42 +26,23 @@ export class SessionService {
     sessionData: Record<string, unknown>,
     providerId: AuthProviderId,
   ): ResultAsync<string, CreateSessionError> {
-    return ResultAsync.fromPromise(
-      (async () => {
-        const sessionPayloadResult = await createUserSessionPayload({
-          authConfig: this.config,
-          providerName: providerId,
-          userClaims: sessionData,
-        });
-        if (sessionPayloadResult.isErr()) {
-          throw new CreateSessionError({
-            cause: sessionPayloadResult.error,
-          });
-        }
-
-        const sessionJWEResult = await encryptUserSessionPayload({
-          userSessionPayload: sessionPayloadResult.value,
+    return createUserSessionPayload({
+      authConfig: this.config,
+      providerName: providerId,
+      userClaims: sessionData,
+    })
+      .andThen((userSessionPayload) =>
+        encryptUserSessionPayload({
+          userSessionPayload,
           secret: this.config.session.secret,
           maxAge: this.config.session.maxAge,
-        });
-        if (sessionJWEResult.isErr()) {
-          throw new CreateSessionError({
-            cause: sessionJWEResult.error,
-          });
-        }
-
-        return sessionJWEResult.value;
-      })(),
-      (error) => {
-        if (error instanceof CreateSessionError) {
-          return error;
-        }
+        }),
+      )
+      .mapErr((error) => {
         return new CreateSessionError({
-          message: 'Unexpected error creating session.',
           cause: error,
         });
-      },
-    );
+      });
   }
 
   // --------------------------------------------
@@ -71,33 +52,27 @@ export class SessionService {
     request: Request,
   ): ResultAsync<UserSessionPayload | null, GetSessionError> {
     return ResultAsync.fromPromise(
-      (async () => {
-        const jwe = await this.userSessionStorage.getSession(request);
-        if (!jwe) return null;
-
-        const sessionResult = await decryptUserSessionJWE({
-          jwe,
-          secret: this.config.session.secret,
-        });
-
-        if (sessionResult.isErr()) {
-          throw new GetSessionError({
-            cause: sessionResult.error,
-          });
+      this.userSessionStorage.getSession(request),
+      (error) => new GetSessionError({ cause: error }),
+    )
+      .andThen((session) => {
+        if (!session) {
+          return okAsync(null);
         }
 
-        return sessionResult.value;
-      })(),
-      (error) => {
+        return decryptUserSession({
+          session,
+          secret: this.config.session.secret,
+        });
+      })
+      .mapErr((error) => {
         if (error instanceof GetSessionError) {
           return error;
         }
         return new GetSessionError({
-          message: 'Unexpected error getting session.',
           cause: error,
         });
-      },
-    );
+      });
   }
 
   // --------------------------------------------
@@ -105,12 +80,9 @@ export class SessionService {
   // --------------------------------------------
   deleteSession(): ResultAsync<void, DeleteSessionError> {
     return ResultAsync.fromPromise(
-      (async () => {
-        await this.userSessionStorage.deleteSession(undefined);
-      })(),
+      this.userSessionStorage.deleteSession(undefined),
       (error) => {
         return new DeleteSessionError({
-          message: 'Unexpected error deleting session.',
           cause: error,
         });
       },

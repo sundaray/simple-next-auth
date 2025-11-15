@@ -61,3 +61,13 @@ export class DecodeGoogleIdTokenError extends AuthError {
     this.name = 'DecodeGoogleIdTokenError';
   }
 }
+
+export class GoogleCompleteSignInError extends AuthError {
+  constructor(options: { message?: string; cause?: unknown } = {}) {
+    super({
+      message: options.message || 'Failed to complete Google sign-in.',
+      cause: options.cause,
+    });
+    this.name = 'GoogleCompleteSignInError';
+  }
+}

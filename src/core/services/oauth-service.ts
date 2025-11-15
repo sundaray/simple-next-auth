@@ -9,7 +9,7 @@ import {
 import { encryptOAuthStatePayload, decryptOAuthStateJWE } from '../oauth';
 import { OAUTH_STATE_MAX_AGE } from '../constants';
 import type { SignInOptions } from '../../types';
-import { ResultAsync } from 'neverthrow';
+import { ResultAsync, safeTry, ok, err } from 'neverthrow';
 import { InitiateSignInError, CompleteSignInError } from './errors';
 
 export class OAuthService {
@@ -28,78 +28,41 @@ export class OAuthService {
     { authorizationUrl: string; oauthStateJWE: string },
     InitiateSignInError
   > {
-    return ResultAsync.fromPromise(
-      (async () => {
-        // Generate state
-        const stateResult = generateState();
-        if (stateResult.isErr()) {
-          throw new InitiateSignInError({
-            cause: stateResult.error,
-          });
-        }
+    const config = this.config;
 
-        // Generate code verifier
-        const codeVerifierResult = generateCodeVerifier();
-        if (codeVerifierResult.isErr()) {
-          throw new InitiateSignInError({
-            cause: codeVerifierResult.error,
-          });
-        }
+    return safeTry(async function* () {
+      const state = yield* generateState();
 
-        // Generate code challenge
-        const codeChallengeResult = await generateCodeChallenge(
-          codeVerifierResult.value,
-        );
-        if (codeChallengeResult.isErr()) {
-          throw new InitiateSignInError({
-            cause: codeChallengeResult.error,
-          });
-        }
+      const codeVerifier = yield* generateCodeVerifier();
 
-        // Encrypt OAuth state
-        const oauthStateJWEResult = await encryptOAuthStatePayload({
-          oauthState: {
-            state: stateResult.value,
-            codeVerifier: codeVerifierResult.value,
-            redirectTo: options?.redirectTo || '/',
-            provider: provider.id,
-          },
-          secret: this.config.session.secret,
-          maxAge: OAUTH_STATE_MAX_AGE,
-        });
-        if (oauthStateJWEResult.isErr()) {
-          throw new InitiateSignInError({
-            cause: oauthStateJWEResult.error,
-          });
-        }
+      const codeChallenge = yield* generateCodeChallenge(codeVerifier);
 
-        // Get authorization URL
-        const authorizationUrlResult = provider.getAuthorizationUrl({
-          state: stateResult.value,
-          codeChallenge: codeChallengeResult.value,
-        });
-        if (authorizationUrlResult.isErr()) {
-          throw new InitiateSignInError({
-            cause: authorizationUrlResult.error,
-          });
-        }
+      const oauthStateJWE = yield* encryptOAuthStatePayload({
+        oauthState: {
+          state,
+          codeVerifier,
+          redirectTo: options?.redirectTo || '/',
+          provider: provider.id,
+        },
+        secret: config.session.secret,
+        maxAge: OAUTH_STATE_MAX_AGE,
+      });
 
-        return {
-          authorizationUrl: authorizationUrlResult.value,
-          oauthStateJWE: oauthStateJWEResult.value,
-        };
-      })(),
-      (error) => {
-        if (error instanceof InitiateSignInError) {
-          return error;
-        }
+      const authorizationUrl = yield* provider.getAuthorizationUrl({
+        state,
+        codeChallenge,
+      });
 
-        return new InitiateSignInError({
-          message: 'Unexpected error during OAuth sign-in initiation.',
-          cause: error,
-        });
-      },
-    );
+      return ok({
+        authorizationUrl,
+        oauthStateJWE,
+      });
+    }).mapErr((error) => {
+      return new InitiateSignInError({
+        message: `Failed to initiate OAuth sign-in.)`,
+        cause: error,
+      });
+    });
   }
 
   // --------------------------------------------
@@ -115,59 +78,49 @@ export class OAuthService {
     },
     CompleteSignInError
   > {
-    return ResultAsync.fromPromise(
-      (async () => {
-        // Get OAuth state from storage
-        const oauthStateJWE = await this.oauthStateStorage.getSession(request);
-        if (!oauthStateJWE) {
-          throw new CompleteSignInError({
+    const config = this.config;
+    const oauthStateStorage = this.oauthStateStorage;
+
+    return safeTry(async function* () {
+      // Get OAuth state from cookie
+      const oauthStateJWE = yield* ResultAsync.fromPromise(
+        oauthStateStorage.getSession(request),
+        (error) => new CompleteSignInError({ cause: error }),
+      );
+
+      if (!oauthStateJWE) {
+        return err(
+          new CompleteSignInError({
             message: 'OAuth state cookie not found',
-          });
-        }
-
-        // Decrypt OAuth state
-        const oauthStateResult = await decryptOAuthStateJWE({
-          jwe: oauthStateJWE,
-          secret: this.config.session.secret,
-        });
-        if (oauthStateResult.isErr()) {
-          throw new CompleteSignInError({
-            cause: oauthStateResult.error,
-          });
-        }
-
-        const oauthState = oauthStateResult.value;
-
-        // Complete authentication with provider
-        const providerResult = await provider.completeSignin(
-          request,
-          oauthState,
+          }),
         );
-        if (providerResult.isErr()) {
-          throw new CompleteSignInError({
-            cause: providerResult.error,
-          });
-        }
+      }
 
-        const userClaims = providerResult.value;
+      // Decrypt OAuth state
+      const oauthState = yield* decryptOAuthStateJWE({
+        jwe: oauthStateJWE,
+        secret: config.session.secret,
+      });
 
-        // Call provider's onAuthenticated callback
-        const sessionData = await provider.onAuthenticated(userClaims);
+      // Complete authentication with provider
+      const userClaims = yield* provider.completeSignin(request, oauthState);
 
-        return {
-          sessionData,
-          redirectTo: oauthState.redirectTo || '/',
-        };
-      })(),
-      (error) => {
-        if (error instanceof CompleteSignInError) {
-          return error;
-        }
-        return new CompleteSignInError({
-          message: 'Unexpected error completing OAuth sign-in.',
-          cause: error,
-        });
-      },
-    );
+      // Call provider's onAuthenticated callback
+      const sessionData = yield* provider.onAuthenticated(userClaims);
+
+      return ok({
+        sessionData,
+        redirectTo: oauthState.redirectTo || '/',
+      });
+    }).mapErr((error) => {
+      if (error instanceof CompleteSignInError) {
+        return error;
+      }
+
+      return new CompleteSignInError({
+        message: 'Failed to complete OAuth sign-in.',
+        cause: error,
+      });
+    });
   }
 }

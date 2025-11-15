@@ -1,4 +1,3 @@
-import type { Result } from 'neverthrow';
 import type { AuthError } from '../core/errors';
 import type {
   SignUpError,
@@ -7,7 +6,7 @@ import type {
   InvalidCredentialsError,
   VerifyEmailError,
 } from './credential/errors';
-import { ResultAsync } from 'neverthrow';
+import { Result, ResultAsync } from 'neverthrow';
 import type { OAuthStatePayload } from '../core/oauth/types';
 import type { User, CredentialProviderConfig } from './credential/types';
 
@@ -28,11 +27,11 @@ export interface OAuthProvider {
   completeSignin(
     request: Request,
     oauthStatePayload: OAuthStatePayload,
-  ): Promise<Result<Record<string, any>, AuthError>>;
+  ): ResultAsync<Record<string, any>, AuthError>;
 
   onAuthenticated(
     userClaims: Record<string, any>,
-  ): Promise<Record<string, unknown>>;
+  ): ResultAsync<Record<string, unknown>, AuthError>;
 }
 
 /**

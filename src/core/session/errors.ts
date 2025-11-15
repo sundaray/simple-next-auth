@@ -20,7 +20,7 @@ export class EncryptUserSessionPayloadError extends AuthError {
   }
 }
 
-export class DecryptUserSessionJweError extends AuthError {
+export class DecryptUserSessionError extends AuthError {
   constructor(options: { message?: string; cause?: unknown } = {}) {
     super({
       message: options.message || 'Failed to decrypt user session JWE.',
